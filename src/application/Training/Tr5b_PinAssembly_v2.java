@@ -1,11 +1,16 @@
-package application;
+package application.Training;
 
+import static utils.Utils.*;
+import utils.HandlerPad;
+import utils.HandlerMFio;
+import utils.HandlerPLCio;
+import utils.HandlerMov;
+import utils.FrameList;
 
+import utils.FrameWrapper;
 import java.util.concurrent.TimeUnit;
-
 import javax.inject.Inject; 
 import javax.inject.Named; 
-
 import com.kuka.common.ThreadUtil;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
@@ -13,7 +18,6 @@ import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 import static com.kuka.roboticsAPI.motionModel.HRCMotions.*;
-
 import com.kuka.roboticsAPI.conditionModel.ForceCondition;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.deviceModel.JointEnum;
@@ -40,73 +44,79 @@ import com.sun.java.swing.plaf.nimbus.ButtonPainter;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 import com.sun.org.apache.bcel.internal.generic.Select;
 
-/**
- * Implementation of a robot application.
- * <p>
- * The application provides a {@link RoboticsAPITask#initialize()} and a 
- * {@link RoboticsAPITask#run()} method, which will be called successively in 
- * the application lifecycle. The application will terminate automatically after 
- * the {@link RoboticsAPITask#run()} method has finished or after stopping the 
- * task. The {@link RoboticsAPITask#dispose()} method will be called, even if an 
- * exception is thrown during initialization or run. 
- * <p>
- * <b>It is imperative to call <code>super.dispose()</code> when overriding the 
- * {@link RoboticsAPITask#dispose()} method.</b> 
- * 
- * @see UseRoboticsAPIContext
- * @see #initialize()
- * @see #run()
- * @see #dispose()
- */
-public class Tr_PinAssembly extends RoboticsAPIApplication {
-	@Inject
-	private LBR kiwa;
+public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
+	// Standard KUKA API objects
+	@Inject private LBR 				kiwa;
+	@Inject private Plc_inputIOGroup 	plcin;
+	@Inject private Plc_outputIOGroup 	plcout;
+	@Inject private MediaFlangeIOGroup 	mfio;
+	@Inject	@Named("Pinza") 		private Tool 		Gripper;
+	@Inject @Named("VacuumBody")	private Workpiece 	VacuumBody;
+	// @Inject	private ITaskLogger 		logger;
 	
-	@Inject	 
-	@Named("Pinza")
-	private Tool Gripper;
+	// Custom modularizing handler objects
+	@Inject private HandlerPad pad = new HandlerPad();
+	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
+	@Inject private HandlerPLCio plc = new HandlerPLCio(plcin, plcout);
+	@Inject private HandlerMov move = new HandlerMov(mfio);
 	
-	@Inject
-	@Named("VacuumBody")
-	private Workpiece VacuumBody;
+	// Private properties - application variables
+	private FrameList frameList = new FrameList();
+	private enum States {state_home, state_teach, state_loop};
+	private States state;
+	private double defSpeed = 0.25;
+	private String homeFramePath;
 	
-	@Inject 							private Plc_inputIOGroup 		plcin;
-	@Inject 							private Plc_outputIOGroup 		plcout;
-	@Inject 							private MediaFlangeIOGroup 		mfio;
+	// Motion related KUKA API objects
+	private CartesianImpedanceControlMode softMode = new CartesianImpedanceControlMode();  	// for stiffless handguiding
+	private CartesianImpedanceControlMode stiffMode = new CartesianImpedanceControlMode();  // for gesture control
+	private PositionHold posHold = new PositionHold(softMode, -1, null);  
+	private IMotionContainer posHoldMotion;			// Motion container for position hold
+	private IMotionContainer torqueBreakMotion;		// Motion container with torque break condition
+	private ICondition JTConds;
 	
-	@Inject
-	private ITaskLogger logger;
-
-	private enum States {state_home, state_teach, state_run, state_pause};
+	
+	// DEPRECATED
 	private enum ButtonInput {short_press, long_press, double_click, triple_click, invalid};
-	private States state; 
 	private boolean keyAlreadyPressed, isAttachedTool, reducedSpeed = false; 
 	private int promptAns;
 	private double maxTorque = 10.0;
-	private double defSpeed = 0.15; 
 	private Frame nextFrame;
-	private String homeFramePath;
-	
 	private FrameWrapper fwo = new FrameWrapper();
- 
-	 
 	private CartesianImpedanceControlMode ctrMode = new CartesianImpedanceControlMode();  	// for stiffless handguiding
 	private CartesianImpedanceControlMode ctrModeStiff = new CartesianImpedanceControlMode();  // for gesture control
-	private PositionHold posHold = new PositionHold(ctrMode, -1, null);  
 	private IMotionContainer positionHoldContainer, moveCmdContainer;		//positionHoldContainer- for stiffless posHold;  moveCmdContainer - for torque break condition
-	
 	private JointTorqueCondition torqueBreakCondition1, torqueBreakCondition2, torqueBreakCondition3, torqueBreakCondition4, torqueBreakCondition5, torqueBreakCondition6, torqueBreakCondition7 ;					// for torque break condition
 	private IFiredConditionInfo info;
 	
 	@Override
 	public void initialize() {
-		setRGB(false, false, true);
-		// setting the Stiffness in HandGuiding mode
-		ctrMode.parametrize(CartDOF.TRANSL).setStiffness(0.1).setDamping(1);			// stiffless handguiding
-		ctrMode.parametrize(CartDOF.ROT).setStiffness(0.1).setDamping(1);  
+		double maxTorque;
+		pad.log("Initializing...");
+		Gripper.attachTo(kiwa.getFlange());
+		configPadKeysTEACH();
+		configPadKeysTORQUE();
+		state = States.state_home;
+		homeFramePath = "/PinAssem";
+		move.setHome(homeFramePath);
 		
-		ctrModeStiff.parametrize(CartDOF.TRANSL).setStiffness(5000).setDamping(1);		// gesture control
-		ctrModeStiff.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1); 
+		// Setting the stiffness in HandGuiding mode
+		softMode.parametrize(CartDOF.TRANSL).setStiffness(0.1).setDamping(1);		// HandGuiding
+		softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
+		softMode.parametrize(CartDOF.Z).setStiffness(0.1).setDamping(1);
+		stiffMode.parametrize(CartDOF.TRANSL).setStiffness(5000).setDamping(1);		// GestureControl
+		stiffMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1); 
+		
+		// Setting joint torque break condition
+		int promptAns = pad.question("Set max External Torque ", "5 Nm", "10 Nm", "15 Nm", "20 Nm");  
+		switch (promptAns) {
+			case 0: maxTorque = 5.0; break;
+			case 1: maxTorque = 10.0; break;
+			case 2: maxTorque = 15.0; break;
+			case 3: maxTorque = 20.0; break;
+			default: maxTorque = 10.0; break;
+		}
+	//	move.setupJTconds(JTConds, maxTorque);
 
 		torqueBreakCondition1 = new JointTorqueCondition(JointEnum.J1, -maxTorque, maxTorque);	
 		torqueBreakCondition2 = new JointTorqueCondition(JointEnum.J2, -maxTorque, maxTorque);
@@ -117,11 +127,6 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 		torqueBreakCondition7 = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
 			
 		
-		// initialize your application here 
-		System.out.println("Initializing...");
-		kiwa.setHomePosition(getApplicationData().getFrame("/PinAssem"));
-		homeFramePath = "/PinAssem";
-		state = States.state_home; 
 		enableTEACHbuttons(); 
 		enableTORQUEbuttons();
 		fwo.Free();
@@ -178,7 +183,7 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 				break;
 
 
-			case state_run:
+			case state_loop:
 				System.out.println("Running."); 
 				setRGB(false, true, false); 
 				ThreadUtil.milliSleep(50);
@@ -266,7 +271,6 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 	}
 
 	private void movePtpWithTorqueCondition (Frame nextFrame){		// overloading for taught points
-
 		double prevSpeed = defSpeed;
 		if (reducedSpeed) {
 			defSpeed = 0.05;
@@ -289,7 +293,6 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 	}
 	
 	private void movePtpWithTorqueCondition (String framePath){		// overloading for appData points
-		
 		double prevSpeed = defSpeed;
 		if (reducedSpeed) {
 			defSpeed = 0.05;
@@ -312,7 +315,6 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 	}
 	
 	private void myHandGuiding(){											// handguiding function
-		
 		System.out.println("Push USER button and start handguiding.");
 		setRGB(false, true, true);
 		while (true) {
@@ -325,7 +327,6 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 				break;
 			}
 		}
- 	 
 		
 		while (true) {
 			ThreadUtil.milliSleep(50);
@@ -362,15 +363,14 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 					System.out.println("Added Frame "+fwo.GetCounter()+"."); 
 					System.out.println("Pin will be inserted in this location.");
 					
-				}else {
+				} else {
 					//do nothing
 				}
-
 			}
 		} 
 	}
   
-	private void enableTEACHbuttons() { 										// TEACH buttons
+	private void configPadKeysTEACH() { 										// TEACH buttons
 		IUserKeyBar keyBar2 = getApplicationUI().createUserKeyBar("TEACH");
 
 		IUserKeyListener listener2 = new IUserKeyListener() {
@@ -420,8 +420,6 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 					} else if (keyAlreadyPressed) {
 						keyAlreadyPressed = false; 
 					}
-
-					 
 				}
 				if (3 == key.getSlot()) {   					//KEY - CLOSE GRIPPER
 					
@@ -475,7 +473,7 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 
 	}
 
-	private void enableTORQUEbuttons() { 									// TORQUE/SPEED Buttons
+	private void configPadKeysTORQUE() { 									// TORQUE/SPEED Buttons
 		IUserKeyBar keyBar = getApplicationUI().createUserKeyBar("TRQ./SPD.");
 
 		IUserKeyListener listener1 = new IUserKeyListener() {
@@ -776,6 +774,5 @@ public class Tr_PinAssembly extends RoboticsAPIApplication {
 //		System.out.println("Position reached.");
 		setRGB(false, true, false); 
 	}
-
 
 }

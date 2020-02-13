@@ -1,4 +1,4 @@
-package application;
+package utils;
 
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 
@@ -20,7 +20,8 @@ import com.kuka.roboticsAPI.motionModel.PTP;
  * The safety needs exactly 10 measurements to perform a successful GMS Referencing. 
  * The time between two measurements must be less than 15 seconds.
  */
-public class PositionAndGMSReferencing extends RoboticsAPIApplication {
+ 
+public class JointsReferencing extends RoboticsAPIApplication {
     private Controller kukaController;
     private LBR lbr_iiwa;
 
@@ -31,42 +32,24 @@ public class PositionAndGMSReferencing extends RoboticsAPIApplication {
     private final static int COMMAND_SUCCESSFUL = 1;
     private int positionCounter = 0;
 
-    public void initialize()
-    {
+    public void initialize() {
         kukaController = (Controller) getContext().getControllers().toArray()[0];
         lbr_iiwa = (LBR) kukaController.getDevices().toArray()[0];
     }
 
-    public void run()
-    {
+    public void run() {
         PositionMastering mastering = new PositionMastering(lbr_iiwa);
-
         boolean allAxesMastered = true;
-        for (int i = 0; i < axisId.length; ++i)
-        {
-            // Check if the axis is mastered - if not, no referencing is possible
-            boolean isMastered = mastering.isAxisMastered(axisId[i]);
-            if (!isMastered)
-            {
-                getLogger().warn("Axis with axisId " + axisId[i] + " is not mastered, therefore it cannot be referenced");
-            }
-            
+        for (int i = 0; i < axisId.length; ++i) {
+            boolean isMastered = mastering.isAxisMastered(axisId[i]);							// Check if the axis is mastered - if not, no referencing is possible
+            if (!isMastered) getLogger().warn("Axis with axisId " + axisId[i] + " is not mastered, therefore it cannot be referenced");
             allAxesMastered &= isMastered;
         }
-        
-        // We can move faster, if operation mode is T1
-        if (OperationMode.T1 == lbr_iiwa.getOperationMode())
-        {
-            joggingVelocity = 0.4;
-        }
-        
-        if (allAxesMastered)
-        {
+        if (OperationMode.T1 == lbr_iiwa.getOperationMode()) joggingVelocity = 0.4;				// We can move faster, if operation mode is T1
+        if (allAxesMastered) {
             getLogger().info("Perform position and GMS referencing with 5 positions");
-            
-            // Move to home position
             getLogger().info("Moving to home position");
-            lbr_iiwa.move(ptpHome().setJointVelocityRel(joggingVelocity));
+            lbr_iiwa.move(ptpHome().setJointVelocityRel(joggingVelocity));	// Move to home position
 
             // In this example 5 positions are defined, though each one 
             // will be reached from negative and from positive axis 
@@ -112,61 +95,44 @@ public class PositionAndGMSReferencing extends RoboticsAPIApplication {
                                             Math.toRadians(-29.95),
                                             Math.toRadians(1.57)));
             
-            // Move to home position at the end
             getLogger().info("Moving to home position");
-            lbr_iiwa.move(ptpHome().setJointVelocityRel(joggingVelocity));
+            lbr_iiwa.move(ptpHome().setJointVelocityRel(joggingVelocity));		// Move to home position at the end
         }
     }
 
-    private void performMotion(JointPosition position)
-    {
+    private void performMotion(JointPosition position) {
         getLogger().info("Moving to position #" + (++positionCounter));
-
         PTP mainMotion = new PTP(position).setJointVelocityRel(joggingVelocity);
         lbr_iiwa.move(mainMotion);
-
+		
         getLogger().info("Moving to current position from negative direction");
         JointPosition position1 = new JointPosition(lbr_iiwa.getJointCount());
-        for (int i = 0; i < lbr_iiwa.getJointCount(); ++i)
-        {
+        for (int i = 0; i < lbr_iiwa.getJointCount(); ++i) {
             position1.set(i, position.get(i) - sideOffset);
         }
         PTP motion1 = new PTP(position1).setJointVelocityRel(joggingVelocity);
         lbr_iiwa.move(motion1);
         lbr_iiwa.move(mainMotion);
-
-        // Wait a little to reduce robot vibration after stop.
-        ThreadUtil.milliSleep(2500);
-        
-        // Send the command to safety to trigger the measurement
-        sendSafetyCommand();
+        ThreadUtil.milliSleep(2500);		// Wait a little to reduce robot vibration after stop.
+        sendSafetyCommand();				// Send the command to safety to trigger the measurement
 
         getLogger().info("Moving to current position from positive direction");
         JointPosition position2 = new JointPosition(lbr_iiwa.getJointCount());
-        for (int i = 0; i < lbr_iiwa.getJointCount(); ++i)
-        {
+        for (int i = 0; i < lbr_iiwa.getJointCount(); ++i) {
             position2.set(i, position.get(i) + sideOffset);
         }
         PTP motion2 = new PTP(position2).setJointVelocityRel(joggingVelocity);
         lbr_iiwa.move(motion2);
         lbr_iiwa.move(mainMotion);
-
-        // Wait a little to reduce robot vibration after stop
-        ThreadUtil.milliSleep(2500);
-        
-        // Send the command to safety to trigger the measurement
-        sendSafetyCommand();
+        ThreadUtil.milliSleep(2500);		// Wait a little to reduce robot vibration after stop
+        sendSafetyCommand();				// Send the command to safety to trigger the measurement
     }
     
-    private void sendSafetyCommand()
-    {
+    private void sendSafetyCommand() {
         ISunriseRequestService requestService = (ISunriseRequestService) (kukaController.getRequestService());
         SSR ssr = SSRFactory.createSafetyCommandSSR(GMS_REFERENCING_COMMAND);
         Message response = requestService.sendSynchronousSSR(ssr);
         int result = response.getParamInt(0);
-        if (COMMAND_SUCCESSFUL != result)
-        {
-            getLogger().warn("Command did not execute successfully, response = " + result);
-        }
+        if (COMMAND_SUCCESSFUL != result) getLogger().warn("Command did not execute successfully, response = " + result);
     }
 }
