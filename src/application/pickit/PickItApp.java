@@ -38,10 +38,11 @@ public class PickItApp extends RoboticsAPIApplication {
 		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
 		move.setJTConds(15.0);
 		move.setGlobalSpeed(1);
+		move.setBlending(20, 5);
 		move.setTCP(PickitGripper, "/Cylinder");
 		move.setHome("/_PickIt/Scan");
 		if(!move.PTPhome(1)) stop();
-		move.PTP("/_PickIt/Scan/Release", 1);
+		move.PTP("/_PickIt/Scan/Release", 1, false);
 		plc.askOpen();
 		move.PTPhome(1);
 		pickit.init("192.168.2.12", 30001);
@@ -109,16 +110,16 @@ public class PickItApp extends RoboticsAPIApplication {
 		postFrame.setZ(300 - (postFrame.getY() - 400) * 0.6);
 		plc.openGripperAsync();
 		move.setTCP(PickitGripper, "/Cylinder/Approach");
-		if (!move.PTP(targetFrame, 0.75)) return 0;
+		if (!move.PTP(targetFrame, 0.75, false)) return 0;
 		if (pickit.getObjType() == 1 && (pickit.getPickID() == 1 || pickit.getPickID() == 2)) {
 			move.setTCP(PickitGripper, "/Cylinder");
 		} else move.setTCP(PickitGripper, "/Cylinder/End");
 		if (!move.LINsafe(targetFrame, 0.25, false)) return -1;
 		plc.closeGripper();
-		if (!move.LIN(postFrame, 0.6)) {
+		if (!move.LIN(postFrame, 0.6, false)) {
 			plc.openGripper();
 			move.setTCP(PickitGripper, "/Cylinder/Approach");
-			move.LIN(targetFrame, 0.6);
+			move.LIN(targetFrame, 0.6, false);
 			return -2;
 		}
 		return 1;
@@ -126,29 +127,29 @@ public class PickItApp extends RoboticsAPIApplication {
 	
 	private void place() {
 		if ((pickit.getObjType() == 1 && pickit.getPickID() == 1)) {
-			move.PTP("/_PickIt/PumpJig/Approach_Z",1);
-			move.LIN("/_PickIt/PumpJig",0.3);
+			move.PTP("/_PickIt/PumpJig/Approach_Z",1, true);
+			move.LIN("/_PickIt/PumpJig",0.3, false);
 			plc.openGripper();
-			move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
+			move.LIN("/_PickIt/PumpJig/Approach_Z",0.8, true);
 		} else if (pickit.getObjType() == 1 && pickit.getPickID() == 2) {
-			move.PTP("/_PickIt/Pole/H_pole/H_Zoffset",1);
-			move.LIN("/_PickIt/Pole/H_pole",0.3);
+			move.PTP("/_PickIt/Pole/H_pole/H_Zoffset",1, true);
+			move.LIN("/_PickIt/Pole/H_pole",0.3, false);
 			plc.openGripper();
-			move.LIN("/_PickIt/Pole/H_pole/H_Xoffset",0.8);
+			move.LIN("/_PickIt/Pole/H_pole/H_Xoffset",0.8, false);
 			reorientate();
-			move.LIN("/_PickIt/Pole/H_pole",0.3);
+			move.LIN("/_PickIt/Pole/H_pole",0.3, false);
 			plc.closeGripper();
-			move.LIN("/_PickIt/Pole/H_pole/H_Zoffset",1);
-			move.LIN("/_PickIt/PumpJig/Approach_Z",1);
-			move.LIN("/_PickIt/PumpJig",0.3);
+			move.LIN("/_PickIt/Pole/H_pole/H_Zoffset",1, true);
+			move.LIN("/_PickIt/PumpJig/Approach_Z",1, true);
+			move.LIN("/_PickIt/PumpJig",0.3, false);
 			plc.openGripper();
-			move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
+			move.LIN("/_PickIt/PumpJig/Approach_Z",0.8, true);
 		} else if (pickit.getObjType() == 3 && pickit.getPickID() == 1) {
 			move.setTCP(PickitGripper, "/Cylinder/End");
-			move.PTP("/_PickIt/Pole/V_Zoffset",1);
-			move.LIN("/_PickIt/Pole", 0.3);
+			move.PTP("/_PickIt/Pole/V_Zoffset",1, true);
+			move.LIN("/_PickIt/Pole", 0.3, false);
 			plc.openGripper();
-			move.LIN("/_PickIt/Pole/V_Zoffset",0.8);
+			move.LIN("/_PickIt/Pole/V_Zoffset",0.8, true);
 		} else {
 			padLog("None");
 		}

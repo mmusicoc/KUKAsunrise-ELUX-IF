@@ -34,7 +34,7 @@ import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 import com.kuka.task.ITaskLogger;
 
 @Singleton
-public class HandlerMov extends RoboticsAPIApplication {
+public class HandlerCobot extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Override public void run() { while (true) { break; } }		// Compulsory method for RoboticsAPIApplication derived classes
 	@Inject private LBR kiwa;
@@ -59,7 +59,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 	private double _blendingAngle;
 	
 	// CONSTRUCTOR
-	@Inject	public HandlerMov(HandlerMFio _mf) {
+	@Inject	public HandlerCobot(HandlerMFio _mf) {
 		this.mf = _mf;
 		_softMode = new CartesianImpedanceControlMode();
 		_stiffMode = new CartesianImpedanceControlMode();
@@ -188,14 +188,14 @@ public class HandlerMov extends RoboticsAPIApplication {
 	
 	// Torque sensing enabled macros **************************************************************
 	
-	public void PTPHOMEcobot() {
+	public void PTPHOMEsafe() {
 		this.LINREL(0, 0, -0.01, 0.5, true);
 		pad.info("Move away from the robot. It will move automatically to home.");
 		this.LINREL(0, 0, -50, 0.5, true);
-		this.PTPcobot(_homeFramePath, _speed[0], true);
+		this.PTPsafe(_homeFramePath, _speed[0], true);
 	}
 	
-	public boolean PTPcobot(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
+	public boolean PTPsafe(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
 		boolean finished = false;
 		do {
 			mf.setRGB("G");
@@ -207,15 +207,15 @@ public class HandlerMov extends RoboticsAPIApplication {
 				log.warn("Collision detected!"); 
 				mf.waitUserButton();
 				relSpeed *= 0.5;
-				if (forceEnd) PTPcobot(targetFrame, relSpeed, forceEnd);
+				if (forceEnd) PTPsafe(targetFrame, relSpeed, forceEnd);
 			} else finished = true;
 		} while (_JTBreak != null);
 		return finished;
 	}
 	
-	public boolean PTPcobot(String targetFramePath, double relSpeed, boolean forceEnd){
+	public boolean PTPsafe(String targetFramePath, double relSpeed, boolean forceEnd){
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
-		return this.PTPcobot(targetFrame.copyWithRedundancy(), relSpeed, forceEnd);
+		return this.PTPsafe(targetFrame.copyWithRedundancy(), relSpeed, forceEnd);
 	}
 	
 	public boolean LINsafe(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points

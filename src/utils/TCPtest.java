@@ -28,13 +28,13 @@ public class TCPtest extends RoboticsAPIApplication {
 
 	@Override public void run() {
 		move.setTCP(pickitGripper, "/Cylinder");
-		move.LIN("/_PickIt/TestTCP/Left", 1);
-		move.LIN("/_PickIt/TestTCP/Right", 1);
-		move.LIN("/_PickIt/TestTCP", 1);
+		move.LIN("/_UTILS/TestTCP/Left", 1, false);
+		move.LIN("/_UTILS/TestTCP/Right", 1, false);
+		move.LIN("/_UTILS/TestTCP", 1, false);
 		move.setTCP(pickitGripper, "/Approach");
-		move.LIN("/_PickIt/TestTCP", 1);
-		move.LIN("/_PickIt/TestTCP/Left", 1);
-		move.LIN("/_PickIt/TestTCP/Right", 1);
-		move.LIN("/_PickIt/TestTCP", 1);
+		move.LIN("/_UTILS/TestTCP", 1, false);
+		move.LIN("/_UTILS/TestTCP/Left", 1, false);
+		move.LIN("/_UTILS/TestTCP/Right", 1, false);
+		move.LIN("/_UTILS/TestTCP", 1, false);
 	}
 }

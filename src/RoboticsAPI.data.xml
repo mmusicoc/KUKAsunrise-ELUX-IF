@@ -1238,7 +1238,7 @@
                     <frame id="_cbd5e25f-71c4-4ef5-8189-68cfa3ae336c" name="H_Xoffset">
                         <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="80.0"/>
                         <additionalInformation>
-                            <info key="LastModificationTime" type="java.lang.Long" value="1579032717665"/>
+                            <info key="LastModificationTime" type="java.lang.Long" value="1579032717677"/>
                             <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                                 <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                             </info>

@@ -46,25 +46,25 @@ public class PickItCalib extends RoboticsAPIApplication {
 	 */
 	public void calibrate(String basePath) throws InterruptedException {
 		move.setGlobalSpeed(1);
-		move.PTP(basePath, 1);
+		move.PTP(basePath, 1, false);
 		waitMillis(1000);
 		padLog("Starting Multi Pose Calibration ... ");
-		move.PTP(basePath + "/P1", 1);
+		move.PTP(basePath + "/P1", 1, false);
 		padLog("Calib in P1");
 		pickit.doCalibration();
-		move.PTP(basePath + "/P2", 1);
+		move.PTP(basePath + "/P2", 1, false);
 		padLog("Calib in P2");
 		pickit.doCalibration();		
-		move.PTP(basePath + "/P3", 1);
+		move.PTP(basePath + "/P3", 1, false);
 		padLog("Calib in P3");
 		pickit.doCalibration();
-		move.PTP(basePath + "/P4", 1);
+		move.PTP(basePath + "/P4", 1, false);
 		padLog("Calib in P4");
 		pickit.doCalibration();
-		move.PTP(basePath + "/P5", 1);
+		move.PTP(basePath + "/P5", 1, false);
 		padLog("Calib in P5");
 		pickit.doCalibration();
-		move.PTP(basePath, 1);
+		move.PTP(basePath, 1, false);
         padLog("Finished callibration");
 	}
 	
