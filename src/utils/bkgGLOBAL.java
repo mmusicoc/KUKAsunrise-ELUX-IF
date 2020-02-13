@@ -1,9 +1,11 @@
-package backgroundTask;
+package utils;
 
-import static utils.Utils.*;
-import utils.*;
+import static eluxLibs.Utils.*;
+import eluxLibs.*;
+//import application.*;
 import application.Training.*;
 
+import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
@@ -11,7 +13,6 @@ import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.tasks.CycleBehavior;
 import com.kuka.roboticsAPI.applicationModel.tasks.RoboticsAPICyclicBackgroundTask;
 import com.kuka.roboticsAPI.uiModel.userKeys.*;
-import javax.inject.Inject;
  
 public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 	@Inject private Plc_inputIOGroup 		plcin;
@@ -21,12 +22,20 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
 	@Inject private HandlerPad pad = new HandlerPad(mf);
 	
-	public void initialize() { 
+	private enum States {cancel, sleep, home, app1, app2, app3, app4, app5, app6};
+	private States state;
+	
+	@Override public void initialize() {
 		initializeCyclic(0, 500, TimeUnit.MILLISECONDS,	CycleBehavior.BestEffort);
 		configPadKeysGLOBAL();
+		state = States.sleep;
+		padLog("App switcher started, access it pressing the key");
 	}
 
-	public void runCyclic() {}
+	public void runCyclic() {
+		
+		
+	}
 
 	private void configPadKeysGLOBAL() {
 		IUserKeyListener padKeysListener = new IUserKeyListener() {
@@ -47,29 +56,35 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 			}
 		};
 		
-		pad.keyBarSetup(padKeysListener, "GLOBAL", "OPEN gripper", "CLOSE gripper", " ", " ");
+		pad.keyBarSetup(padKeysListener, "GLOBAL", "OPEN gripper", "CLOSE gripper", "Switch app", " ");
 	}
 	
 	private void appSwitcher() {
 		int promptAns = pad.question("Which program do you want to run?", "Cancel", "Sleep", "Home", "Tr1", "Tr2", "Tr3", "Tr4", "Tr5");
-		switch (promptAns) {
-			case 0:
-				break;
-			case 1:
-				sleep();
-				break;
-			case 2:
-				_Home runApp2 = new _Home();
-				runApp2.initialize();
-				runApp2.run();
-				break;
-			case 3:
-				Tr1_BasicMotions runApp3 = new Tr1_BasicMotions();
-				runApp3.initialize();
-				runApp3.run();
-				break;
-			default:
-				break;
-		}
+		padLog(promptAns);
+		//if (promptAns == state.ordinal()) return;
+	//	else {
+			switch (promptAns) {
+				case 0:
+					break;
+				case 1:
+					sleep();
+					break;
+				case 2:
+					_Home appHome = new _Home();
+					appHome.initialize();
+					padLog("Home initialized");
+					padLog("Home run");
+					appHome.run();
+					break;
+				case 3:
+					Tr1_BasicMotions runApp3 = new Tr1_BasicMotions();
+					runApp3.initialize();
+					runApp3.run();
+					break;
+				default:
+					break;
+			}
+		//}
 	}
 }

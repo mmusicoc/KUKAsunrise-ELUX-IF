@@ -9,21 +9,20 @@ import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.uiModel.ApplicationDialogType;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 
-public class _Home extends RoboticsAPIApplication {
+public class _AppSwitcher extends RoboticsAPIApplication {
 	@Inject	private LBR 				kiwa;
 	@Inject private MediaFlangeIOGroup	mfio;
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
 			private double 				relSpeed;
 			private int					promptAns;
 			
-	@Override public void initialize() {
-		relSpeed = 0.25;
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType.QUESTION, 
-						"Where do you want to go? Collision detection is NOT enabled for this operation", 
-						"Shutoff REST", "Teach LEFT", "Teach CENTRAL", "Teach RIGHT", "VERTICAL", "HORIZONTAL");
+	@Override 	public void initialize() { 
+		padLog("App switcher started, access it pressing the key");
+		
 	}
 
-	@Override public void run() {
+	@Override
+	public void run() {
 		//padLog("Move PTP to HOME-REST position");
 		mf.setRGB("G");
 		switch (promptAns) {

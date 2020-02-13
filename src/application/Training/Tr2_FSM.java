@@ -1,13 +1,13 @@
 package application.Training;
 
-import static utils.Utils.*;
-import utils.*;
+import static eluxLibs.Utils.*;
+import eluxLibs.*;
 
+import javax.inject.Inject;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import javax.inject.Inject;
 
 public class Tr2_FSM extends RoboticsAPIApplication {
 	// Standard KUKA API objects

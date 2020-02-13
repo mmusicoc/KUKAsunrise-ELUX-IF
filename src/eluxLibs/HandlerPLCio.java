@@ -1,6 +1,6 @@
-package utils;
+package eluxLibs;
 
-import static utils.Utils.waitMillis;
+import static eluxLibs.Utils.waitMillis;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -28,6 +28,11 @@ public class HandlerPLCio {
 	/***************************************************************************
 	* STANDARD METHODS BY mario.musico@electrolux.com <p>
 	***************************************************************************/
+	
+	public int getGripperState() {
+		if (PLCin.getPinza_Holding()) return (int)1;
+		else return 0;
+	}
 	
 	public void openGripper(int millis) {
 		PLCout.setPinza_Chiudi(false);

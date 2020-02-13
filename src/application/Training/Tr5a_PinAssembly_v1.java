@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import utils.FrameWrapper;
+import eluxLibs.FrameWrapper;
 
 import com.kuka.common.ThreadUtil;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
@@ -118,8 +118,8 @@ public class Tr5a_PinAssembly_v1 extends RoboticsAPIApplication {
 		
 		// initialize your application here 
 		System.out.println("Initializing...");
-		kiwa.setHomePosition(getApplicationData().getFrame("/PinAssem"));
-		homeFramePath = "/PinAssem";
+		kiwa.setHomePosition(getApplicationData().getFrame("/_PinAssembly/Pick"));
+		homeFramePath = "/_PinAssembly/Pick";
 		state = States.state_home; 
 		enableTEACHbuttons(); 
 		enableTORQUEbuttons();

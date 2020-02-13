@@ -1,7 +1,7 @@
 package application.Training;
 
-import static utils.Utils.*;
-import utils.*;
+import static eluxLibs.Utils.*;
+import eluxLibs.*;
 
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;

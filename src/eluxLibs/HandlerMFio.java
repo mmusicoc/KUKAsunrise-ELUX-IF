@@ -1,4 +1,4 @@
-package utils;
+package eluxLibs;
 
 /*******************************************************************
 * <b> STANDARD HANDLER CLASS BY mario.musico@electrolux.com </b> <p>
@@ -10,8 +10,8 @@ package utils;
 * int ckeckButtonInput() <p>
 */
 
-import static utils.Utils.padLog;
-import static utils.Utils.waitMillis;
+import static eluxLibs.Utils.padLog;
+import static eluxLibs.Utils.waitMillis;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

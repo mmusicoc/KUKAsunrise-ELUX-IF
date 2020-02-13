@@ -1,4 +1,4 @@
-package utils;
+package eluxLibs;
 
 /*******************************************************************
 * <b> STANDARD UTIL CLASS BY mario.musico@electrolux.com </b> <p>
