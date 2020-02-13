@@ -44,11 +44,11 @@ public class Tr_basicMotions extends RoboticsAPIApplication {
 		// your application execution starts here
 		kiwa.move(ptpHome());
 		// fcghcfg
-		kiwa.move(ptp(getApplicationData().getFrame("/Training/P2")).setJointJerkRel(defRelSpeed));
+		kiwa.move(ptp(getApplicationData().getFrame("/Training/P2")).setJointVelocityRel(defRelSpeed));
 		ThreadUtil.milliSleep(1000);
-		kiwa.move(lin(getApplicationData().getFrame("/Training/P1")).setJointJerkRel(defRelSpeed));
+		kiwa.move(lin(getApplicationData().getFrame("/Training/P1")).setJointVelocityRel(defRelSpeed));
 		ThreadUtil.milliSleep(1000);
-		kiwa.move(circ(getApplicationData().getFrame("/Training/P2"), getApplicationData().getFrame("/Rest")).setJointJerkRel(defRelSpeed));
+		kiwa.move(circ(getApplicationData().getFrame("/Training/P2"), getApplicationData().getFrame("/Rest")).setJointVelocityRel(defRelSpeed));
 		
 		return;
 	}

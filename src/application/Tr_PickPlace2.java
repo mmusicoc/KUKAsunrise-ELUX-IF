@@ -154,13 +154,7 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 		fwo.Free();
 		Gripper.attachTo(kiwa.getFlange()); 	
 		setRGB(false, true, false);		
-		ThreadUtil.milliSleep(500);
-		//							while (true) {									// Just for test
-		//								if (mfio.getUserButton()) {
-		//									userButtonInput();
-		//								}
-		//								ThreadUtil.milliSleep(50);
-		//							}
+		ThreadUtil.milliSleep(500); 
 	}
 
 	@Override
@@ -400,8 +394,8 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 					System.out.println("Added Frame "+fwo.GetCounter()+" : " + fwo.Last().toString()); 
 
 					positionHoldContainer.cancel(); 
-					VacuumBody.detach();
-					System.out.println("Workpiece Detached."); 
+					//VacuumBody.detach();
+					//System.out.println("Workpiece Detached."); 
 					positionHoldContainer = kiwa.moveAsync(posHold); 
 					plcout.setPinza_Chiudi(false);
 					plcout.setPinza_Apri(true);
@@ -420,8 +414,8 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 					ThreadUtil.milliSleep(1800);							// to wait while gripper closing so workpiece can be attached
 					if (plcin.getPinza_Holding()) {
 						positionHoldContainer.cancel(); 
-						//						VacuumBody.attachTo(Gripper.getDefaultMotionFrame()); 
-						System.out.println("Workpiece Not Attached.");
+						// VacuumBody.attachTo(Gripper.getDefaultMotionFrame()); 
+						//System.out.println("Workpiece Not Attached.");
 						positionHoldContainer = kiwa.moveAsync(posHold); 
 					}else { 
 						System.out.println("Workpiece Not Attached.");
@@ -436,62 +430,12 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 			}
 		} 
 	}
-
-	//	private void enableMODESbuttons() { 									// MODES Buttons
-	//		IUserKeyBar keyBar = getApplicationUI().createUserKeyBar("MODES");
-	//
-	//		IUserKeyListener listener1 = new IUserKeyListener() {
-	//
-	//			@Override
-	//			public void onKeyEvent(IUserKey key, UserKeyEvent event) {
-	//				if (0 == key.getSlot()) {  						//KEY - ESM 1								
-	////					kiwa.setESMState("1"); 
-	////					System.out.println("ESM set to 1");
-	//				}				
-	//				if (1 == key.getSlot()) {  						//KEY - ESM 2
-	//					//					kiwa.setESMState("2");
-	////					System.out.println("ESM set to 2");
-	//				}
-	//				if (2 == key.getSlot()) {  						//KEY - TEACH MODE			 
-	//					state = States.state_teach;
-	//					System.out.println("Going to TEACH mode after this cycle.");
-	//				}
-	//				if (3 == key.getSlot()) {  						//KEY - PAUSE/PLAY 				
-	//					if (!keyAlreadyPressed && state==States.state_run) {
-	//						state = States.state_pause;
-	//						keyAlreadyPressed = true; 
-	//						System.out.println("Pauzing program."); 
-	//						ThreadUtil.milliSleep(500);							
-	//					}else if (!keyAlreadyPressed && state==States.state_pause) {
-	//						state = States.state_run;
-	//						keyAlreadyPressed = true; 
-	//						System.out.println("Resuming program."); 
-	//					} else if (keyAlreadyPressed) {
-	//						keyAlreadyPressed = false; 
-	//					}
-	//					
-	//				}
-	//			}
-	//		};
-	//
-	//		IUserKey button0 = keyBar.addUserKey(0, listener1, true);
-	//		IUserKey button1 = keyBar.addUserKey(1, listener1, true);
-	//		IUserKey button2 = keyBar.addUserKey(2, listener1, true);
-	//		IUserKey button3 = keyBar.addUserKey(3, listener1, true);
-	//
-	//		button0.setText(UserKeyAlignment.TopMiddle, "ESM1"); 
-	//		button1.setText(UserKeyAlignment.TopMiddle, "ESM2"); 
-	//		button2.setText(UserKeyAlignment.TopMiddle, "TEACH");
-	//		button3.setText(UserKeyAlignment.TopMiddle, "PAUSE/PLAY");
-	//
-	//
-	//		keyBar.publish();
-	//
-	//	}
+ 
 
 
 	private void enableTEACHbuttons() { 										// TEACH buttons
-		IUserKeyBar keyBar2 = getApplicationUI().createUserKeyBar("TEACH");
+		
+		IUserKeyBar teachKeyBar = getApplicationUI().createUserKeyBar("TEACH");
 
 		IUserKeyListener listener2 = new IUserKeyListener() {
 
@@ -501,7 +445,7 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 
 					if (!keyAlreadyPressed && state == States.state_teach) {
 
-						if (fwo.Last().hasAdditionalParameter("close Gripper")) {
+						if (fwo.Last().hasAdditionalParameter("close Gripper ")) {
 							plcout.setPinza_Chiudi(false);
 							plcout.setPinza_Apri(true);
 						}					
@@ -513,23 +457,6 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 					}
 				}
 
-
-				//				if (1 == key.getSlot()) {  						//KEY - RECORD POSITION
-				//					if (!keyAlreadyPressed && state == States.state_teach) {
-				//						frames[pointCounter] = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-				//						System.out.println("Added Frame "+pointCounter+" : " + frames[pointCounter].toString()); 
-				//						setRGB(false, false, false);
-				//						ThreadUtil.milliSleep(150);
-				//						setRGB(false, true, false);
-				//						ThreadUtil.milliSleep(150);
-				//						setRGB(false, true, true);
-				//						pointCounter++;
-				//						keyAlreadyPressed = true;	
-				//					} else if (keyAlreadyPressed) {
-				//						keyAlreadyPressed = false; 
-				//					}
-				//					
-				//				}
 				if (1 == key.getSlot()) {  						//KEY - TEACH MODE			 
 					state = States.state_teach;
 					exitForLoop = true;
@@ -604,10 +531,10 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 			}
 		};
 
-		IUserKey button0 = keyBar2.addUserKey(0, listener2, true);
-		IUserKey button1 = keyBar2.addUserKey(1, listener2, true);
-		IUserKey button2 = keyBar2.addUserKey(2, listener2, true);
-		IUserKey button3 = keyBar2.addUserKey(3, listener2, true);
+		IUserKey button0 = teachKeyBar.addUserKey(0, listener2, true);
+		IUserKey button1 = teachKeyBar.addUserKey(1, listener2, true);
+		IUserKey button2 = teachKeyBar.addUserKey(2, listener2, true);
+		IUserKey button3 = teachKeyBar.addUserKey(3, listener2, true);
 
 		button0.setText(UserKeyAlignment.TopMiddle, "Delete Previous"); 
 		button1.setText(UserKeyAlignment.TopMiddle, "TEACH"); 
@@ -615,7 +542,7 @@ public class Tr_PickPlace2 extends RoboticsAPIApplication {
 		button3.setText(UserKeyAlignment.TopMiddle, "Close Gripper");
 
 
-		keyBar2.publish();
+		teachKeyBar.publish();
 
 	}
 

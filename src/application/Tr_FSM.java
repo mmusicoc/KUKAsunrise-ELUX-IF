@@ -37,7 +37,7 @@ public class Tr_FSM extends RoboticsAPIApplication {
 	
 	@Inject
 	private LBR kiwa;
-	private enum States {state_home, state_1, state_2, state_3};
+	private enum States {state_A, state_B, state_C, state_D};
 	private States state; 
 	private double defRelSpeed;
 	
@@ -49,7 +49,7 @@ public class Tr_FSM extends RoboticsAPIApplication {
 		System.out.println("Initializing..");
 		kiwa.setHomePosition(getApplicationData().getFrame("/Rest"));
 		defRelSpeed = 0.15;
-		state = States.state_home;
+		state = States.state_A;
 		
 	}
 
@@ -60,41 +60,44 @@ public class Tr_FSM extends RoboticsAPIApplication {
 		
 		while (true) {
 			switch (state) {
-			case state_home:
-					System.out.println("In state HOME.");
+			case state_A:
+					System.out.println("Current state : state A");
 					mfio.setLEDBlue(true);
 					plcout.setPinza_Apri(false);
 					ThreadUtil.milliSleep(1500);
 					plcout.setPinza_Chiudi(true);
 					ThreadUtil.milliSleep(1500);
+						System.out.println("Press green button to continue");
 					while (!mfio.getUserButton()) {
 						ThreadUtil.milliSleep(50);
 					}
-					state = States.state_1;
+					state = States.state_B;
 				break;
 				
-			case state_1:
-				System.out.println("In state 1.");
+			case state_B:
+				System.out.println("Current state : state B");
 				mfio.setLEDRed(true);
 				ThreadUtil.milliSleep(1500);
+				System.out.println("Press green button to continue");
 				while (!mfio.getUserButton()) {
 					ThreadUtil.milliSleep(50);
 				}
-				state = States.state_2; 
+				state = States.state_C; 
 				break;
 				
-			case state_2: 
-				System.out.println("In state 2.");
+			case state_C: 
+				System.out.println("Current state : state C");
 				mfio.setLEDGreen(true);
 				ThreadUtil.milliSleep(1500);
+				System.out.println("Press green button to continue");
 				while (!mfio.getUserButton()) {
 					ThreadUtil.milliSleep(50);
 				}
-				state = States.state_3; 
+				state = States.state_D; 
 				break;
 				
-			case state_3:
-				System.out.println("In state 3.");
+			case state_D:
+				System.out.println("Current state : state D");
 				mfio.setLEDBlue(false);
 				mfio.setLEDRed(false);
 				mfio.setLEDGreen(false);
@@ -103,10 +106,11 @@ public class Tr_FSM extends RoboticsAPIApplication {
 				plcout.setPinza_Chiudi(false);
 				ThreadUtil.milliSleep(1500);
 				plcout.setPinza_Apri(true);
+				System.out.println("Press green button to continue");
 				while (!mfio.getUserButton()) {
 					ThreadUtil.milliSleep(50);
 				}
-				state = States.state_home; 
+				state = States.state_A; 
 				break;
 
 			default:

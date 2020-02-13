@@ -791,8 +791,40 @@
                     </redundancy>
                 </redundancyData>
             </frame>
+            <frame id="_b6844452-bc1c-48c1-a5ff-e5fe52965c98" name="P6">
+                <transformation a="0.25843557227767666" b="0.17837605723663255" c="0.1753840351579695" x="-32.24958394486248" y="-127.92304505484374" z="125.70773290797501"/>
+                <additionalInformation>
+                    <info key="LastModificationTime" type="java.lang.Long" value="1568643813520"/>
+                    <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="Pinza" tool="Pinza" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
+                        <tcpTransformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+                    </info>
+                </additionalInformation>
+                <redundancyData>
+                    <redundancy transformationProviderName="KUKA_Sunrise_Cabinet_1/LBR_iiwa_14_R820_1" type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy">
+                        <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$StatusParameter" value="2" valueType="java.lang.Integer"/>
+                        <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$TurnParameter" value="24" valueType="java.lang.Integer"/>
+                        <info type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy$E1Parameter" value="0.03669270056392154" valueType="java.lang.Double"/>
+                    </redundancy>
+                </redundancyData>
+                <frame id="_4f52a748-3f19-4d83-878e-d3a3e12f3b71" name="P1">
+                    <transformation a="0.029319604839464934" b="-0.20797973646535528" c="-0.05837896976573963" x="39.46441255865011" y="-23.623299071708345" z="-119.25732464765969"/>
+                    <additionalInformation>
+                        <info key="LastModificationTime" type="java.lang.Long" value="1568643919997"/>
+                        <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="Pinza" tool="Pinza" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
+                            <tcpTransformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+                        </info>
+                    </additionalInformation>
+                    <redundancyData>
+                        <redundancy transformationProviderName="KUKA_Sunrise_Cabinet_1/LBR_iiwa_14_R820_1" type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy">
+                            <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$StatusParameter" value="2" valueType="java.lang.Integer"/>
+                            <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$TurnParameter" value="24" valueType="java.lang.Integer"/>
+                            <info type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy$E1Parameter" value="0.036077430551023804" valueType="java.lang.Double"/>
+                        </redundancy>
+                    </redundancyData>
+                </frame>
+            </frame>
             <frame id="_efa3c81e-ab3c-4982-945e-ea68ac77cac0" name="P1">
-                <transformation a="-0.041795154734548805" b="-0.22739046053233009" c="0.003259040039261117" x="-175.71677771555733" y="91.90388008534461" z="134.41520285861094"/>
+                <transformation a="-0.0417951547345488" b="-0.22739046053233009" c="0.0032590400392611134" x="-175.7167777155572" y="91.90388008534461" z="134.41520285861088"/>
                 <additionalInformation>
                     <info key="LastModificationTime" type="java.lang.Long" value="1560441239407"/>
                     <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="Pinza/Frame" tool="Pinza" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
@@ -807,6 +839,38 @@
                     </redundancy>
                 </redundancyData>
             </frame>
+        </frame>
+        <frame id="_25db005b-d389-4884-a1e5-f291138e7e28" name="ToolCalib">
+            <transformation a="-0.006499390644542049" b="0.018711107384529975" c="-2.8832948791949726" x="2.6817635071176227" y="783.8106796783196" z="337.1364799931266"/>
+            <additionalInformation>
+                <info key="LastModificationTime" type="java.lang.Long" value="1568644398286"/>
+                <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="Pinza/Frame" tool="Pinza" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
+                    <tcpTransformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+                </info>
+            </additionalInformation>
+            <redundancyData>
+                <redundancy transformationProviderName="KUKA_Sunrise_Cabinet_1/LBR_iiwa_14_R820_1" type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy">
+                    <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$StatusParameter" value="2" valueType="java.lang.Integer"/>
+                    <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$TurnParameter" value="72" valueType="java.lang.Integer"/>
+                    <info type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy$E1Parameter" value="0.014336009248507591" valueType="java.lang.Double"/>
+                </redundancy>
+            </redundancyData>
+        </frame>
+        <frame id="_c50e4bfa-3647-4fdf-9c0b-2b32db2d4061" name="P1">
+            <transformation a="-1.566950106446383" b="0.627085316075899" c="3.12927787317326" x="-3.56277749008336" y="159.59402708509882" z="809.9660699689068"/>
+            <additionalInformation>
+                <info key="LastModificationTime" type="java.lang.Long" value="1570616211146"/>
+                <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="Flange" tool="Flange" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
+                    <tcpTransformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+                </info>
+            </additionalInformation>
+            <redundancyData>
+                <redundancy transformationProviderName="KUKA_Sunrise_Cabinet_1/LBR_iiwa_14_R820_1" type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy">
+                    <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$StatusParameter" value="2" valueType="java.lang.Integer"/>
+                    <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$TurnParameter" value="10" valueType="java.lang.Integer"/>
+                    <info type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy$E1Parameter" value="0.0021096430623201655" valueType="java.lang.Double"/>
+                </redundancy>
+            </redundancyData>
         </frame>
     </world>
     <objectTemplates>
@@ -843,10 +907,13 @@
                 <info key="ToolVelocityPointPath" type="java.lang.String" value="/gripperCenter"/>
                 <info key="ToolVelocityOrientationPath" type="java.lang.String" value="/gripperCenter"/>
             </additionalInformation>
-            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="6.003761388068957" cogY="5.881467818599991" cogZ="37.25899713811934" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="1.6410790336064407"/>
+            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="9.608636329492972" cogY="9.572410973795213" cogZ="44.56785813678466" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="1.5928286460002514"/>
         </toolTemplate>
         <geometricObjectTemplate class="" name="GeometricObjectTemplate"/>
         <toolTemplate class="" name="DVTool">
+            <additionalInformation>
+                <info key="SafetyID" type="java.lang.Integer" value="1"/>
+            </additionalInformation>
             <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="0.0" cogY="0.0" cogZ="0.0" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="0.0"/>
         </toolTemplate>
         <workpieceTemplate class="" defaultMotionFrameRef="/Frame" name="VacuumBody">
