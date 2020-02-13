@@ -1,10 +1,11 @@
 package utils;
 
 import static utils.Utils.*;
-import com.kuka.generated.ioAccess.Plc_inputIOGroup;
-import com.kuka.generated.ioAccess.Plc_outputIOGroup;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.kuka.generated.ioAccess.Plc_inputIOGroup;
+import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 
 @Singleton
 public class HandlerPLCio {
@@ -13,8 +14,8 @@ public class HandlerPLCio {
 	private Plc_inputIOGroup PLCin;
 	private Plc_outputIOGroup PLCout;
 	
-	@Inject			// CONSTRUCTOR
-	public HandlerPLCio(HandlerMFio _mf, Plc_inputIOGroup _PLCin, Plc_outputIOGroup _PLCout) {
+	// CONSTRUCTOR
+	@Inject	public HandlerPLCio(HandlerMFio _mf, Plc_inputIOGroup _PLCin, Plc_outputIOGroup _PLCout) {
 		this.mf = _mf;
 		this.PLCin = _PLCin;
 		this.PLCout = _PLCout;
@@ -34,7 +35,7 @@ public class HandlerPLCio {
 	//	padLog("Opening gripper");
 		waitMillis(millis);
 	}
-	public void openGripper() { this.openGripper(2000); } // Wait for the gripper to close before continuing with the next command
+	public void openGripper() { this.openGripper(1500); } // Wait for the gripper to close before continuing with the next command
 	public void openGripperAsync() { this.openGripper(10); }
 	
 	public void closeGripper(int millis) {
@@ -44,7 +45,7 @@ public class HandlerPLCio {
 	//	padLog("Closing gripper");
 		waitMillis(millis);
 	}
-	public void closeGripper() { this.closeGripper(2000); } // Wait for the gripper to close before continuing with the next command
+	public void closeGripper() { this.closeGripper(1500); } // Wait for the gripper to close before continuing with the next command
 	public void closeGripperAsync() { this.closeGripper(10); }
 	
 	public void askOpen() {

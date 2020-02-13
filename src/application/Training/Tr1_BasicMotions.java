@@ -16,12 +16,12 @@ public class Tr1_BasicMotions extends RoboticsAPIApplication {
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
 	@Inject private HandlerMov move = new HandlerMov(mf);
 	
-	public void initialize() {
+	@Override public void initialize() {
 		padLog("Initializing..");
-		move.setHome("/Rest");
+		move.setHome("/_HOME/_2_Teach_CENTRAL");
 	}
 
-	public void run() {
+	@Override public void run() {
 		padLog("Move PTP home");
 		kiwa.move(ptpHome());
 		for (double relSpeed  = 0.2; relSpeed < 1 ; relSpeed += 0.195){

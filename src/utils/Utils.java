@@ -1,13 +1,14 @@
 package utils;
 
+/*******************************************************************
+* <b> STANDARD UTIL CLASS BY mario.musico@electrolux.com </b> <p>
+* static void waitMillis(int millis)/(int millis, boolean log)<p>
+* static void sleep() <p>
+* static void padLog(String/int/boolean/double) <p>
+*/
+
 import com.kuka.common.ThreadUtil;
 
-/**********************************************
-* <b>STANDARD METHODS BY mario.musico@electrolux.com</b> <p>
-* static void waitMillis(int millis)/(int millis, boolean log)<p>
-* static void sleep()
-* static void padLog(String/int/boolean/double) - AVOID USING, CALL utils.HandlerPad.log -
-*/
 public class Utils {
 	
 	/**

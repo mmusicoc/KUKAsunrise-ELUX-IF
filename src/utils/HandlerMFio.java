@@ -1,9 +1,20 @@
 package utils;
 
+/*******************************************************************
+* <b> STANDARD HANDLER CLASS BY mario.musico@electrolux.com </b> <p>
+* void saveRGB() <p>
+* void resetRGB(String color, [boolean log]) - DEFAULT log = false <p>
+* void blinkRGB(String color, int millis, [boolean log]) - DEFAULT log = false <p>
+* boolean getUserButton() <p>
+* void waitUserButton() <p>
+* int ckeckButtonInput() <p>
+*/
+
 import static utils.Utils.*;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 
 @Singleton
 public class HandlerMFio {
@@ -13,31 +24,18 @@ public class HandlerMFio {
 	// Private properties
 	private boolean[] prevRGB;
 	
-	@Inject			// CONSTRUCTOR
-	public HandlerMFio(MediaFlangeIOGroup _MFio) { 
+	// CONSTRUCTOR
+	@Inject	public HandlerMFio(MediaFlangeIOGroup _MFio) { 
 		this.MFio = _MFio;
 	}
 	
-	/***************************************************************************
-	* STANDARD METHODS BY mario.musico@electrolux.com <p>
-	***************************************************************************/
+	// Save & restore RGB status ******************************************************************
 	
-	public boolean getUserButton() { return MFio.getUserButton(); }
+	public void saveRGB() { prevRGB = getRGB(); }
 	
-	public void waitUserButton() {
-		this.saveRGB();
-		if(prevRGB[0] == true && prevRGB[1] == false && prevRGB[2] == false) ;
-		else this.setRGB("B");
-		padLog("Press USER GREEN BUTTON to continue");
-		while (true) {
-			if (this.getUserButton()) break;
-			waitMillis(50);
-		}
-		this.blinkRGB("GB", 500);		// Wait for torque to stabilize and notify input
-		this.resetRGB();
-	}
+	public void resetRGB() { this.setRGB(this.prevRGB); }
 	
-	public boolean [] getRGB() {
+	private boolean [] getRGB() {
 		boolean[] rgb = new boolean [3];
 		rgb[0] = MFio.getLEDRed();
 		rgb[1] = MFio.getLEDGreen();
@@ -45,15 +43,15 @@ public class HandlerMFio {
 		return rgb;
 	}
 	
-	public void saveRGB() { prevRGB = getRGB(); }
-	
-	public void setRGB(boolean[] rgb) {
+	private void setRGB(boolean[] rgb) {
 		MFio.setLEDRed(rgb[0]);
 		MFio.setLEDGreen(rgb[1]);
 		MFio.setLEDBlue(rgb[2]);
 	}
 	
-	public void setRGB(boolean r, boolean g, boolean b) {
+	// Force new RGB status ***********************************************************************
+	
+	private void setRGB(boolean r, boolean g, boolean b) {
 		MFio.setLEDRed(r);
 		MFio.setLEDGreen(g);
 		MFio.setLEDBlue(b);
@@ -74,8 +72,6 @@ public class HandlerMFio {
 	
 	public void setRGB(String color) { this.setRGB(color, false); }
 	
-	public void resetRGB() { this.setRGB(this.prevRGB); }
-	
 	public void blinkRGB(String color, int millis) { this.blinkRGB(color, millis, false); }
 	
 	public void blinkRGB(String color, int millis, boolean log) {
@@ -83,6 +79,23 @@ public class HandlerMFio {
 		if (log) padLog("MediaFlange LED blink " + color + " for " + millis + " millis");
 		this.setRGB(color);
 		waitMillis(millis);
+		this.resetRGB();
+	}
+	
+	// Button handlers ****************************************************************************
+	
+	public boolean getUserButton() { return MFio.getUserButton(); }
+	
+	public void waitUserButton() {
+		this.saveRGB();
+		if(prevRGB[0] == true && prevRGB[1] == false && prevRGB[2] == false) ;
+		else this.setRGB("B");
+		padLog("Press USER GREEN BUTTON to continue");
+		while (true) {
+			if (this.getUserButton()) break;
+			waitMillis(50);
+		}
+		this.blinkRGB("GB", 500);		// Wait for torque to stabilize and notify input
 		this.resetRGB();
 	}
 	

@@ -1,7 +1,23 @@
 package utils;
 
+/*******************************************************************
+* <b> STANDARD HANDLER CLASS BY mario.musico@electrolux.com </b> <p>
+* void setHome(String nextFramePath) <p>
+* void PTPhome() <p>
+* void PTP (String nextFramePath, double relSpeed) <p>
+* void LIN (String nextFramePath, double relSpeed) <p>
+* void CIRC (String nextFramePath1, String nextFramePath2, double relSpeed) <p>
+* ICondition getJTConds() <p>
+* void setJTConds (double maxTorque) <p>
+* void PTPwithJTConds (Frame nextFrame / String nextFramePath, double relSpeed) <p>
+* void LINRELwithJTConds (int x, int y, int z, double relSpeed) <p>
+* void checkComponentZ (int probeDist, double relSpeed) <p>
+*/
+
 import static utils.Utils.*;
+
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 import com.kuka.roboticsAPI.deviceModel.LBR;
@@ -10,51 +26,62 @@ import com.kuka.roboticsAPI.conditionModel.ICondition;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
 import com.kuka.roboticsAPI.geometricModel.*;
+import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 import com.kuka.roboticsAPI.motionModel.IMotionContainer;
 //import com.kuka.roboticsAPI.motionModel.PositionHold;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
+import com.kuka.task.ITaskLogger;
 
+@Singleton
 public class HandlerMov extends RoboticsAPIApplication {
 	// Standard KUKA API objects
-	@Override public void run() { while (true) { break; } }
+	@Override public void run() { while (true) { break; } }		// Compulsory method for RoboticsAPIApplication derived classes
 	@Inject private LBR kiwa;
 	@Inject private HandlerMFio mf;
+	@Inject private ITaskLogger log;
 	
 	// Private properties
 	private ICondition JTConds;
+	private IMotionContainer JTBMotion;
+	private IFiredConditionInfo JTBreak;
 	
-	@Inject			// CONSTRUCTOR
-	public HandlerMov(HandlerMFio _mf) {
+	// CONSTRUCTOR
+	@Inject	public HandlerMov(HandlerMFio _mf) {
 		this.mf = _mf;
 	}
 	
-	/***************************************************************************
-	* STANDARD METHODS BY mario.musico@electrolux.com <p>
-	***************************************************************************/
+	// Standard moves, simple calls ***************************************************************
 	
-// Standard moves
-	public void setHome(String frameName){
-		kiwa.setHomePosition(getApplicationData().getFrame(frameName));
+	public void setHome(String nextFramePath) {
+		kiwa.setHomePosition(getApplicationData().getFrame(nextFramePath));
 	}
 	
-	public void PTP(String frameName, double relSpeed) {
-		padLog("Move PTP to " + frameName);
-		kiwa.move(ptp(getApplicationData().getFrame(frameName))
+	public void PTPhome() { kiwa.move(ptpHome()); }
+	
+	public void PTP(String nextFramePath, double relSpeed) {
+		log.info("Move PTP to " + nextFramePath);
+		kiwa.move(ptp(getApplicationData().getFrame(nextFramePath))
 					.setJointVelocityRel(relSpeed));
 	}
 	
-	public void LIN(String frameName, double relSpeed) {
-		padLog("Move LIN to " + frameName);
-		kiwa.move(lin(getApplicationData().getFrame(frameName))
+	public void PTP(Frame nextFrame, double relSpeed) {
+		kiwa.move(ptp(nextFrame).setJointVelocityRel(relSpeed));
+	}
+	
+	public void LIN(String nextFramePath, double relSpeed) {
+		log.info("Move LIN to " + nextFramePath);
+		kiwa.move(lin(getApplicationData().getFrame(nextFramePath))
 					.setJointVelocityRel(relSpeed));
 	}
 	
-	public void CIRC(String frameName1, String frameName2, double relSpeed) {
-		padLog("Move CIRC to " + frameName1 + " then to " + frameName2);
-		kiwa.move(circ(	getApplicationData().getFrame(frameName1),
-						getApplicationData().getFrame(frameName2))
+	public void CIRC(String nextFramePath1, String nextFramePath2, double relSpeed) {
+		log.info("Move CIRC to " + nextFramePath1 + " then to " + nextFramePath2);
+		kiwa.move(circ(	getApplicationData().getFrame(nextFramePath1),
+						getApplicationData().getFrame(nextFramePath2))
 					.setJointVelocityRel(relSpeed));
 	}
+	
+	// Torque sensing enabled macros **************************************************************
 	
 	public ICondition getJTConds() { return this.JTConds; }
 	
@@ -68,64 +95,136 @@ public class HandlerMov extends RoboticsAPIApplication {
 		JTCond[6] = new JointTorqueCondition(JointEnum.J6, -maxTorque, maxTorque);
 		JTCond[7] = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
 		JTConds = JTCond[1].or(JTCond[2]).or(JTCond[3]).or(JTCond[4]).or(JTCond[5]).or(JTCond[6]).or(JTCond[7]);
-		padLog("Max Axis Torque set to " + maxTorque + " Nm.");
+		log.info("Max Axis Torque set to " + maxTorque + " Nm.");
 	}
 	
 	public void PTPwithJTConds(Frame nextFrame, double relSpeed){		// overloading for taught points
-		IMotionContainer torqueBreakMotion;
-		IFiredConditionInfo JTBreak;
-		CartesianImpedanceControlMode softMode = new CartesianImpedanceControlMode();
-		softMode.parametrize(CartDOF.TRANSL).setStiffness(300).setDamping(0.9);
-		softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(0.9);
 		do {
 			mf.setRGB("G");
-			torqueBreakMotion = kiwa.move(ptp(nextFrame).setJointVelocityRel(relSpeed).breakWhen(this.JTConds)); 
-			JTBreak = torqueBreakMotion.getFiredBreakConditionInfo();
+			this.JTBMotion = kiwa.move(ptp(nextFrame).setJointVelocityRel(relSpeed).breakWhen(this.JTConds)); 
+			this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
 			if (JTBreak != null) {
-				mf.setRGB("R");
+				mf.setRGB("RB");
 				kiwa.move(linRel(0, 0, -30).setJointVelocityRel(1));
-				padLog("Collision detected!"); 
+				log.warn("Collision detected!"); 
 				mf.waitUserButton();
 				PTPwithJTConds(nextFrame, relSpeed);
 			}
 		} while (JTBreak != null);
 	}
 	
-	public void PTPwithJTConds(String framePath, double relSpeed){
-		ObjectFrame nextFrame = getApplicationData().getFrame(framePath);
+	public void PTPwithJTConds(String nextFramePath, double relSpeed){
+		ObjectFrame nextFrame = getApplicationData().getFrame(nextFramePath);
 		this.PTPwithJTConds(nextFrame.copyWithRedundancy(), relSpeed);
 	}
 	
-	public void LINRELwithJTConds(double x, double y, double z, double reducedSpeed) {
+	public void LINwithJTConds(Frame nextFrame, double relSpeed){		// overloading for taught points
+		do {
+			mf.setRGB("G");
+			this.JTBMotion = kiwa.move(lin(nextFrame).setJointVelocityRel(relSpeed).breakWhen(this.JTConds)); 
+			this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
+			if (JTBreak != null) {
+				mf.setRGB("RB");
+				kiwa.move(linRel(0, 0, -30).setJointVelocityRel(1));
+				log.warn("Collision detected!"); 
+				mf.waitUserButton();
+				LINwithJTConds(nextFrame, relSpeed);
+			}
+		} while (JTBreak != null);
+	}
+	
+	public boolean twistJ7(double angle, double relSpeed, double maxTorque) {
+		padLog("Twisting the pin...");
+		mf.blinkRGB("GB", 250);
+		JointTorqueCondition JTCond = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
+		this.JTBMotion = kiwa.move(linRel(Transformation.ofDeg(0, 0, 0, angle, 0, 0)).setJointVelocityRel(relSpeed).breakWhen(JTCond)); // Tx, Ty, Tz, Rz, Ry, Rx
+		this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
+		if (JTBreak != null) {
+			padLog("Rotation reached limit due to torque sensing");
+			mf.blinkRGB("GB", 500);
+			return true;
+		} else {
+			padLog("Full rotation performed, no obstacle detected");
+			mf.blinkRGB("RB", 500);
+			return false;
+		}
+	}
+	
+	public boolean ckeckHole(double tolerance, double relSpeed, double maxTorque) {
+		padLog("Testing hole insertion...");
+		mf.blinkRGB("GB", 250);
+		boolean check = false;
+		ICondition tempJTConds = this.JTConds;
+		this.setJTConds(maxTorque);
+		mf.setRGB("G");
+		Frame holeFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
+		
+		this.JTBMotion = kiwa.move(linRel(-tolerance, -tolerance, 0).setJointVelocityRel(relSpeed).breakWhen(JTConds));
+		this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
+		if (this.JTBreak != null) mf.blinkRGB("GB", 200);
+		else { mf.blinkRGB("RB", 200); return false; }
+		this.PTP(holeFrame, relSpeed);
+		
+		this.JTBMotion = kiwa.move(linRel(tolerance, tolerance, 0).setJointVelocityRel(relSpeed).breakWhen(JTConds));
+		this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
+		if (this.JTBreak != null) mf.blinkRGB("GB", 200);
+		else { mf.blinkRGB("RB", 200); return false; }
+		this.PTP(holeFrame, relSpeed);
+		
+		this.JTConds = tempJTConds;
+		return true;
+	}
+	
+	public void LINRELwithJTConds(int x, int y, int z, double relSpeed) {
 		int holeFindError = 7;
-		IMotionContainer torqueBreakMotion;
-		IFiredConditionInfo JTBreak;
 		Frame currentFrame, targetFrame;
 		ICondition tempJTConds = this.JTConds;
 		this.setJTConds(3);
 		mf.setRGB("G");
-		torqueBreakMotion = kiwa.move(linRel(x, y, z).setJointVelocityRel(reducedSpeed).breakWhen(JTConds)); 
+		this.JTBMotion = kiwa.move(linRel(x, y, z).setJointVelocityRel(relSpeed).breakWhen(JTConds)); 
 		do {
-			JTBreak = torqueBreakMotion.getFiredBreakConditionInfo();
+			this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
 			if (JTBreak != null) {
 				currentFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
 				targetFrame = kiwa.getCommandedCartesianPosition(kiwa.getFlange());
 				if (Math.abs(currentFrame.getX() - targetFrame.getX()) < holeFindError && 
 					Math.abs(currentFrame.getY() - targetFrame.getY()) < holeFindError && 
 					Math.abs(currentFrame.getZ() - targetFrame.getZ()) < holeFindError) {
-					padLog("Collision inside error margin for Pin/Hole search.");
+					log.warn("Collision inside error margin for Pin/Hole search.");
 					mf.blinkRGB("GB", 500);
-					break;
+					break; 
 				} else {
-					padLog("Collision detected!"); 
-					mf.setRGB("R");
-					kiwa.move(linRel(0, 0, -30).setJointVelocityRel(reducedSpeed));
+					log.warn("Collision detected!"); 
+					mf.setRGB("RB");
+					kiwa.move(linRel(0, 0, -30).setJointVelocityRel(relSpeed));
 					mf.waitUserButton();
 					mf.setRGB("G");
-					torqueBreakMotion = kiwa.move(lin(targetFrame).setJointVelocityRel(reducedSpeed).breakWhen(JTConds));
+					this.JTBMotion = kiwa.move(lin(targetFrame).setJointVelocityRel(relSpeed).breakWhen(JTConds));
 				}
 			}
 		} while (JTBreak != null);
 		this.JTConds = tempJTConds;
+	}
+	
+	public void checkComponentZ(int probeDist, double relSpeed, CartesianImpedanceControlMode stiffMode){
+		boolean pieceFound = false;
+		log.info("Checking component presence...");
+		do {
+			mf.setRGB("G");
+			this.JTBMotion = kiwa.move(linRel(0, 0, probeDist).setJointVelocityRel(relSpeed).breakWhen(JTConds)); 
+			this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
+			if (JTBreak != null) {
+				log.info("Component detected. " ); 
+				mf.blinkRGB("GB", 800);
+				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(relSpeed));
+				pieceFound = true;
+			} else {
+				mf.setRGB("RB");
+				log.warn("No components detected, Reposition the workpiece correctly and push the cobot (gesture control)." );
+				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(relSpeed));
+				kiwa.move(positionHold(stiffMode, -1, null).breakWhen(JTConds));
+			}
+		} while (!pieceFound);
+		waitMillis(250);
 	}
 }
