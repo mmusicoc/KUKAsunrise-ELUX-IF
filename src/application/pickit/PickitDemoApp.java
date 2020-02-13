@@ -32,6 +32,7 @@ import com.kuka.roboticsAPI.deviceModel.JointPosition;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.executionModel.CommandInvalidException;
 import com.kuka.roboticsAPI.geometricModel.Frame;
+import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 import com.kuka.roboticsAPI.motionModel.Spline;
@@ -56,16 +57,16 @@ import com.kuka.roboticsAPI.uiModel.ApplicationDialogType;
  * @see #run()
  * @see #dispose()
  */
-public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
+public class PickitDemoApp extends RoboticsAPIApplication {
 	private Controller kuka_Sunrise_Cabinet_1;
 	private LBR lbr;
 	//private Tool gripper;
-	private PickIt pickit;
+	private PickItAPI pickit;
 	
 	@Inject private Plc_inputIOGroup 	plcin;
 	@Inject private Plc_outputIOGroup 	plcout;
 	private MediaFlangeIOGroup mediaFlangeIOGroup;
-	@Inject	@Named("PickItGripper") 		private Tool 		gripper;
+	@Inject	@Named("PickitGripper") 		private Tool 		gripper;
 	
 	// Custom modularizing handler objects
 			@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
@@ -121,7 +122,7 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 		lbr = (LBR) kuka_Sunrise_Cabinet_1.getDevices().toArray()[0]; //(LBR) getDevice(kuka_Sunrise_Cabinet_1, "LBR_iiwa_14_R820_1");
 		gripper = getApplicationData().createFromTemplate("PickItGripper");
 		
-		pickit = new PickIt(lbr);
+		pickit = new PickItAPI(lbr);
 		System.out.println("Opening pickit socket ...");
 		pickit.pickit_socket_open("192.168.2.12", 30001);				// IP CONFIG
 	}
@@ -143,14 +144,7 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 			}
 			System.out.println("Start picking sequence");
 			// position from where to observe the objects with the camera
-			JointPosition detection_pose = new JointPosition(
-					Math.toRadians(90.0),
-					Math.toRadians(7.0),
-					Math.toRadians(0.0),
-					Math.toRadians(-75.0),
-					Math.toRadians(0.0),
-					Math.toRadians(92.0),
-					Math.toRadians(-1));
+			ObjectFrame detection_pose = getApplicationData().getFrame("/_PickIt/Scan");
 			try {
 				lbr.move(ptp(detection_pose).setJointVelocityRel(picking_config.medium_vel));
 			} catch (CommandInvalidException e) {
@@ -207,6 +201,7 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 							lin(pick_pose).setJointVelocityRel(picking_config.slow_vel));
 						gripper.move(detect_to_pick_traj);
 						*/
+						System.out.println(pick_pose.toString());
 						lbr.move(ptp(pre_pick_pose));
 						lbr.move(lin(pick_pose));
 						plc.closeGripper();
@@ -313,7 +308,7 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 	}
 	
 	public static void main(String[] args) {
-		RobotMountedPickItBasicApplication app = new RobotMountedPickItBasicApplication();
+		PickitDemoApp app = new PickitDemoApp();
 		app.runApplication();
 	}
 }

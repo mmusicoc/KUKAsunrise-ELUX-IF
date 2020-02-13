@@ -38,18 +38,20 @@ public class HandlerPLCio {
 		_PLCout.setPinza_Chiudi(false);
 		waitMillis(10);
 		_PLCout.setPinza_Apri(true);
-	//	padLog("Opening gripper");
 		waitMillis(millis);
 	}
 	public void openGripper() { this.openGripper(1500); } // Wait for the gripper to close before continuing with the next command
 	public void openGripperAsync() { this.openGripper(10); }
 	
 	public void closeGripper(int millis) {
+		int timer = 0;
 		_PLCout.setPinza_Apri(false);
 		waitMillis(10);
 		_PLCout.setPinza_Chiudi(true);
-	//	padLog("Closing gripper");
-		waitMillis(millis);
+		while(timer < millis && !_PLCin.getPinza_Holding()) {
+			waitMillis(100);
+			timer += 100;
+		}
 	}
 	public void closeGripper() { this.closeGripper(1500); } // Wait for the gripper to close before continuing with the next command
 	public void closeGripperAsync() { this.closeGripper(10); }

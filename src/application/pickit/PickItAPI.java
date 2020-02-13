@@ -11,7 +11,7 @@ import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class PickIt {
+public class PickItAPI {
   private static final int MULT = 10000;
   private static final int PICKIT_ROBOT_TYPE = 5;
   private static final int PICKIT_IF_VERSION = 11;
@@ -72,7 +72,7 @@ public class PickIt {
   private LBR lbr;
   /// Public functions ///
 
-  public PickIt(LBR lbr) {
+  public PickItAPI(LBR lbr) {
     this.lbr = lbr;
   }
 

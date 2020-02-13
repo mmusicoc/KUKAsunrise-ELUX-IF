@@ -27,7 +27,7 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Inject private Plc_inputIOGroup 	plcin;
 	@Inject private Plc_outputIOGroup 	plcout;
 	private MediaFlangeIOGroup 			mediaFlangeIOGroup;
-	@Inject	@Named("Pickit") 	private Tool gripper;
+	@Inject	@Named("PickitGripper") 	private Tool PickitGripper;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
@@ -38,7 +38,11 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Override public void initialize() {
 		kiwaController = (Controller) getContext().getControllers().toArray()[0];
 		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
-		move.setTCP(gripper, "/Flange");
+		move.setJTConds(10.0);
+		move.setGlobalSpeed(1);
+		move.setTCP(PickitGripper, "/Flange");
+		plc.askOpen();
+		if(!move.PTP("/_PickIt/Scan", 1)) stop();
 		pickit = new HandlerPickIt(kiwa, move);
 		pickit.init("192.168.2.12", 30001);
 	}
@@ -47,27 +51,44 @@ public class PickItApp extends RoboticsAPIApplication {
 		int boxStatus;
 		Frame pickFrame;
 		padLog("Start picking sequence");
-		if(!move.PTP("/_PickIt/Scan", 0.25)) sleep();
-		if(!pickit.config(3, 2, "/_PickIt/Scan", 0.25, 350, 3000)) sleep();
+		if(!move.PTP("/_PickIt/Scan", 1)) stop();
+		if(!pickit.config(3, 2, "/_PickIt/Scan", 0.25, 350, 5000)) stop();
 		while (pickit.isRunning()) {
 			boxStatus = pickit.getBox(true);
-			Transformation pickF = pickit.getPickFrame();
-			padLog("Received next Pick-it object...");
-			sleep();
-								
-				if (pickit.hasFoundObj()) {
-					Transformation pickit_pose = pickit.getPickFrame();
-		        	Frame base_T_current_ee =  kiwa.getCurrentCartesianPosition(kiwa.getFlange()).copy();
-					Frame pick_pose = pickit.computePickPose(base_T_current_ee, pickit_pose);
-					Frame pre_pick_pose = pickit.computePrePickPose(pick_pose);
-					pickit.doSendPickFrame();
-					waitMillis(150);
-					padLog("The pick ID is " + pickit.getPickID());
-					try {
-						kiwa.move(ptp(pre_pick_pose));
-						kiwa.move(lin(pick_pose));
-						plc.closeGripper();
-						kiwa.move(lin(pre_pick_pose));
+			
+			/*int timeCounter = 0;
+			if (pickit.getRemainingObj() == 0) {
+				move.PTP("/_PickIt/Scan", 1);
+				waitMillis(350);
+				pickit.doScanForObj();
+				//sleep();
+			} else {
+				pickit.doScanForObj();
+			}
+			while(!pickit.isReady()) {
+				waitMillis(10);
+				timeCounter += 10;
+				if (timeCounter >= 6000) {
+					padErr("Timeout is overdue, PickIt didn't answer");
+					continue;
+				}
+			}
+			if (pickit.hasFoundObj()) {
+				//padLog(pickit.getPickFrame().toString());
+				pick(pickit.getPickFrame());
+				//pickit.doSendPickFrameData();
+			}*/
+			/*
+			
+			boxStatus = pickit.getBox(true);
+			if (boxStatus > 0) {
+				pickFrame = pickit.computePickPose();
+				padLog(pickFrame.toString());
+				move.setTCP(pickitGripper, "/Cylinder");
+				padLog("The pick ID is " + pickit.getPickID());
+				kiwa.move(ptp(pickFrame));
+				//pick(pickFrame);
+				sleep();
 						switch (pickit.getObjType()) {
 							case 1:
 								move.PTP("/_PickIt/Pole_H/_4_Jig_approach_Z",1);
@@ -89,13 +110,28 @@ public class PickItApp extends RoboticsAPIApplication {
 							waitMillis(100);
 						}
 						padLog("Placed model type " + pickit.getPickID());
-					} catch (CommandInvalidException e) {
-						System.out.println("Unable to move to object, going to next detection ...");
-					}
+					
 					padLog("Placed model type " + pickit.getPickID());
-				}
+				}*/
 			}
 			pickit.terminate();
+	}
+	
+	private void pick(Frame targetFrame) {
+		Frame postFrame = targetFrame.copyWithRedundancy();
+		postFrame.setZ(postFrame.getZ() + 100);
+		plc.openGripperAsync();
+		move.setTCP(PickitGripper, "/Approach");
+		move.PTP(targetFrame, 0.75);
+		move.setTCP(PickitGripper, "/Cylinder");
+		move.LIN(targetFrame, 0.25);
+		plc.closeGripper();
+		move.LIN(postFrame, 0.6);
+	}
+	
+	private void stop() {
+		padLog("Program stopped");
+		dispose();
 	}
 	
 	@Override public void dispose() { 

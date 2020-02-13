@@ -1923,7 +1923,7 @@
             </frames>
             <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="-60.0" cogY="0.0" cogZ="100.0" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="0.91"/>
         </workpieceTemplate>
-        <toolTemplate class="" defaultMotionFrameRef="/Cylinder" name="Pickit">
+        <toolTemplate class="" defaultMotionFrameRef="/Flange" name="PickitGripper">
             <frames>
                 <frame id="_9816be01-a6ed-4c21-b66c-81fd48542b15" name="JawBack">
                     <transformation a="0.0" b="0.0" c="0.0" x="-100.0" y="0.0" z="110.0"/>
@@ -1938,7 +1938,12 @@
                     </additionalInformation>
                 </frame>
                 <frame id="_a2e43369-88e7-4ae4-ac2e-f8427bb9cb59" name="Cylinder">
-                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="223.0"/>
+                    <transformation a="0.0" b="3.141592653589793" c="0.0" x="0.0" y="0.0" z="223.0"/>
+                    <frames>
+                        <frame id="_b7836561-091f-4421-ab09-40b09c4064be" name="Approach">
+                            <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="-100.0"/>
+                        </frame>
+                    </frames>
                 </frame>
                 <frame id="_6fb09667-a96f-4aaa-9122-dce7bdda153e" name="JawFront">
                     <transformation a="0.0" b="0.0" c="0.0" x="100.0" y="0.0" z="110.0"/>
