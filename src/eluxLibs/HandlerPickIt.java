@@ -16,7 +16,6 @@ import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class HandlerPickIt{
 	private LBR kiwa;
-	//private HandlerMov move;
 	private receiveDataThread receive_data_thread = new receiveDataThread();
 	private sendDataThread send_data_thread = new sendDataThread();
 	private int _timeout;
@@ -24,23 +23,27 @@ public class HandlerPickIt{
 	/// Pickit data ///
 	private int _setup_id = 0;
 	private int _product_id = 0;
-	private volatile Frame pick_frame;
-	private volatile Transformation _pick_offset;
-	private volatile double _obj_age = 0;
-	private volatile int _obj_type = 0;
-	private volatile double[] obj_size = {0, 0, 0};
 	private volatile int _obj_remaining = 0;
+	private volatile int _obj_type = 0;
 	private volatile int _pick_id = 0;
+	private volatile Frame _pick_frame;
+	private volatile double[] _pick_offset = {0,0,0,0,0,0};
+	
+	// (UNUSED)
+	private volatile Transformation _pick_offset_tr;
+	private volatile double _obj_age = 0;
+	private volatile double[] obj_size = {0, 0, 0};
 	private volatile double _pickref_id = 0;
+	
+	// Ethernet socket communication
 	private Socket _socket;
 	private DataOutputStream to_pickit;
 	private DataInputStream from_pickit;
 	private byte[] _data_to_pickit = new byte[12 * 4];
 	private byte[] _data_from_pickit = new byte[16 * 4];
 
-	@Inject public HandlerPickIt(LBR _kiwa, HandlerMov _move) {		// Constructor
+	@Inject public HandlerPickIt(LBR _kiwa) {		// Constructor
 		this.kiwa = _kiwa;
-		//this.move = _move;
 	}
 	
 	// GETTERS ------------------------------------------
@@ -51,7 +54,8 @@ public class HandlerPickIt{
 	public boolean isRunning() { return _status != _STOPPED && _status != _ERROR; }
 	public boolean isReady() { return _status != _WAITING; }
 	public boolean hasFoundObj() { return _status == _OBJ_FOUND; }
-	public Frame getPickFrame() { return pick_frame; }
+	public Frame getPickFrame() { return _pick_frame; }
+	public double getZrot() { return (deg(_pick_offset[4] + 180)); }
 	
 	public int getBox() {
 		int timeCounter = 0;
@@ -130,7 +134,7 @@ public class HandlerPickIt{
 	}
 	
 	public boolean init(String pickit_ip, int pickit_port) {
-		pick_frame = kiwa.getCurrentCartesianPosition(kiwa.getFlange()).copy();
+		_pick_frame = kiwa.getCurrentCartesianPosition(kiwa.getFlange()).copy();
 		_obj_remaining = 0;
 		_status = _WAITING;
 		try {
@@ -184,21 +188,27 @@ public class HandlerPickIt{
 			_obj_age = (double)data[7]/_FACTOR;
 			_obj_type = data[8];
 			_obj_remaining = data[12];
-			pick_frame.setTransformationFromParent(Transformation.ofDeg(
+			_pick_frame.setTransformationFromParent(Transformation.ofDeg(
 	        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
 	        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR));
 		} else if (_status == _GET_PICKFRAME_OK) {
-			_pick_offset = Transformation.ofDeg(
-	        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
-	        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR);
+			for (int i = 0; i < 3; i++) _pick_offset[i] = (double)data[i]/_FACTOR * 1000;
+			for (int i = 3; i < 6; i++) _pick_offset[i] = (double)data[i]/_FACTOR;
+			_pick_offset_tr = Transformation.ofDeg(_pick_offset[0], 
+												   _pick_offset[1],
+												   _pick_offset[2],
+												   _pick_offset[3],
+												   _pick_offset[4],
+												   _pick_offset[5]);
 			_pickref_id = (double)data[7]/_FACTOR;
 			_pick_id = data[8];
-			return false; 
+		} else if (_status == _GET_PICKFRAME_FAILED) {
+			return false;
 		}
 		return true;
 	}
 	
-	private void printData(int[] data){
+	public void printData(int[] data){
 		padLog("Data: *****");
 		padLog("B00: " + (double)data[0]/_FACTOR * 1000);	// X
 		padLog("B01: " + (double)data[1]/_FACTOR * 1000);	// Y

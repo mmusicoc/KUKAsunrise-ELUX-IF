@@ -20,8 +20,8 @@ public class PickItCalib extends RoboticsAPIApplication {
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
 	@Inject private HandlerMov move = new HandlerMov(mf);
-	@Inject private HandlerPickIt pickit = new HandlerPickIt(kiwa, move);
 	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private HandlerPickIt pickit = new HandlerPickIt(kiwa);
 	
 	@Override public void initialize() {
 		move.setTCP(pickitGripper, "/Flange");
