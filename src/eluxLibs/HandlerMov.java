@@ -17,7 +17,6 @@ package eluxLibs;
 import static eluxLibs.Utils.*;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.deviceModel.LBR;
@@ -79,8 +78,8 @@ public class HandlerMov extends RoboticsAPIApplication {
 	public PositionHold getPosHold() { return _posHold; }
 	public ICondition getJTConds() { return this._JTConds; }
 	public double[] scaleSpeed(double relSpeed) {
-		double[] scaledSpeed = _speed;
-		for (int i = 0; i < 7; i++) scaledSpeed[i] *= relSpeed;
+		double[] scaledSpeed = {1, 1, 1, 1, 1, 1, 1};
+		for (int i = 0; i < 7; i++) scaledSpeed[i] = _speed[i] * relSpeed;
 		return scaledSpeed;
 	}
 		
@@ -99,7 +98,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 	public void setTCP(Tool _tool, String _tcp) {
 		_tool.attachTo(kiwa.getFlange());
 		tcp = _tool.getFrame(_tcp);
-		padLog("TCP set to " + _tool.getName() + ", frame " + tcp.getName());
+		// padLog("TCP set to " + _tool.getName() + ", frame " + tcp.getName());
 	}
 	
 	public void swapLockDir()  {

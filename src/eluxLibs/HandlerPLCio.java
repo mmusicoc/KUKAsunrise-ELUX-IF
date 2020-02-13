@@ -35,10 +35,16 @@ public class HandlerPLCio {
 	}
 	
 	public void openGripper(int millis) {
+		boolean holding = _PLCin.getPinza_Holding();
+		int timer = 0;
 		_PLCout.setPinza_Chiudi(false);
 		waitMillis(10);
 		_PLCout.setPinza_Apri(true);
-		waitMillis(millis);
+		while(timer < millis && holding) {
+			holding = _PLCin.getPinza_Holding();
+			waitMillis(100);
+			timer += 100;
+		}
 	}
 	public void openGripper() { this.openGripper(1500); } // Wait for the gripper to close before continuing with the next command
 	public void openGripperAsync() { this.openGripper(10); }
@@ -58,7 +64,10 @@ public class HandlerPLCio {
 	
 	public void askOpen() {
 		if (!_PLCin.getPinza_Holding()) this.openGripperAsync();
-		else if (pad.question("The gripper is gripping sth, do you want to open it before proceeding?", "YES", "NO") == 0) openGripper();
+		else if (pad.question("The gripper is gripping sth, do you want to open it before proceeding?", "YES", "NO") == 0) {
+			waitMillis(2000);
+			openGripper();
+		}
 	}
 	
 	public void askClose(boolean loop) {

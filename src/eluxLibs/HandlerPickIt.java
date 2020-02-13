@@ -16,20 +16,16 @@ import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class HandlerPickIt{
 	private LBR kiwa;
-	private HandlerMov move;
+	//private HandlerMov move;
 	private receiveDataThread receive_data_thread = new receiveDataThread();
 	private sendDataThread send_data_thread = new sendDataThread();
-	private String _scanFramePath;
-	private double _relSpeed;
-	private int _stabilizeTime;
 	private int _timeout;
 
 	/// Pickit data ///
 	private int _setup_id = 0;
 	private int _product_id = 0;
-	private volatile Transformation _pick_frame;
 	private volatile Frame pick_frame;
-	private volatile Transformation _approach_frame;
+	private volatile Transformation _pick_offset;
 	private volatile double _obj_age = 0;
 	private volatile int _obj_type = 0;
 	private volatile double[] obj_size = {0, 0, 0};
@@ -44,7 +40,7 @@ public class HandlerPickIt{
 
 	@Inject public HandlerPickIt(LBR _kiwa, HandlerMov _move) {		// Constructor
 		this.kiwa = _kiwa;
-		this.move = _move;
+		//this.move = _move;
 	}
 	
 	// GETTERS ------------------------------------------
@@ -55,17 +51,10 @@ public class HandlerPickIt{
 	public boolean isRunning() { return _status != _STOPPED && _status != _ERROR; }
 	public boolean isReady() { return _status != _WAITING; }
 	public boolean hasFoundObj() { return _status == _OBJ_FOUND; }
-	public Transformation getPickTraf() { return _pick_frame; }
 	public Frame getPickFrame() { return pick_frame; }
 	
-	public int getBox(boolean scan) {
+	public int getBox() {
 		int timeCounter = 0;
-		if (scan || this.getRemainingObj() == 0) {
-			move.PTP(_scanFramePath, 1);
-			waitMillis(_stabilizeTime);
-			this.doScanForObj();
-		}
-		else this.doCalcNextObj();
 		while(!this.isReady()) {
 			waitMillis(10);
 			timeCounter += 10;
@@ -76,11 +65,12 @@ public class HandlerPickIt{
 		}
 		padLog("Answer took " + timeCounter + "ms");
 		if (this.hasFoundObj()) {
+			this.doSendPickFrameData();
 			padLog("Found " + getRemainingObj() + " objects");
 			return getRemainingObj();
 		}
 		else {
-			padLog("Pickit was unable to find any objects");
+			padLog("Pickit was unable to find any reachable objects");
 			return 0;
 		}
 		
@@ -107,7 +97,7 @@ public class HandlerPickIt{
 		_command = _WAIT_FOR_OBJ;
 	}
 
-	public synchronized void doCalcNextObj() {
+	public synchronized void doSendNextObj() {
 		padLog("Pickit calc next object to pick");
 		_status = _WAITING;
 		_command = _NEXT_OBJ;
@@ -119,12 +109,9 @@ public class HandlerPickIt{
 	    _command = _GET_PICKFRAME;
 	}
   
-	public synchronized boolean config(int setup_id, int product_id, String scanFramePath, double relSpeed, int stabilizeTime, int timeout) {
+	public synchronized boolean config(int setup_id, int product_id, int timeout) {
 		_setup_id = setup_id;
 		_product_id = product_id;
-		_scanFramePath = scanFramePath;
-		_relSpeed = relSpeed;
-		_stabilizeTime = stabilizeTime;
 		_timeout = timeout;
 		
 		_command = _CONFIGURE;
@@ -136,7 +123,7 @@ public class HandlerPickIt{
 			waitMillis(10);
 
 		}
-		padLog("PickIt configured with Setup ID = " + setup_id + "and Product ID = " + product_id);
+		padLog("PickIt configured with Setup ID = " + setup_id + " and Product ID = " + product_id);
 		return true;
 	}
 	
@@ -159,12 +146,8 @@ public class HandlerPickIt{
 
 	public void terminate() {
 		try {
-		receive_data_thread.terminate();
-	  	send_data_thread.terminate();
-	/*	try { receive_data_thread.join(200); }
-		catch (Exception e) { padErr("Failed to stop pickit threads"); }
-		try { send_data_thread.join(200); }
-		catch (Exception e) { padErr("Failed to stop pickit threads"); } */
+			receive_data_thread.terminate();
+			send_data_thread.terminate();
 			to_pickit.close();
 			from_pickit.close();
 			_socket.close();
@@ -185,32 +168,53 @@ public class HandlerPickIt{
 			.asIntBuffer();
 		int[] data = new int[intBuf.remaining()];
 		intBuf.get(data);
-		if (data[14] != ROBOT_TYPE) {
+		if (data[14] != _ROBOT_TYPE) {
 			padErr("Pick-it is not configured to communicate with KUKA LBR.");
 			return false;
 		}
-		if (data[15] != INTERFACE_VERSION) {
+		if (data[15] != _INTERFACE_VERSION) {
 			padErr("The Pickit-it interface version does not match the version of this program.");
+			return false;
 		}
-		if (data[13] == _OBJ_FOUND) {		// Review
-			_pick_frame = Transformation.ofDeg(
-        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
-        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR);
-			_pick_id = data[8];		// PICKFRAME
-			_pickref_id = (double)data[7]/_FACTOR;
-			_obj_remaining = data[12];
-			_status = data[13];
-			pick_frame.setTransformationFromParent(Transformation.ofDeg(
-	        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
-	        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR));
-		} else if (data[13] == _GET_PICKFRAME_OK) { return false; 
-		} else {
+		_status = data[13];
+		// this.printData(data);
+		if (_status == _OBJ_FOUND) {
 			_obj_age = (double)data[7]/_FACTOR;
 			_obj_type = data[8];
 			_obj_remaining = data[12];
-			_status = data[13];
-		}	
+			pick_frame.setTransformationFromParent(Transformation.ofDeg(
+	        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
+	        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR));
+		} else if (_status == _GET_PICKFRAME_OK) {
+			_pick_offset = Transformation.ofDeg(
+	        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
+	        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR);
+			_pickref_id = (double)data[7]/_FACTOR;
+			_pick_id = data[8];
+			return false; 
+		}
 		return true;
+	}
+	
+	private void printData(int[] data){
+		padLog("Data: *****");
+		padLog("B00: " + (double)data[0]/_FACTOR * 1000);	// X
+		padLog("B01: " + (double)data[1]/_FACTOR * 1000);	// Y
+		padLog("B02: " + (double)data[2]/_FACTOR * 1000);	// Z
+		padLog("B03: " + (double)data[3]/_FACTOR);			// A
+		padLog("B04: " + (double)data[4]/_FACTOR);			// B
+		padLog("B05: " + (double)data[5]/_FACTOR);			// C
+		padLog("B06: " + data[6]);							// Nothing, must be 0
+		padLog("B07: " + data[7]);							// Object age (ms) / PickrefID
+		padLog("B08: " + data[8]);							// Object type (if status = 20) / PickID (if status = 70)
+		padLog("B09: " + data[9]);							// Object dimension (X)
+		padLog("B10: " + data[10]);							// Object dimension (Y)
+		padLog("B11: " + data[11]);							// Object dimension (Z)
+		padLog("B12: " + data[12]);							// Remaining objects (-1)
+		padLog("B13: " + data[13]);							// Status = 20 if object found
+		padLog("B14: " + data[14]);							// Robot type = 5 if KUKA LBR iiwa
+		padLog("B15: " + data[15]);							// Version number = 11
+		padLog("End of data. *****");
 	}
 
 	private boolean sendData() {
@@ -226,8 +230,8 @@ public class HandlerPickIt{
 		byteBuffer.putInt(_command);
 		byteBuffer.putInt(_setup_id);
 		byteBuffer.putInt(_product_id);
-		byteBuffer.putInt(ROBOT_TYPE);
-		byteBuffer.putInt(INTERFACE_VERSION);
+		byteBuffer.putInt(_ROBOT_TYPE);
+		byteBuffer.putInt(_INTERFACE_VERSION);
 		_command = -1;
 		try { to_pickit.write(_data_to_pickit); } 
 		catch (IOException e) { return false; }
@@ -304,6 +308,6 @@ public class HandlerPickIt{
 	private static final int _GET_PICKFRAME = 70;
 	
 	private static final int _FACTOR = 10000;
-	private static final int ROBOT_TYPE = 5;
-	private static final int INTERFACE_VERSION = 11;
+	private static final int _ROBOT_TYPE = 5;
+	private static final int _INTERFACE_VERSION = 11;
 }
