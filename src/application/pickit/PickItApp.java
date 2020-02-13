@@ -1,66 +1,31 @@
-/*
- *
- * PickIT basic example application for a KUKA IIWA mounted camera - (C)Intermodalics BVBA
- * 
- * Ruben Smits - ruben.smits@intermodalics.eu
- * Adolfo Rodriguez - adolfo.rodriguez@intermodalics.eu
- * Dominick Vanthienen - dominick.vanthienen@intermodalics.eu
- * 
- */
+package application.Pickit;
 
-package application.pickit;
-
-import java.io.IOException;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
-//import pickit.PickIt;
 
 import static eluxLibs.Utils.*;
 import eluxLibs.*;
+//import pickit.PickIt;
 
+import java.io.IOException;
+import javax.inject.Inject;
+import javax.inject.Named;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
-
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
-
 import com.kuka.roboticsAPI.controllerModel.Controller;
-import com.kuka.roboticsAPI.deviceModel.JointPosition;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.executionModel.CommandInvalidException;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
-import com.kuka.roboticsAPI.motionModel.Spline;
-
 import com.kuka.roboticsAPI.uiModel.ApplicationDialogType;
 
-/**
- * Implementation of a sample robot application.
- * <p>
- * The application provides a {@link RoboticsAPITask#initialize()} and a
- * {@link RoboticsAPITask#run()} method, which will be called successively in
- * the application lifecycle. The application will terminate automatically after
- * the {@link RoboticsAPITask#run()} method has finished or after stopping the
- * task. The {@link RoboticsAPITask#dispose()} method will be called, even if an
- * exception is thrown during initialization or run.
- * <p>
- * <b>It is imperative to call <code>super.dispose()</code> when overriding the
- * {@link RoboticsAPITask#dispose()} method.</b>
- * 
- * @see UseRoboticsAPIContext
- * @see #initialize()
- * @see #run()
- * @see #dispose()
- */
-public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
+public class PickItApp extends RoboticsAPIApplication {
 	private Controller kuka_Sunrise_Cabinet_1;
 	private LBR lbr;
 	//private Tool gripper;
-	private PickIt pickit;
+	private HandlerPickIt pickit;
 	
 	@Inject private Plc_inputIOGroup 	plcin;
 	@Inject private Plc_outputIOGroup 	plcout;
@@ -114,74 +79,47 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 		return pre_pick_pose;
 	}
 	
-	@Override
-	public void initialize() {
+	@Override public void initialize() {
 		// Robot initialization
 		kuka_Sunrise_Cabinet_1 = (Controller) getContext().getControllers().toArray()[0]; //getController("KUKA_Sunrise_Cabinet_1");
 		lbr = (LBR) kuka_Sunrise_Cabinet_1.getDevices().toArray()[0]; //(LBR) getDevice(kuka_Sunrise_Cabinet_1, "LBR_iiwa_14_R820_1");
 		gripper = getApplicationData().createFromTemplate("PickItGripper");
 		
-		pickit = new PickIt(lbr);
-		System.out.println("Opening pickit socket ...");
-		pickit.pickit_socket_open("192.168.2.12", 30001);				// IP CONFIG
+		pickit = new HandlerPickIt(lbr, "192.168.2.12", 30001);
 	}
 	
-	@Override
-	public void dispose() {
-		super.dispose();
-	}
+	@Override public void dispose() { super.dispose(); }
 
-	@Override
-	public void run() {
+	@Override public void run() {
 		try{
 			gripper.attachTo(lbr.getFlange());
-			System.out.println("Ask operator what to do ...");
-			// show a selection pop-up
-			while (selection() == 0)
-			{
-				;
-			}
+			while (selection() == 0) { ; }
 			System.out.println("Start picking sequence");
-			// position from where to observe the objects with the camera
-			JointPosition detection_pose = new JointPosition(
-					Math.toRadians(90.0),
-					Math.toRadians(7.0),
-					Math.toRadians(0.0),
-					Math.toRadians(-75.0),
-					Math.toRadians(0.0),
-					Math.toRadians(92.0),
-					Math.toRadians(-1));
 			try {
-				lbr.move(ptp(detection_pose).setJointVelocityRel(picking_config.medium_vel));
+				lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Scan")).setJointVelocityRel(picking_config.medium_vel));
 			} catch (CommandInvalidException e) {
 				System.out.println("Unable to move to detection pose. Exiting...");
 				return;
 			}
+			sleep();
 			System.out.println("Configuring pickit ...");
-			// fill in here the id of the product as indicated between brackets next to the product name
-			// on the configuration tab of the Pick-it web interface
-			int pickit_product_id = 2;
-			// fill in here the id of the setup as indicated between brackets next to the setup name
-			// on the configuration tab of the Pick-it web interface
-			int pickit_setup_id = 3;
-			if (!pickit.pickit_configure(pickit_setup_id,
-										 pickit_product_id)) {
+			if (!pickit.config(3, 2)) {
 				return;
 			}
-			while (pickit.pickit_is_running()) {
-				if (pickit.pickit_remaining_objects() == 0) {
+			while (pickit.isRunning()) {
+				if (pickit.getRemainingObj() == 0) {
 				    // Move to detection frame.
-					lbr.move(ptp(detection_pose).setJointVelocityRel(picking_config.medium_vel));
+					lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Scan")).setJointVelocityRel(picking_config.medium_vel));
 					System.out.println("New Pick-it detection ...");
 					// Required to make sure that the pcl is captured after coming to rest.
 					Thread.sleep(350);
-					pickit.pickit_look_for_object();
+					pickit.doScanForObj();
 				} else {
 					System.out.println("Get next Pick-it object ...");
-					pickit.pickit_next_object();
+					pickit.doCalcNextObj();
 				}
 				int trycount = 0;
-				while (!pickit.pickit_has_response() && trycount < 100) {
+				while (!pickit.isReady() && trycount < 100) {
 					Thread.sleep(100);
 					trycount++;
 				}
@@ -191,14 +129,14 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 				}
 				System.out.println("Received next Pick-it object ...");
 								
-				if (pickit.pickit_object_found()) {
-					Transformation pickit_pose = pickit.pickit_get_pose();
+				if (pickit.hasFoundObj()) {
+					Transformation pickit_pose = pickit.getPickFrame();
 		        	Frame base_T_current_ee =  lbr.getCurrentCartesianPosition(lbr.getFlange()).copy();
 					Frame pick_pose = computePickPose(picking_config, base_T_current_ee, pickit_pose);
 					Frame pre_pick_pose = computePrePickPose(picking_config, pick_pose);
-					pickit.pickit_get_pick_frame_data();
+					pickit.doSendPickFrame();
 					Thread.sleep(150);
-					padLog("The pick ID is " + pickit.pickit_pick_id());
+					padLog("The pick ID is " + pickit.getPickID());
 					try {
 						// Move to picking frame.
 						/*
@@ -211,7 +149,7 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 						lbr.move(lin(pick_pose));
 						plc.closeGripper();
 						lbr.move(lin(pre_pick_pose));
-						switch (pickit.pickit_object_type()) {
+						switch (pickit.getObjType()) {
 							case 1:
 								lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Pole_H/_4_Jig_approach_Z")));
 								lbr.move(lin(getApplicationData().getFrame("/_PickIt/Pole_H/_5_Jig_pos")));
@@ -228,22 +166,22 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 								break;
 						}
  						//lbr.move(ptp(detection_pose).setJointVelocityRel(picking_config.medium_vel));
-						padLog("Placed model type " + pickit.pickit_pick_id());
-						while (!pickit.pickit_has_response()) {
+						padLog("Placed model type " + pickit.getPickID());
+						while (!pickit.isReady()) {
 							Thread.sleep(100);
 						}
-						padLog("Placed model type " + pickit.pickit_pick_id());
+						padLog("Placed model type " + pickit.getPickID());
 					} catch (CommandInvalidException e) {
 						System.out.println("Unable to move to object, going to next detection ...");
 					}
-					padLog("Placed model type " + pickit.pickit_pick_id());
+					padLog("Placed model type " + pickit.getPickID());
 				}
 			}
-			pickit.pickit_socket_close();
+			pickit.socketClose();
 		} catch (InterruptedException e) {
 			System.out.println("Interrupted Robot Application");
 			try {
-				pickit.pickit_socket_close();
+				pickit.socketClose();
 			} catch (IOException ee) {
 				System.err.println("IOError during pickit socket close");
 				//e.printStackTrace();
@@ -251,7 +189,7 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 		} catch (IOException e) {
 			System.out.println("IOException during Robot application");
 			try {
-				pickit.pickit_socket_close();
+				pickit.socketClose();
 			} catch (IOException ee) {
 				System.err.println("IOError during pickit socket close");
 				//e.printStackTrace();
@@ -271,7 +209,7 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 					ApplicationDialogType.QUESTION, "What's next?", "Multi-pose calibration", "Start picking");
 			switch (ret) {
 			case 0:
-				calibrate();
+				doCalibration();
 				return ret;
 			case 1:
 				return ret;				
@@ -284,36 +222,37 @@ public class RobotMountedPickItBasicApplication extends RoboticsAPIApplication {
 	 * Calibration function, requires 5 calibration poses to be taught-in, named Calib_pose1 to Calib_pose5
 	 * @throws InterruptedException
 	 */
-	private void calibrate() throws InterruptedException {
+	private void doCalibration() throws InterruptedException {
 		int time_before = 500; // ms
 		int time_after = 6000; // ms
 		System.out.println("Starting Multi Pose Calibration ... ");
 		lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Calib/P1")));
 		Thread.sleep(time_before);
-		pickit.pickit_do_calibration();
+		pickit.doCalibration();
 		Thread.sleep(time_after);
 		lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Calib/P2")));
 		Thread.sleep(time_before);
-		pickit.pickit_do_calibration();
+		pickit.doCalibration();
 		Thread.sleep(time_after);		
 		lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Calib/P3")));
 		Thread.sleep(time_before);
-		pickit.pickit_do_calibration();
+		pickit.doCalibration();
 		Thread.sleep(time_after);
 		lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Calib/P4")));
 		Thread.sleep(time_before);
-		pickit.pickit_do_calibration();
+		pickit.doCalibration();
 		Thread.sleep(time_after);
 		lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Calib/P5")));
 		Thread.sleep(time_before);
-		pickit.pickit_do_calibration();
+		pickit.doCalibration();
 		Thread.sleep(time_after);
 		lbr.move(ptp(getApplicationData().getFrame("/_PickIt/Calib")));
         System.out.println("Finished collecting calibration poses ... ");
 	}
-	
+	/*
 	public static void main(String[] args) {
 		RobotMountedPickItBasicApplication app = new RobotMountedPickItBasicApplication();
 		app.runApplication();
 	}
+	*/
 }

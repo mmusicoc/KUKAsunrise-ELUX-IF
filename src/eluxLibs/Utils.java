@@ -43,4 +43,6 @@ public class Utils {
 	public static void padLog(int msg) { System.out.println(msg); }
 	public static void padLog(boolean msg) { System.out.println(msg); }
 	public static void padLog(double msg) { System.out.println(msg); }
+	public static void padErr(String msg) { System.err.println(msg); }
+	public static void padWarn(String msg) { System.err.println(msg); }
 }
