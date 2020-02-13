@@ -1,0 +1,66 @@
+Per far funzionare il server serve che dentro RoboticsAPI.data.xml e nella sezione "processDataContainer" 
+ci siano queste variabili. Sostituire il valore di Controller Name e Device Name
+con il nome corretto del controller e del device.
+
+<processDataContainer>
+        
+        <!-- tuoi dati -->
+        
+        
+        <processData dataType="java.lang.String" defaultValue="" displayName="Controller Name" editableOnHmi="false" id="ControllerName" value="KUKA_Sunrise_Cabinet_1"/>
+        <processData dataType="java.lang.String" defaultValue="" displayName="Device Name" editableOnHmi="false" id="DeviceName" value="LBR_iiwa_7_R800_1"/>
+        <processData dataType="java.lang.Boolean" defaultValue="true" displayName="Server on" editableOnHmi="false" id="ServerOn" value="false"/>
+        <processData dataType="java.lang.Boolean" defaultValue="true" displayName="Server fault" editableOnHmi="false" id="ServerFault" value="false"/>
+        <processData dataType="java.lang.Boolean" defaultValue="true" displayName="Start server" id="StartServer" value="True"/>
+</processDataContainer>
+
+
+
+Dopodichè aggiungere nel main del programma che necessita del server la riga KrcServer.main(args); dove args[0] se diverso 
+da null viene usata come porta sulla quale aprire il server.
+
+Esempio:
+
+public static void main(String[] args) {
+		RobotApplication app = new RobotApplication();
+		KrcServer.main(args);
+		app.runApplication();
+	}
+	
+Sempre nel programma che funge da Application bisognerà:
+-dichiararlo come "possessore" dell'oggetto e fare in modo che implementi l'interfaccia ITaskFunctionProvider
+
+	@ProvidedFunctions(IDataExchange.class)
+	public class RobotApplication extends RoboticsAPIApplication implements ITaskFunctionProvider {
+
+- definire la variabile di tipo DataExchange che conterrà i dati visibili da pc
+	private DataExchange _function;
+	
+	e nell'initialize()
+	
+	 
+	_function = new DataExchange();	
+	
+
+- aggiungere questo blocco di codice dentro l'application
+
+/**
+	* ITaskFunctionProvider method that has to be
+	* implemented by the task
+	*/
+	@Override
+	public Map<Class<? extends ITaskFunction>, ITaskFunction>
+	createTaskFunctions() {
+		// Creation of the map containing all ITaskFunction instances
+		Map<Class<? extends ITaskFunction>, ITaskFunction> map = new
+		HashMap<Class<? extends ITaskFunction>, ITaskFunction>();
+		
+		// Fill the map with functions and corresponding interface
+		map.put(IDataExchange.class, _function);
+		
+		// Return map which references the ITaskFunction instances
+		return map;
+	}
+
+
+
