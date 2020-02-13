@@ -28,6 +28,7 @@ public class Tr2_CollisionDetection extends RoboticsAPIApplication {
 		gripper.attachTo(kiwa.getFlange());
 		double maxTorque = pad.askTorque();
 		move.setJTConds(maxTorque);
+		move.setGlobalSpeed(1);
 	}
 
 	@Override public void run() {

@@ -55,7 +55,7 @@ public class HandlerPLCio {
 	public void closeGripperAsync() { this.closeGripper(10); }
 	
 	public void askOpen() {
-		if (!_PLCin.getPinza_Holding()) this.openGripper();
+		if (!_PLCin.getPinza_Holding()) this.openGripperAsync();
 		else if (pad.question("The gripper is gripping sth, do you want to open it before proceeding?", "YES", "NO") == 0) openGripper();
 	}
 	

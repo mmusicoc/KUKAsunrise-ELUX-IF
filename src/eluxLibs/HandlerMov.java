@@ -17,6 +17,7 @@ package eluxLibs;
 import static eluxLibs.Utils.*;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.deviceModel.LBR;
@@ -27,6 +28,7 @@ import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceContr
 import com.kuka.roboticsAPI.conditionModel.ICondition;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.deviceModel.JointEnum;
+import com.kuka.roboticsAPI.executionModel.CommandInvalidException;
 import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
 import com.kuka.roboticsAPI.geometricModel.*;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
@@ -39,17 +41,20 @@ public class HandlerMov extends RoboticsAPIApplication {
 	@Inject private LBR kiwa;
 	@Inject private HandlerMFio mf;
 	@Inject private ITaskLogger log;
+	@Inject @Named("Flange4kg") private Tool tcp;
 	
 	// Private properties
+	private static final boolean log1 = false;
 	private ICondition _JTConds;
 	private IMotionContainer _JTBMotion;
 	private IFiredConditionInfo _JTBreak;
 	private CartesianImpedanceControlMode _softMode, _stiffMode;
 	private PositionHold _posHold;
 	private String _homeFramePath;
-	private double _speed;
+	private double[] _speed = {0,0,0,0,0,0,0};
 	private double _maxTorque;
 	private double _releaseDist;
+	private boolean _lockDir;
 	
 	// CONSTRUCTOR
 	@Inject	public HandlerMov(HandlerMFio _mf) {
@@ -58,24 +63,51 @@ public class HandlerMov extends RoboticsAPIApplication {
 		_stiffMode = new CartesianImpedanceControlMode();
 		_stiffMode.parametrize(CartDOF.TRANSL).setStiffness(5000).setDamping(1);
 		_stiffMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
-		_speed = 0.25;
+		this.setGlobalSpeed(0.25);
 		_maxTorque = 5;
 		_releaseDist = 10;
+		_lockDir = false;
 	}
 	
 	// Custom modularizing handler objects
-		@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private HandlerPad pad = new HandlerPad(mf);
 
+	// GETTERS
+		
+	public Tool getTCP() { return this.tcp; }
+	public PositionHold getPosHold() { return _posHold; }
+	public ICondition getJTConds() { return this._JTConds; }
+	public double[] scaleSpeed(double relSpeed) {
+		double[] scaledSpeed = _speed;
+		for (int i = 0; i < 7; i++) scaledSpeed[i] *= relSpeed;
+		return scaledSpeed;
+	}
 		
 	// SETTERS
 	
+	public void setGlobalSpeed(double speed) { 
+		for (int i = 0; i < 7; i++) this._speed[i] = speed;
+	}
+	public void setA7Speed(double speed) { this._speed[6] = speed; }
+	public void setSafeRelease(double releaseDist) { this._releaseDist = releaseDist; }
 	public void setHome(String targetFramePath) {
 		_homeFramePath = targetFramePath;
 		kiwa.setHomePosition(getApplicationData().getFrame(targetFramePath));
 	}
 	
-	public void setGlobalSpeed(double speed) {
-		this._speed = speed;
+	public void setTCP(Tool _tcp) {
+		tcp = _tcp;
+		tcp.attachTo(kiwa.getFlange());
+	}
+	
+	public void swapLockDir()  {
+		this._softMode.parametrize(CartDOF.ALL).setStiffness(0.1).setDamping(1);		// HandGuiding
+		_lockDir = !_lockDir;
+		if (_lockDir) {
+			this._softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
+			this._softMode.parametrize(CartDOF.A).setStiffness(0.1).setDamping(1);
+		}
+		_posHold = new PositionHold(_softMode, -1, null);
 	}
 	
 	public void setJTConds(double maxTorque){
@@ -89,79 +121,61 @@ public class HandlerMov extends RoboticsAPIApplication {
 		JTCond[6] = new JointTorqueCondition(JointEnum.J6, -maxTorque, maxTorque);
 		JTCond[7] = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
 		_JTConds = JTCond[1].or(JTCond[2]).or(JTCond[3]).or(JTCond[4]).or(JTCond[5]).or(JTCond[6]).or(JTCond[7]);
-		log.info("Max Axis Torque set to " + maxTorque + " Nm.");
-	}
-	
-	public void setSafeRelease(double releaseDist) {
-		this._releaseDist = releaseDist;
+		if(log1) log.info("Max Axis Torque set to " + maxTorque + " Nm.");
 	}
 	
 	// Standard moves, simple calls ***************************************************************
 	
-	public void PTP(Frame targetFrame, double relSpeed) {
-		kiwa.move(ptp(targetFrame).setJointVelocityRel(relSpeed*_speed));
+	public boolean PTP(Frame targetFrame, double relSpeed) {
+		try { tcp.move(ptp(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed))); return true; }
+		catch(CommandInvalidException e) { padErr("Unable to perform movement"); return false; }
 	}
-	
-	public void PTP(String targetFramePath, double relSpeed) {
-		log.info("Move PTP to " + targetFramePath);
+	public boolean PTP(String targetFramePath, double relSpeed) {
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
-		this.PTP(targetFrame.copyWithRedundancy(), relSpeed);
+		return this.PTP(targetFrame.copyWithRedundancy(), relSpeed);
 	}
 	
-	public void LIN(Frame targetFrame, double relSpeed) {
-		kiwa.move(lin(targetFrame).setJointVelocityRel(relSpeed*_speed));
+	public boolean PTPHOME(double relSpeed) {
+		return this.PTP(_homeFramePath, relSpeed);
 	}
 	
-	public void LIN(String targetFramePath, double relSpeed) {
-		log.info("Move LIN to " + targetFramePath);
+	public boolean LIN(Frame targetFrame, double relSpeed) {
+		try { tcp.move(lin(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed))); return true; }
+		catch(CommandInvalidException e) { padErr("Unable to perform movement"); return false; }
+	}
+	public boolean LIN(String targetFramePath, double relSpeed) {
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
-		this.LIN(targetFrame.copyWithRedundancy(), relSpeed);
+		return this.LIN(targetFrame.copyWithRedundancy(), relSpeed);
 	}	
 	
-	public void LINREL(double x, double y, double z, double relSpeed) {
-		kiwa.move(linRel(x, y, z).setJointVelocityRel(relSpeed*_speed));
+	public boolean LINREL(double x, double y, double z, double relSpeed) {
+		try { tcp.move(linRel(x, y, z).setJointVelocityRel(scaleSpeed(relSpeed))); return true; }
+		catch(CommandInvalidException e) { padErr("Unable to perform movement"); return false; }
 	}
 	
-	public void CIRC(Frame targetFrame1, Frame targetFrame2, double relSpeed) {
-		kiwa.move(circ(targetFrame1, targetFrame2).setJointVelocityRel(relSpeed*_speed));
+	public boolean CIRC(Frame targetFrame1, Frame targetFrame2, double relSpeed) {
+		try { tcp.move(circ(targetFrame1, targetFrame2).setJointVelocityRel(scaleSpeed(relSpeed))); return true; }
+		catch(CommandInvalidException e) { padErr("Unable to perform movement"); return false; }
 	}	
-	
-	public void CIRC(String targetFramePath1, String targetFramePath2, double relSpeed) {
-		log.info("Move CIRC to " + targetFramePath1 + " then to " + targetFramePath2);
+	public boolean CIRC(String targetFramePath1, String targetFramePath2, double relSpeed) {
 		ObjectFrame targetFrame1 = getApplicationData().getFrame(targetFramePath1);
 		ObjectFrame targetFrame2 = getApplicationData().getFrame(targetFramePath2);
-		this.CIRC(targetFrame1.copyWithRedundancy(), targetFrame2.copyWithRedundancy(), relSpeed);
+		return this.CIRC(targetFrame1.copyWithRedundancy(), targetFrame2.copyWithRedundancy(), relSpeed);
 	}
 	
 	// Torque sensing enabled macros **************************************************************
-	
-	public void setSoftMode()  {
-		this._softMode.parametrize(CartDOF.ALL).setStiffness(0.1).setDamping(1);		// HandGuiding
-		switch (pad.question("Lock DOF A", "YES", "NO")) {
-			case 0:
-				this._softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
-				this._softMode.parametrize(CartDOF.A).setStiffness(0.1).setDamping(1);
-				break;
-			case 1: break;
-		}
-		_posHold = new PositionHold(_softMode, -1, null);
-	}
-	
-	public PositionHold getPosHold() { return _posHold; }
-	
-	public ICondition getJTConds() { return this._JTConds; }
 	
 	public void PTPHOMEsafe() {
 		this.LINREL(0, 0, -0.01, 0.5);
 		pad.info("Move away from the robot. It will move automatically to home.");
 		this.LINREL(0, 0, -50, 0.5);
-		this.PTPsafe(_homeFramePath, _speed);
+		this.PTPsafe(_homeFramePath, _speed[0]);
 	}
 	
 	public void PTPsafe(Frame targetFrame, double relSpeed){		// overloading for taught points
 		do {
 			mf.setRGB("G");
-			this._JTBMotion = kiwa.move(ptp(targetFrame).setJointVelocityRel(relSpeed*_speed).breakWhen(this._JTConds)); 
+			this._JTBMotion = kiwa.move(ptp(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
 				mf.setRGB("RB");
@@ -182,7 +196,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 	public void LINsafe(Frame targetFrame, double relSpeed){		// overloading for taught points
 		do {
 			mf.setRGB("G");
-			this._JTBMotion = kiwa.move(lin(targetFrame).setJointVelocityRel(relSpeed*_speed).breakWhen(this._JTConds)); 
+			this._JTBMotion = kiwa.move(lin(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
 				mf.setRGB("RB");
@@ -203,7 +217,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 	public void CIRCsafe(Frame targetFrame1, Frame targetFrame2, double relSpeed){		// overloading for taught points
 		do {
 			mf.setRGB("G");
-			this._JTBMotion = kiwa.move(circ(targetFrame1, targetFrame2).setJointVelocityRel(relSpeed*_speed).breakWhen(this._JTConds)); 
+			this._JTBMotion = kiwa.move(circ(targetFrame1, targetFrame2).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
 				mf.setRGB("RB");
@@ -246,18 +260,21 @@ public class HandlerMov extends RoboticsAPIApplication {
 		this.LINsafe(targetFrame, 0.1);
 	}
 	
-	public void checkPartZ(int probeDist, double relSpeed) {
+	public void checkPartZ(int probeDist, double relSpeed, double maxTorque) {
 		Frame targetFrame = kiwa.getCommandedCartesianPosition(kiwa.getFlange());
+		double prevMaxTorque = this._maxTorque;
 		boolean pieceFound = false;
-		log.info("Checking component presence...");
+		if(log1) log.info("Checking component presence...");
 		do {
 			mf.setRGB("G");
-			this._JTBMotion = kiwa.move(linRel(0, 0, probeDist).setJointVelocityRel(relSpeed*_speed).breakWhen(_JTConds)); 
+			this.setJTConds(maxTorque);
+			this._JTBMotion = kiwa.move(linRel(0, 0, probeDist).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(_JTConds)); 
+			this.setJTConds(prevMaxTorque);
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
-				log.info("Component detected. " ); 
-				mf.blinkRGB("GB", 800);
-				kiwa.move(lin(targetFrame).setJointVelocityRel(relSpeed*_speed));
+				if(log1) log.info("Component detected. " ); 
+				kiwa.move(lin(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)));
+				mf.blinkRGB("GB", 400);
 				pieceFound = true;
 			} else {
 				mf.setRGB("RB");
@@ -274,7 +291,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 		do {
 			pinFound = probeXY(tolerance, relSpeed, 3);
 			if (pinFound) {
-				log.info("Pin found. " ); 
+				if(log1) log.info("Pin found. " ); 
 				mf.blinkRGB("GB", 800);
 				pinFound = true;
 			} else {
@@ -292,7 +309,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 		do {
 			holeFound = probeXY(tolerance, relSpeed, 3);
 			if (holeFound) {
-				log.info("Hole found. " ); 
+				if(log1) log.info("Hole found. " ); 
 				mf.blinkRGB("GB", 800);
 				holeFound = true;
 			} else {
@@ -306,38 +323,38 @@ public class HandlerMov extends RoboticsAPIApplication {
 	
 	private boolean probeXY(double tolerance, double relSpeed, double maxTorque) {
 		boolean found = false;
-		padLog("Testing hole insertion...");
+		if(log1) padLog("Testing hole insertion...");
 		mf.blinkRGB("GB", 250);
 		double prevMaxTorque = this._maxTorque;
 		this.setJTConds(maxTorque);
 		mf.setRGB("G");
 		Frame holeFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-		this._JTBMotion = kiwa.move(linRel(-tolerance, -tolerance, 0).setJointVelocityRel(relSpeed*_speed).breakWhen(_JTConds));
+		this._JTBMotion = kiwa.move(linRel(-tolerance, -tolerance, 0).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(_JTConds));
 		this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 		if (this._JTBreak != null) { mf.blinkRGB("GB", 200); found = true; }
 		else mf.blinkRGB("RB", 200);
-		this.PTP(holeFrame, relSpeed*_speed);
+		this.PTP(holeFrame, relSpeed*_speed[0]);
 		if (found) {
-			this._JTBMotion = kiwa.move(linRel(tolerance, tolerance, 0).setJointVelocityRel(relSpeed*_speed).breakWhen(_JTConds));
+			this._JTBMotion = kiwa.move(linRel(tolerance, tolerance, 0).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(_JTConds));
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (this._JTBreak != null) mf.blinkRGB("GB", 200);
 			else { mf.blinkRGB("RB", 200); found = false; }
-			this.PTP(holeFrame, relSpeed*_speed);
+			this.PTP(holeFrame, relSpeed*_speed[0]);
 		}
 		this.setJTConds(prevMaxTorque);
 		return found;
 	}
 	
 	public boolean twistJ7withJTCond(double angle, double extra, double relSpeed, double maxTorque) {
-		padLog("Twisting the pin...");
+		if(log1) padLog("Twisting the pin...");
 		mf.blinkRGB("GB", 250);
 		JointTorqueCondition JTCond = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
 		try {
 			kiwa.move(linRel(Transformation.ofDeg(0,0,0,angle,0,0)).setJointVelocityRel(_speed));
-			this._JTBMotion = kiwa.move(linRel(Transformation.ofDeg(0, 0, 0, extra, 0, 0)).setJointVelocityRel(relSpeed*_speed).breakWhen(JTCond)); // Tx, Ty, Tz, Rz, Ry, Rx
+			this._JTBMotion = kiwa.move(linRel(Transformation.ofDeg(0, 0, 0, extra, 0, 0)).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(JTCond)); // Tx, Ty, Tz, Rz, Ry, Rx
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
-				padLog("Rotation reached limit due to torque sensing");
+				if(log1) padLog("Rotation reached limit due to torque sensing");
 				mf.blinkRGB("GB", 500);
 				return true;
 			} else {

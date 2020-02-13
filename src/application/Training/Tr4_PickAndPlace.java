@@ -17,6 +17,8 @@ import com.kuka.roboticsAPI.motionModel.IMotionContainer;
 import com.kuka.roboticsAPI.uiModel.userKeys.*;
 
 public class Tr4_PickAndPlace extends RoboticsAPIApplication {
+	private static final boolean log1 = false;
+	
 	// Standard KUKA API objects
 	@Inject private LBR 				kiwa;
 	@Inject private Plc_inputIOGroup 	plcin;
@@ -66,6 +68,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 				case home:
 					plc.askOpen();
 					move.PTPHOMEsafe();
+					plc.askOpen();
 					state = States.loop;
 					break;
 				case loop:
@@ -76,54 +79,66 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 	}
 	
 	private void loopRoutine(){
+		int loop = 2;
 		move.LINsafe("/_PickPlace/_0_Planes",1);
 		pickZ("/_PickPlace/_0_Planes/Pick");
 		move.LINsafe("/_PickPlace/_0_Planes/XY",1);
-		for(int i = 1; i <= 4; i++) {
+		for(int i = 1; i <= loop; i++) {
 			move.LINsafe("/_PickPlace/_0_Planes/XY/P2",1);
 			move.LINsafe("/_PickPlace/_0_Planes/XY/P3",1);
 			move.LINsafe("/_PickPlace/_0_Planes/XY/P4",1);
 			move.LINsafe("/_PickPlace/_0_Planes/XY",1);
 		}
-		for(int i = 1; i <= 4; i++) {
+		for(int i = 1; i <= loop; i++) {
 			move.LINsafe("/_PickPlace/_0_Planes/XZ/P2",1);
 			move.LINsafe("/_PickPlace/_0_Planes/XZ/P3",1);
 			move.LINsafe("/_PickPlace/_0_Planes/XZ/P4",1);
 			move.LINsafe("/_PickPlace/_0_Planes/XZ",1);
 		}
-		for(int i = 1; i <= 4; i++) {
+		for(int i = 1; i <= loop; i++) {
 			move.LINsafe("/_PickPlace/_0_Planes/YZ/P2",1);
 			move.LINsafe("/_PickPlace/_0_Planes/YZ/P3",1);
 			move.LINsafe("/_PickPlace/_0_Planes/YZ/P4",1);
 			move.LINsafe("/_PickPlace/_0_Planes/YZ",1);
 		}
 		move.LINsafe("/_PickPlace/_1_Circular/P1r",1);
-		for(int i = 1; i <= 4; i++) {
+		for(int i = 1; i <= loop; i++) {
 			move.CIRC("/_PickPlace/_1_Circular","/_PickPlace/_1_Circular/P2r",1);
 			move.CIRC("/_PickPlace/_1_Circular","/_PickPlace/_1_Circular/P1r",1);
 		}
 		move.LINsafe("/_PickPlace/_1_Circular/P1",1);
-		for(int i = 1; i <= 4; i++) {
+		for(int i = 1; i <= loop; i++) {
 			move.CIRC("/_PickPlace/_1_Circular","/_PickPlace/_1_Circular/P2",1);
 			move.CIRC("/_PickPlace/_1_Circular","/_PickPlace/_1_Circular/P1",1);
 		}
 		move.LINsafe("/_PickPlace/_1_Circular",1);
 		placeZ("/_PickPlace/_0_Planes/Pick");
+		
+		move.LINsafe("/_PickPlace/_2_Drag", 1);
+		move.LINsafe("/_PickPlace/_2_Drag/P01", 1);
+		move.LINsafe("/_PickPlace/_2_Drag/P02", 0.25);
+		move.LINsafe("/_PickPlace/_2_Drag/P03", 1);
+		move.LINsafe("/_PickPlace/_2_Drag/P04", 0.5);
+		move.LINsafe("/_PickPlace/_2_Drag/P05", 1);
+		move.LINsafe("/_PickPlace/_2_Drag/P06", 0.25);
+		move.LINsafe("/_PickPlace/_2_Drag/P07", 1);
+		move.LINsafe("/_PickPlace/_2_Drag/P08", 1);
+		move.LINsafe("/_PickPlace/_2_Drag", 1);
 	}
 	
 	private void pickZ(Frame targetFrame) {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		move.PTPsafe(preFrame, 1);
-		padLog("Picking process");
+		if(log1) padLog("Picking process");
 		move.LINsafe(targetFrame, approachSpeed);
-		move.checkPartZ(25, 0.1);
+		move.checkPartZ(15, 0.1, 2);
 		closeGripperCheck(false);
 		move.LINsafe(preFrame, approachSpeed);
 	}
 	
 	private void pickZ(String targetFramePath) {
-		padLog("Place pin macro at " + targetFramePath);
+		if(log1) padLog("Place part macro at " + targetFramePath);
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		this.pickZ(targetFrame.copyWithRedundancy());
 	}
@@ -132,14 +147,14 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		move.PTPsafe(preFrame, 1);
-		padLog("Placing process");
+		if(log1) padLog("Placing process");
 		move.LINsafe(targetFrame, approachSpeed);
 		openGripperCheck(false);
 		move.LINsafe(preFrame, approachSpeed);
 	}
 	
 	private void placeZ(String targetFramePath) {
-		padLog("Place pin macro at " + targetFramePath);
+		if(log1) padLog("Place part macro at " + targetFramePath);
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		this.placeZ(targetFrame.copyWithRedundancy());
 	}
@@ -150,7 +165,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 			waitMillis(50);
 		}
 		if (plcin.getPinza_Holding()){
-			padLog("Workpiece gripped");
+			if(log1) padLog("Workpiece gripped");
 			workpieceGripped = true;
 			if (isPosHold) posHoldMotion.cancel();
 		//	workpiece.attachTo(gripper.getDefaultMotionFrame()); 
@@ -166,7 +181,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 		if (workpieceGripped) {
 			workpieceGripped = false;
 			if (isPosHold) posHoldMotion.cancel();
-			padLog("Workpiece released");
+			if(log1) padLog("Workpiece released");
 		//	workpiece.detach(); 
 			if (isPosHold) posHoldMotion = kiwa.moveAsync(move.getPosHold());
 		}

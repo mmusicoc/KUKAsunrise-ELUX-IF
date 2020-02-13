@@ -19,7 +19,7 @@ import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
 public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 	// #Define parameters
-	private static final boolean log1 = true;	// Log level 1: main events
+	private static final boolean log1 = false;	// Log level 1: main events
 	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
 	
 	// Standard KUKA API objects
@@ -76,7 +76,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		while (true) {
 			switch (state) {
 				case home:
-					move.setSoftMode();
+					move.swapLockDir();
 					move.PTPHOMEsafe();
 					checkGripper();
 					state = States.teach;
@@ -126,7 +126,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 						break;
 					case 11:
 						mf.blinkRGB("RGB", 500);
-						move.setSoftMode();
+						move.swapLockDir();
 						posHoldMotion.cancel();
 						move.LINREL(0, 0, 0.01, 0.5);
 						posHoldMotion = kiwa.moveAsync(move.getPosHold());

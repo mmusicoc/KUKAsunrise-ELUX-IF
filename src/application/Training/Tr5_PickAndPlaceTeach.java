@@ -17,7 +17,7 @@ import com.kuka.roboticsAPI.uiModel.userKeys.*;
 
 public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	// #Define parameters
-	private static final boolean log1 = true;	// Log level 1: main events
+	private static final boolean log1 = false;	// Log level 1: main events
 	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
 	
 	// Standard KUKA API objects
@@ -74,7 +74,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 			switch (state) {
 				case home:
 					plc.askOpen();
-					move.setSoftMode();
+					move.swapLockDir();
 					move.PTPHOMEsafe();
 					plc.askOpen();
 					state = States.teach;
@@ -127,7 +127,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 						break;
 					case 11:
 						mf.blinkRGB("RGB", 500);
-						move.setSoftMode();
+						move.swapLockDir();
 						posHoldMotion.cancel();
 						move.LINREL(0, 0, 0.01, 0.5);
 						posHoldMotion = kiwa.moveAsync(move.getPosHold());
@@ -173,9 +173,9 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
 		move.PTPsafe(preFrame, 1);
-		padLog("Picking process");
+		if(log1) padLog("Picking process");
 		move.LINsafe(targetFrame, approachSpeed);
-		move.checkPartZ(25, 0.01);
+		move.checkPartZ(25, 0.1, 3);
 		closeGripperCheck(false);
 		move.LINsafe(preFrame, approachSpeed);
 	}
@@ -184,7 +184,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
 		move.PTPsafe(preFrame, 1);
-		padLog("Placing process");
+		if(log1) padLog("Placing process");
 		move.LINsafe(targetFrame, approachSpeed);
 		openGripperCheck(false);
 		move.LINsafe(preFrame, approachSpeed);
@@ -196,7 +196,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 			waitMillis(50);
 		}
 		if (plcin.getPinza_Holding()){
-			padLog("Workpiece gripped");
+			if(log1) padLog("Workpiece gripped");
 			workpieceGripped = true;
 			if (isPosHold) posHoldMotion.cancel();
 		//	workpiece.attachTo(gripper.getDefaultMotionFrame()); 
@@ -212,7 +212,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		if (workpieceGripped) {
 			workpieceGripped = false;
 			if (isPosHold) posHoldMotion.cancel();
-			padLog("Workpiece released");
+			if(log1) padLog("Workpiece released");
 		//	workpiece.detach(); 
 			if (isPosHold) posHoldMotion = kiwa.moveAsync(move.getPosHold());
 		}

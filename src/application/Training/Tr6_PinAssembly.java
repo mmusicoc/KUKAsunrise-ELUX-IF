@@ -19,7 +19,7 @@ import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
 public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	// #Define parameters
-	private static final boolean log1 = true;	// Log level 1: main events
+	private static final boolean log1 = false;	// Log level 1: main events
 	
 	// Standard KUKA API objects
 	@Inject private LBR 				kiwa;
@@ -41,6 +41,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	private double relSpeed = 0.25;
 	private static final double approachOffset = 40;
 	private static final double approachSpeed = 0.1;
+	private static final double probeSpeed = 0.1;
 	
 	private void progInfo() {
 		pad.info("Description of this program operation:\n" + 
@@ -116,14 +117,14 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		move.PTPsafe(preFrame, relSpeed);
-		padLog("Picking process");
+		if(log1) padLog("Picking process");
 		move.LINsafe(targetFrame, approachSpeed);
-		move.checkPinPick(5, 0.01);
+		move.checkPinPick(5, probeSpeed);
 		move.LINsafe(preFrame, approachSpeed);
 	}
 	
 	private void pickPinZ(String targetFramePath) {
-		padLog("Pick pin macro at " + targetFramePath);
+		if (log1) padLog("Pick pin macro at " + targetFramePath);
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		this.pickPinZ(targetFrame.copyWithRedundancy());
 	}
@@ -134,17 +135,17 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		do  {
 			move.PTPsafe(preFrame, relSpeed);
-			padLog("Picking process");
+			if (log1) padLog("Placing process");
 			move.LINsafe(targetFrame, approachSpeed);
-			move.checkPinPlace(5, 0.01);
+			move.checkPinPlace(5, probeSpeed);
 			inserted = move.twistJ7withJTCond(45, 30, 0.15, 0.7);
-			move.LINREL(0, 0, -30, 0.01);
+			move.LINREL(0, 0, -30, approachSpeed);
 		}
 		while (!inserted);		
 	}
 	
 	private void placePinY(String targetFramePath) {
-		padLog("Place pin macro at " + targetFramePath);
+		if (log1) padLog("Place pin macro at " + targetFramePath);
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		this.placePinY(targetFrame.copyWithRedundancy());
 	}
@@ -167,7 +168,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 							} else padLog("Key not available in this mode.");
 							break;
 						case 2:  						// KEY - SET SPEED
-							relSpeed = pad.askSpeed();
+							move.setGlobalSpeed(pad.askSpeed());
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
