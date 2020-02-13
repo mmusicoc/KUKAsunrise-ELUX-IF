@@ -31,7 +31,7 @@ public class Tr1_FSM extends RoboticsAPIApplication {
 	}
 
 	@Override public void run() {
-		move.PTPhome();
+		move.PTPHOMEsafe();
 		while (true) {				// Endless loop
 			switch (state) {
 				case state_A:		// Close gripper, LED to Red, wait for button

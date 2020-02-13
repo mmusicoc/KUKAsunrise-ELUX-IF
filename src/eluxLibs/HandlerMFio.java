@@ -59,8 +59,7 @@ public class HandlerMFio {
 		MFio.setLEDBlue(b);
 	}
 
-	public void setRGB(String color, boolean log) {
-		if (log) padLog("MediaFlange LED ring to " + color);
+	public void setRGB(String color) {
 		if (color.equalsIgnoreCase("R")) this.setRGB(true,false,false);
 		else if (color.equalsIgnoreCase("G")) this.setRGB(false,true,false);
 		else if (color.equalsIgnoreCase("B")) this.setRGB(false,false,true);
@@ -72,13 +71,8 @@ public class HandlerMFio {
 		else padLog("MediaFlange color not valid");
 	}
 	
-	public void setRGB(String color) { this.setRGB(color, false); }
-	
-	public void blinkRGB(String color, int millis) { this.blinkRGB(color, millis, false); }
-	
-	public void blinkRGB(String color, int millis, boolean log) {
+	public void blinkRGB(String color, int millis) {
 		this.saveRGB();
-		if (log) padLog("MediaFlange LED blink " + color + " for " + millis + " millis");
 		this.setRGB(color);
 		waitMillis(millis);
 		this.resetRGB();
@@ -90,15 +84,15 @@ public class HandlerMFio {
 	
 	public void waitUserButton() {
 		this.saveRGB();
-		if(prevRGB[0] == true && prevRGB[1] == false && prevRGB[2] == false) ;
-		else this.setRGB("B");
+		if((prevRGB[0] == true) && (prevRGB[1] == false) && (prevRGB[2] == false)) ;
+		else this.setRGB("GB");
 		padLog("Press USER GREEN BUTTON to continue");
 		while (true) {
 			if (this.getUserButton()) break;
 			waitMillis(50);
 		}
-		this.blinkRGB("GB", 500);		// Wait for torque to stabilize and notify input
 		this.resetRGB();
+		this.blinkRGB("RGB", 250);		// Wait for torque to stabilize and notify input
 	}
 	
 	public int checkButtonInput(){						// determine user button input

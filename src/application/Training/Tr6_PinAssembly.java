@@ -17,7 +17,7 @@ import com.kuka.roboticsAPI.uiModel.userKeys.IUserKey;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
-public class Tr5_PinAssembly extends RoboticsAPIApplication {
+public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	// #Define parameters
 	private static final boolean log1 = true;	// Log level 1: main events
 	
@@ -39,9 +39,8 @@ public class Tr5_PinAssembly extends RoboticsAPIApplication {
 	private enum States {home, teach, loop};
 	private States state;
 	private double relSpeed = 0.25;
-	private final double approachOffset = 40;
-	private final double approachSpeed = 0.1;
-	private final String homeFramePath = "/_PinAssembly/PrePick";
+	private static final double approachOffset = 40;
+	private static final double approachSpeed = 0.1;
 	
 	private void progInfo() {
 		pad.info("Description of this program operation:\n" + 
@@ -57,10 +56,8 @@ public class Tr5_PinAssembly extends RoboticsAPIApplication {
 		gripper.attachTo(kiwa.getFlange());
 		configPadKeysGENERAL();
 		state = States.home;
-		move.setHome(homeFramePath);
-		
-		relSpeed = 0.25; //pad.askSpeed();
-		// double maxTorque = pad.askTorque();
+		move.setHome("/_PinAssembly/PrePick");
+		move.setGlobalSpeed(0.25);
 		move.setJTConds(10.0);
 	}
 
@@ -68,8 +65,7 @@ public class Tr5_PinAssembly extends RoboticsAPIApplication {
 		while (true) {
 			switch (state) {
 				case home:
-					padLog("Going home.");
-					move.PTPwithJTConds(homeFramePath, relSpeed);
+					move.PTPHOMEsafe();
 					checkGripper();
 					state = States.loop;
 					break;
@@ -88,21 +84,21 @@ public class Tr5_PinAssembly extends RoboticsAPIApplication {
 	private void loopRoutine(){
 		if (log1) padLog("Loop routine.");
 		pickPinZ("/_PinAssembly/PrePick/Pick1");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
 		placePinY("/_PinAssembly/PrePlace/Place1");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
 		pickPinZ("/_PinAssembly/PrePick/Pick2");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
 		placePinY("/_PinAssembly/PrePlace/Place2");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
 		pickPinZ("/_PinAssembly/PrePick/Pick3");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
 		placePinY("/_PinAssembly/PrePlace/Place3");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
 		pickPinZ("/_PinAssembly/PrePick/Pick4");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
 		placePinY("/_PinAssembly/PrePlace/Place4");
-		move.PTPwithJTConds("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
 	}
 	
 	private void checkGripper() {
@@ -119,11 +115,11 @@ public class Tr5_PinAssembly extends RoboticsAPIApplication {
 	private void pickPinZ(Frame targetFrame) {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
-		move.PTPwithJTConds(preFrame, relSpeed);
+		move.PTPsafe(preFrame, relSpeed);
 		padLog("Picking process");
-		move.LINwithJTConds(targetFrame, approachSpeed);
+		move.LINsafe(targetFrame, approachSpeed);
 		move.checkPinPick(5, 0.01);
-		move.LINwithJTConds(preFrame, approachSpeed);
+		move.LINsafe(preFrame, approachSpeed);
 	}
 	
 	private void pickPinZ(String targetFramePath) {
@@ -137,9 +133,9 @@ public class Tr5_PinAssembly extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		do  {
-			move.PTPwithJTConds(preFrame, relSpeed);
+			move.PTPsafe(preFrame, relSpeed);
 			padLog("Picking process");
-			move.LINwithJTConds(targetFrame, approachSpeed);
+			move.LINsafe(targetFrame, approachSpeed);
 			move.checkPinPlace(5, 0.01);
 			inserted = move.twistJ7withJTCond(45, 30, 0.15, 0.7);
 			move.LINREL(0, 0, -30, 0.01);

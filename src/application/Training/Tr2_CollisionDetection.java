@@ -33,9 +33,9 @@ public class Tr2_CollisionDetection extends RoboticsAPIApplication {
 	@Override public void run() {
 		mf.setRGB("B");
 		for (;;) {
-			move.PTPwithJTConds("/_HOME/_1_Teach_LEFT", relSpeed);
+			move.PTPsafe("/_HOME/_1_Teach_LEFT", relSpeed);
 			waitMillis(1500, true);
-			move.PTPwithJTConds("/_HOME/_3_Teach_RIGHT", relSpeed);
+			move.PTPsafe("/_HOME/_3_Teach_RIGHT", relSpeed);
 			waitMillis(1500, true);
 		}
 	}

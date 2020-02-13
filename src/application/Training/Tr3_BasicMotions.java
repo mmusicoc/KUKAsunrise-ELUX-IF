@@ -30,11 +30,11 @@ public class Tr3_BasicMotions extends RoboticsAPIApplication {
 		kiwa.move(ptpHome().setJointVelocityRel(relSpeed));
 		for (relSpeed = 0.2; relSpeed < 1 ; relSpeed += 0.195){
 			padLog("Speed is " + relSpeed + "/1");
-			move.PTPwithJTConds("/_HOME/_0_Shutoff_REST", relSpeed);
+			move.PTPsafe("/_HOME/_0_Shutoff_REST", relSpeed);
 			waitMillis(1000, true);
-			move.LINwithJTConds("/_HOME/_1_Teach_LEFT", relSpeed);
+			move.LINsafe("/_HOME/_1_Teach_LEFT", relSpeed);
 			waitMillis(1000, true);
-			move.CIRCwithJTConds("/_HOME/_2_Teach_CENTRAL", "/_HOME/_3_Teach_RIGHT", relSpeed);
+			move.CIRCsafe("/_HOME/_2_Teach_CENTRAL", "/_HOME/_3_Teach_RIGHT", relSpeed);
 		}
 		kiwa.move(ptpHome());
 		padLog("Finished program");

@@ -23,14 +23,15 @@ public class HandlerPad extends RoboticsAPIApplication {
 	* STANDARD METHODS BY mario.musico@electrolux.com <p>
 	***************************************************************************/
 	
-	public double askSpeed() { return this.askSpeed(0.15, 0.25, 0.5, 1); }
-	public double askSpeed(double s0, double s1, double s2, double s3){
+	public double askSpeed() { return this.askSpeed(0.15, 0.25, 0.5, 0.75, 1); }
+	public double askSpeed(double s0, double s1, double s2, double s3, double s4){
 		double relSpeed = 0.1;
-		switch (this.question("Set relative speed", s0 + "", s1 + "", s2 + "", s3 + "")) {
+		switch (this.question("Set relative speed", s0 + "", s1 + "", s2 + "", s3 + "", s4 + "")) {
 			case 0: relSpeed = s0; break;
 			case 1: relSpeed = s1; break;
 			case 2: relSpeed = s2; break;
 			case 3: relSpeed = s3; break;
+			case 4: relSpeed = s4; break;
 		}
 		return relSpeed;
 	}

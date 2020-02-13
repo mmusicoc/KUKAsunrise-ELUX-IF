@@ -10,17 +10,14 @@ import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.deviceModel.LBR;
-import com.kuka.roboticsAPI.geometricModel.CartDOF;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 import com.kuka.roboticsAPI.motionModel.IMotionContainer;
-import com.kuka.roboticsAPI.motionModel.PositionHold;
-import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKey;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
-public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
+public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 	// #Define parameters
 	private static final boolean log1 = true;	// Log level 1: main events
 	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
@@ -43,30 +40,26 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 	private enum States {home, teach, loop};
 	private States state;
 	private boolean endLoopRoutine = false;
-	private double relSpeed = 0.25;
-	private final double approachOffset = 40;
-	private final double approachSpeed = 0.1;
-	private final String homeFramePath = "/_PinAssembly/PrePick";
+	private static final double approachOffset = 40;
+	private static final double approachSpeed = 0.1;
+	private static final double probeSpeed = 0.05;
 	
 	// Motion related KUKA API objects
-	private CartesianImpedanceControlMode softMode = new CartesianImpedanceControlMode();  	// for stiffless handguiding
-	private PositionHold posHold = new PositionHold(softMode, -1, null);  
 	private IMotionContainer posHoldMotion;			// Motion container for position hold
 	
 	private void progInfo() {
 		pad.info("Description of this program operation:\n" + 
 					"\tTeaching mode:\n" +
 						"\t\t1 click: Register frame\n" +
-						"\t\t2 click: Register frame where pin is picked\n" +
-						"\t\t3 click: Register frame when pin is in hole\n" +
-						"\t\t\tNOTE: twisting task will be performed automatically" +
+						"\t\t2 clicks: Register frame where pin is picked\n" +
+						"\t\t3 clicks: Register frame when pin is in hole\n" +
+						"\t\t\tNOTE: twisting task will be performed automatically\n" +
 						"\t\tLong press: Exit teaching mode\n" +
 					"\tRun mode:\n" +
 						"\t\tLoop back and forward along recorded frame list\n" +
 						"\t\tPress TEACH Key to return to teach mode\n" +
 						"\t\tDefault relSpeed = 0.25\n" +
-						"\t\tDefault maxTorque = 10.0 Nm\n" +
-				"\nATTENTION: robot will perform move to PrePick");
+						"\t\tDefault maxTorque = 10.0 Nm\n");
 	}
 	
 	@Override public void initialize() {
@@ -74,14 +67,8 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 		gripper.attachTo(kiwa.getFlange());
 		configPadKeysGENERAL();
 		state = States.home;
-		move.setHome(homeFramePath);
-		
-		// Setting the stiffness in HandGuiding mode
-		softMode.parametrize(CartDOF.TRANSL).setStiffness(0.01).setDamping(1);		// HandGuiding
-		softMode.parametrize(CartDOF.ROT).setStiffness(0.01).setDamping(1);
-		
-		relSpeed = 0.25; //pad.askSpeed();
-		// double maxTorque = pad.askTorque();
+		move.setHome("/_PinAssembly/PrePick");
+		move.setGlobalSpeed(0.25);
 		move.setJTConds(10.0);
 	}
 
@@ -89,8 +76,8 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 		while (true) {
 			switch (state) {
 				case home:
-					padLog("Going home.");
-					move.PTPwithJTConds(homeFramePath, relSpeed);
+					move.setSoftMode();
+					move.PTPHOMEsafe();
 					checkGripper();
 					state = States.teach;
 					break;
@@ -110,7 +97,7 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 		int btnInput;
 		padLog("Start handguiding teaching mode."); 
 		mf.waitUserButton();
-		posHoldMotion = kiwa.moveAsync(posHold);
+		posHoldMotion = kiwa.moveAsync(move.getPosHold());
 		
 		teachLoop:
 		while (true) {
@@ -118,7 +105,7 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 				Frame newFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
 				btnInput = mf.checkButtonInput();			// Run the button press check
 				switch (btnInput) {
-					case 10: 							// Exit handguiding phase
+					case 10: 							// Exit hand guiding phase
 						if (frameList.size() >= 2) break teachLoop;
 						else padLog("Record at least 2 positions to start running.");
 						break;
@@ -137,6 +124,15 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 						frameList.add(newFrame, log1);
 						padLog("Place here");
 						break;
+					case 11:
+						mf.blinkRGB("RGB", 500);
+						move.setSoftMode();
+						posHoldMotion.cancel();
+						move.LINREL(0, 0, 0.01, 0.5);
+						posHoldMotion = kiwa.moveAsync(move.getPosHold());
+					default:
+						padLog("Command not valid, try again");
+						continue teachLoop;
 				}
 			}
 			waitMillis(5);
@@ -145,7 +141,7 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 		posHoldMotion.cancel();
 		move.LINREL(0, 0, 0.01, 0.5);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
-		move.PTPwithJTConds(homeFramePath, relSpeed);
+		move.PTPHOMEsafe();
 	}
 	
 	private void loopRoutine(){
@@ -158,7 +154,7 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 			if (log2) padLog("Going to Frame "+ i +".");
 			if (targetFrame.hasAdditionalParameter("PICK")) pickPinZ(targetFrame);
 			else if (targetFrame.hasAdditionalParameter("PLACE")) placePinY(targetFrame);
-			else move.PTPwithJTConds(targetFrame, relSpeed);
+			else move.PTPsafe(targetFrame, 1);
 		} 
 	}
 	
@@ -176,11 +172,11 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 	private void pickPinZ(Frame targetFrame) {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
-		move.PTPwithJTConds(preFrame, relSpeed);
+		move.PTPsafe(preFrame, 1);
 		padLog("Picking process");
-		move.LINwithJTConds(targetFrame, approachSpeed);
-		move.checkPinPick(5, 0.01);
-		move.LINwithJTConds(preFrame, approachSpeed);
+		move.LINsafe(targetFrame, approachSpeed);
+		move.checkPinPick(5, probeSpeed);
+		move.LINsafe(preFrame, approachSpeed);
 	}
 	
 	private void placePinY(Frame targetFrame) {
@@ -188,12 +184,12 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setY(preFrame.getY() + approachOffset);
 		do  {
-			move.PTPwithJTConds(preFrame, relSpeed);
+			move.PTPsafe(preFrame, 1);
 			padLog("Picking process");
-			move.LINwithJTConds(targetFrame, approachSpeed);
-			move.checkPinPlace(5, 0.01);
+			move.LINsafe(targetFrame, approachSpeed);
+			move.checkPinPlace(5, probeSpeed);
 			inserted = move.twistJ7withJTCond(45, 30, 0.15, 0.7);
-			move.LINREL(0, 0, -30, 0.01);
+			move.LINREL(0, 0, -30, approachSpeed);
 		}
 		while (!inserted);		
 	}
@@ -217,7 +213,7 @@ public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 							} else padLog("Key not available in this mode.");
 							break;
 						case 2:  						// KEY - SET SPEED
-							relSpeed = pad.askSpeed();
+							move.setGlobalSpeed(pad.askSpeed());
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();

@@ -22,13 +22,9 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
 	@Inject private HandlerPad pad = new HandlerPad(mf);
 	
-	private enum States {cancel, sleep, home, app1, app2, app3, app4, app5, app6};
-	private States state;
-	
 	@Override public void initialize() {
 		initializeCyclic(0, 500, TimeUnit.MILLISECONDS,	CycleBehavior.BestEffort);
 		configPadKeysGLOBAL();
-		state = States.sleep;
 		padLog("App switcher started, access it pressing the key");
 	}
 
