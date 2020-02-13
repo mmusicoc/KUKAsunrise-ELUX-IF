@@ -151,8 +151,12 @@ public class HandlerMov extends RoboticsAPIApplication {
 		return this.LIN(_homeFramePath, relSpeed);
 	}
 	
-	public boolean LINREL(double x, double y, double z, double relSpeed) {
-		try { tcp.move(linRel(x, y, z).setJointVelocityRel(scaleSpeed(relSpeed))); return true; }
+	public boolean LINREL(double x, double y, double z, double relSpeed, boolean absolute) {
+		try { 
+			if (absolute) kiwa.move(linRel(x, y, z).setJointVelocityRel(scaleSpeed(relSpeed))); 
+			else tcp.move(linRel(x, y, z).setJointVelocityRel(scaleSpeed(relSpeed)));
+			return true; 
+			}
 		catch(CommandInvalidException e) { padErr("Unable to perform movement"); return false; }
 	}
 	
@@ -169,74 +173,79 @@ public class HandlerMov extends RoboticsAPIApplication {
 	// Torque sensing enabled macros **************************************************************
 	
 	public void PTPHOMEsafe() {
-		this.LINREL(0, 0, -0.01, 0.5);
+		this.LINREL(0, 0, -0.01, 0.5, true);
 		pad.info("Move away from the robot. It will move automatically to home.");
-		this.LINREL(0, 0, -50, 0.5);
-		this.PTPsafe(_homeFramePath, _speed[0]);
+		this.LINREL(0, 0, -50, 0.5, true);
+		this.PTPsafe(_homeFramePath, _speed[0], true);
 	}
 	
-	public void PTPsafe(Frame targetFrame, double relSpeed){		// overloading for taught points
+	public boolean PTPsafe(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
+		boolean finished = false;
 		do {
 			mf.setRGB("G");
-			this._JTBMotion = kiwa.move(ptp(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
+			this._JTBMotion = tcp.move(ptp(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
 				mf.setRGB("RB");
-				this.LINREL(0, 0, -_releaseDist, 1);
+				this.LINREL(0, 0, -_releaseDist, 1, true);
 				log.warn("Collision detected!"); 
 				mf.waitUserButton();
 				relSpeed *= 0.5;
-				PTPsafe(targetFrame, relSpeed);
-			}
+				if (forceEnd) PTPsafe(targetFrame, relSpeed, forceEnd);
+			} else finished = true;
 		} while (_JTBreak != null);
+		return finished;
 	}
 	
-	public void PTPsafe(String targetFramePath, double relSpeed){
+	public boolean PTPsafe(String targetFramePath, double relSpeed, boolean forceEnd){
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
-		this.PTPsafe(targetFrame.copyWithRedundancy(), relSpeed);
+		return this.PTPsafe(targetFrame.copyWithRedundancy(), relSpeed, forceEnd);
 	}
 	
-	public void LINsafe(Frame targetFrame, double relSpeed){		// overloading for taught points
+	public boolean LINsafe(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
+		boolean finished = false;
 		do {
 			mf.setRGB("G");
-			this._JTBMotion = kiwa.move(lin(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
+			this._JTBMotion = tcp.move(lin(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
 				mf.setRGB("RB");
-				this.LINREL(0, 0, -_releaseDist, 1);
+				this.LINREL(0, 0, -_releaseDist, 1, true);
 				log.warn("Collision detected!"); 
 				mf.waitUserButton();
 				relSpeed *= 0.5;
-				LINsafe(targetFrame, relSpeed);
-			}
+				if (forceEnd) LINsafe(targetFrame, relSpeed, forceEnd);
+			} else finished = true;
 		} while (_JTBreak != null);
+		return finished;
 	}
 	
-	public void LINsafe(String targetFramePath, double relSpeed){
+	public boolean LINsafe(String targetFramePath, double relSpeed, boolean forceEnd){
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
-		this.LINsafe(targetFrame.copyWithRedundancy(), relSpeed);
+		return this.LINsafe(targetFrame.copyWithRedundancy(), relSpeed, forceEnd);
 	}
 	
-	public void CIRCsafe(Frame targetFrame1, Frame targetFrame2, double relSpeed){		// overloading for taught points
+	public boolean CIRCsafe(Frame targetFrame1, Frame targetFrame2, double relSpeed, boolean forceEnd){		// overloading for taught points
+		boolean finished = false;
 		do {
 			mf.setRGB("G");
-			this._JTBMotion = kiwa.move(circ(targetFrame1, targetFrame2).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
+			this._JTBMotion = tcp.move(circ(targetFrame1, targetFrame2).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(this._JTConds)); 
 			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
 			if (_JTBreak != null) {
 				mf.setRGB("RB");
-				this.LINREL(0, 0, -_releaseDist, 1);
+				this.LINREL(0, 0, -_releaseDist, 1, true);
 				log.warn("Collision detected!"); 
 				mf.waitUserButton();
 				relSpeed *= 0.5;
-				LINsafe(targetFrame2, relSpeed);			// SECURITY MEASURE, NEW CIRC CAN OVERSHOOT!!
-			}
+				if (forceEnd) LINsafe(targetFrame2, relSpeed, forceEnd);			// SECURITY MEASURE, NEW CIRC CAN OVERSHOOT!!
+			} else finished = true;
 		} while (_JTBreak != null);
+		return finished;
 	}
-	
-	public void CIRCsafe(String targetFramePath1, String targetFramePath2, double relSpeed){
+	boolean CIRCsafe(String targetFramePath1, String targetFramePath2, double relSpeed, boolean forceEnd){
 		ObjectFrame targetFrame1 = getApplicationData().getFrame(targetFramePath1);
 		ObjectFrame targetFrame2 = getApplicationData().getFrame(targetFramePath2);
-		this.CIRCsafe(targetFrame1.copyWithRedundancy(), targetFrame2.copyWithRedundancy(), relSpeed);
+		return this.CIRCsafe(targetFrame1.copyWithRedundancy(), targetFrame2.copyWithRedundancy(), relSpeed, forceEnd);
 	}
 	
 	public void waitPushGesture() {
@@ -250,17 +259,17 @@ public class HandlerMov extends RoboticsAPIApplication {
 	public void waitPushGestureZ(Frame targetFrame) {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() + 50);
-		this.LINsafe(preFrame, 0.1);
+		this.LINsafe(preFrame, 0.1, true);
 		this.waitPushGesture();
-		this.LINsafe(targetFrame, 0.1);
+		this.LINsafe(targetFrame, 0.1, true);
 	}
 	
 	public void waitPushGestureY(Frame targetFrame) {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setY(preFrame.getY() + 50);
-		this.LINsafe(preFrame, 0.1);
+		this.LINsafe(preFrame, 0.1, true);
 		this.waitPushGesture();
-		this.LINsafe(targetFrame, 0.1);
+		this.LINsafe(targetFrame, 0.1, true);
 	}
 	
 	public void checkPartZ(int probeDist, double relSpeed, double maxTorque) {

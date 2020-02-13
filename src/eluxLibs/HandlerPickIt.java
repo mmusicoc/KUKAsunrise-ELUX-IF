@@ -23,7 +23,6 @@ public class HandlerPickIt{
 	/// Pickit data ///
 	private int _setup_id = 0;
 	private int _product_id = 0;
-	private volatile boolean _obj_found = false;
 	private volatile int _obj_remaining = 0;
 	private volatile int _obj_type = 0;
 	private volatile int _pick_id = 0;
@@ -55,27 +54,14 @@ public class HandlerPickIt{
 	public boolean isRunning() { return _status != _STOPPED && _status != _ERROR; }
 	public boolean isReady() { return _status != _WAITING; }
 	public Frame getPickFrame() { return _pick_frame; }
-	public double getZrot() { return (deg(_pick_offset[4] + 180)); }
+	public double getZrot() { return (deg(-_pick_offset[4] - 180)); }
 	
 	public int getBox() {
-		int timeCounter = 0;
-		int remaining = 0;
-		if (!this.isReady()) {
-			while(!this.isReady()) {
-				waitMillis(10);
-				timeCounter += 10;
-				if (timeCounter >= _timeout) {
-					padErr("Timeout is overdue, PickIt didn't answer");
-					return -1;
-				}
-			}
-			padLog("Answer delayed " + timeCounter + "ms");
-		}
+		if (!waitPickitAnswer()) return -1;
 		if (_status == _OBJ_FOUND) {
 			this.doSendPickFrameData();
-			remaining = getRemainingObj() + 1;
-			padLog("Found " + remaining + " objects");
-			return remaining;
+			if (!waitPickitAnswer()) return -1;
+			return getRemainingObj() + 1;
 		} else if (_status == _OBJ_FOUND_NONE){
 			padLog("Pick-It was unable to find any reachable objects");
 			waitMillis(1000);
@@ -85,7 +71,22 @@ public class HandlerPickIt{
 			waitMillis(1000);
 			return -3;
 		} else return 0;
-		
+	}
+	
+	public boolean waitPickitAnswer() {
+		int timeCounter = 0;
+		if (!this.isReady()) {
+			while(!this.isReady()) {
+				waitMillis(10);
+				timeCounter += 10;
+				if (timeCounter >= _timeout) {
+					padErr("Timeout is overdue, PickIt didn't answer");
+					return false;
+				}
+			}
+			// padLog("Answer delayed " + timeCounter + "ms");
+		}
+		return true;
 	}
 	
 	// SETTERS ------------------------------------------
@@ -99,19 +100,18 @@ public class HandlerPickIt{
 
 	public synchronized void doScanForObj() {
 		// padLog("Pickit scan for objects");
-		_obj_found = false;
 		_status = _WAITING;
 		_command = _SCAN_FOR_OBJ;
 	}
 
 	public synchronized void doWaitForObj() {
-		padLog("Pickit wait for objects");
+		// padLog("Pickit wait for objects");
 		_status = _WAITING;
 		_command = _WAIT_FOR_OBJ;
 	}
 
 	public synchronized void doSendNextObj() {
-		padLog("Pickit calc next object to pick");
+		// padLog("Pickit calc next object to pick");
 		_status = _WAITING;
 		_command = _NEXT_OBJ;
 	}
@@ -192,16 +192,14 @@ public class HandlerPickIt{
 		_status = data[13];
 		// this.printData(data);
 		if (_status == _OBJ_FOUND) {
-			_obj_found = true;
 			_obj_age = (double)data[7]/_FACTOR;
 			_obj_type = data[8];
 			_obj_remaining = data[12];
 			_pick_frame.setTransformationFromParent(Transformation.ofDeg(
 	        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
 	        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR));
-			padLog(rad2deg((double)data[4]/_FACTOR));
+			//padLog(rad2deg((double)data[4]/_FACTOR));
 		} else if (_status == _OBJ_FOUND_NONE) {
-			_obj_found = false;
 		}
 		else if (_status == _GET_PICKFRAME_OK) {
 			for (int i = 0; i < 3; i++) _pick_offset[i] = (double)data[i]/_FACTOR * 1000;

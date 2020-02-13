@@ -944,9 +944,9 @@
                 <info key="LastModificationTime" type="java.lang.Long" value="1578503479722"/>
             </additionalInformation>
             <frame id="_5e53d04c-d442-4229-872f-3afa412c775e" name="PumpJig">
-                <transformation a="1.571264146182515" b="0.0" c="0.0" x="-372.13416923434255" y="661.5954316893385" z="42.400368084252875"/>
+                <transformation a="1.571264146182515" b="0.0" c="0.0" x="-372.13416923434255" y="663.0" z="42.400368084252875"/>
                 <additionalInformation>
-                    <info key="LastModificationTime" type="java.lang.Long" value="1578669172358"/>
+                    <info key="LastModificationTime" type="java.lang.Long" value="1579024117230"/>
                     <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                         <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                     </info>
@@ -1174,9 +1174,9 @@
                 </frame>
             </frame>
             <frame id="_c3cd06e4-d580-4211-ba5b-75e89a1394b4" name="Pole">
-                <transformation a="1.5704426861227694" b="0.0" c="0.0" x="-209.96917944128774" y="661.5567634629665" z="222.28887716073257"/>
+                <transformation a="1.5704426861227694" b="0.0" c="0.0" x="-209.96917944128774" y="663.0" z="222.28887716073257"/>
                 <additionalInformation>
-                    <info key="LastModificationTime" type="java.lang.Long" value="1578669201046"/>
+                    <info key="LastModificationTime" type="java.lang.Long" value="1579024110455"/>
                     <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                         <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                     </info>
@@ -1189,9 +1189,9 @@
                     </redundancy>
                 </redundancyData>
                 <frame id="_34ed7c45-6c61-45a7-97a6-f41168608353" name="V_Zoffset">
-                    <transformation a="-1.6971703660181465E-4" b="9.201744399054405E-6" c="-1.0516862859739594E-4" x="0.014573277067540857" y="-0.09027500906380226" z="61.442676475434865"/>
+                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="60.0"/>
                     <additionalInformation>
-                        <info key="LastModificationTime" type="java.lang.Long" value="1578666369808"/>
+                        <info key="LastModificationTime" type="java.lang.Long" value="1579020154457"/>
                         <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                             <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                         </info>
@@ -1200,7 +1200,7 @@
                         <redundancy transformationProviderName="KUKA_Sunrise_Cabinet_1/LBR_iiwa_14_R820_1" type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy">
                             <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$StatusParameter" value="2" valueType="java.lang.Integer"/>
                             <info type="com.kuka.roboticsAPI.deviceModel.StatusTurnRedundancy$TurnParameter" value="12" valueType="java.lang.Integer"/>
-                            <info type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy$E1Parameter" value="-4.9015499463774E-5" valueType="java.lang.Double"/>
+                            <info type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy$E1Parameter" value="0.0" valueType="java.lang.Double"/>
                         </redundancy>
                     </redundancyData>
                 </frame>
@@ -1236,9 +1236,9 @@
                         </redundancy>
                     </redundancyData>
                     <frame id="_cbd5e25f-71c4-4ef5-8189-68cfa3ae336c" name="H_Xoffset">
-                        <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="100.0"/>
+                        <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="80.0"/>
                         <additionalInformation>
-                            <info key="LastModificationTime" type="java.lang.Long" value="1578998555795"/>
+                            <info key="LastModificationTime" type="java.lang.Long" value="1579032717665"/>
                             <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                                 <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                             </info>
@@ -2039,18 +2039,6 @@
         </workpieceTemplate>
         <toolTemplate class="" defaultMotionFrameRef="/Flange" name="PickitGripper">
             <frames>
-                <frame id="_9816be01-a6ed-4c21-b66c-81fd48542b15" name="JawBack">
-                    <transformation a="0.0" b="0.0" c="0.0" x="-100.0" y="0.0" z="110.0"/>
-                    <additionalInformation>
-                        <info key="Radius" type="java.lang.Integer" value="40"/>
-                    </additionalInformation>
-                </frame>
-                <frame id="_637c64be-bb31-45e2-8e6a-151ed1a566c8" name="GripperCenter">
-                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="110.0"/>
-                    <additionalInformation>
-                        <info key="Radius" type="java.lang.Integer" value="40"/>
-                    </additionalInformation>
-                </frame>
                 <frame id="_a2e43369-88e7-4ae4-ac2e-f8427bb9cb59" name="Cylinder">
                     <transformation a="0.0" b="3.141592653589793" c="0.0" x="0.0" y="0.0" z="280.0"/>
                     <frames>
@@ -2066,22 +2054,16 @@
                             <transformation a="3.141592653589793" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
                         </frame>
                         <frame id="_140cf3ec-7b7d-44e3-8a91-c232aa21e334" name="End">
-                            <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="-20.0"/>
+                            <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="-25.0"/>
                         </frame>
                     </frames>
-                </frame>
-                <frame id="_6fb09667-a96f-4aaa-9122-dce7bdda153e" name="JawFront">
-                    <transformation a="0.0" b="0.0" c="0.0" x="100.0" y="0.0" z="110.0"/>
-                    <additionalInformation>
-                        <info key="Radius" type="java.lang.Integer" value="40"/>
-                    </additionalInformation>
                 </frame>
                 <frame id="_6d39c445-ff6a-441a-aaa2-7af6c3a897ab" name="Flange">
                     <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
                 </frame>
             </frames>
             <additionalInformation/>
-            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="-7.45" cogY="-6.3" cogZ="77.9" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="4.0"/>
+            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="7.352965310028117" cogY="11.6420821675134" cogZ="60.564586629735224" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="1.75663993663977"/>
         </toolTemplate>
         <toolTemplate class="" name="Flange4kg">
             <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="0.0" cogY="0.0" cogZ="0.0" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="4.0"/>

@@ -12,7 +12,6 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.controllerModel.Controller;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
-import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class PickItApp extends RoboticsAPIApplication {
@@ -31,14 +30,13 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Inject private HandlerPad pad = new HandlerPad(mf);
 	@Inject private HandlerPickIt pickit = new HandlerPickIt(kiwa);
 	
-	int failCounterFind = 0;
-	int failCounterPick = 0;
+	int failCounter = -1;
 	boolean rot180 = false;
 	
 	@Override public void initialize() {
 		kiwaController = (Controller) getContext().getControllers().toArray()[0];
 		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
-		move.setJTConds(10.0);
+		move.setJTConds(15.0);
 		move.setGlobalSpeed(1);
 		move.setTCP(PickitGripper, "/Cylinder");
 		move.setHome("/_PickIt/Scan");
@@ -53,105 +51,107 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Override public void run() {
 		padLog("Start picking sequence");
 		int box = 0;
+		int pick = 0;
 		scan(false);
 		while (pickit.isRunning()) {
 			box = pickit.getBox();
 			if (box > 0) {
-				failCounterFind = 0;
-				if (!pick(pickit.getPickFrame(), 200)) {
-					padLog("Error when picking piece.");
-					failCounterPick ++;
+				padLog("Found " + box + " objects, picking model " + pickit.getObjType() + ", pickPoint "+ pickit.getPickID());
+				pick = pick(pickit.getPickFrame());
+				if (pick == 0) {
+					padLog("Object found unreachable by robot, polling next one");
+					if(pickit.getRemainingObj() > 0) pickit.doSendNextObj();
+					else scan(false);
+				} else if (pick == -1) {
+					padLog("Gripper collided with unexpected object");
+					scan(false);
+				} else if (pick == -2) {
+					padLog("Object couldn't be exctracted from box");
+					scan(false);
 				} else {
+					failCounter = 0;
 					move.setTCP(PickitGripper, "/Cylinder");
 					move.PTPhome(1);
 					scan(true);
-					if ((pickit.getObjType() == 1 && pickit.getPickID() == 1)) {
-						move.PTP("/_PickIt/PumpJig/Approach_Z",1);
-						move.LIN("/_PickIt/PumpJig",0.3);
-						plc.openGripper();
-						move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
-					} else if (pickit.getObjType() == 1 && pickit.getPickID() == 2) {
-						move.PTP("/_PickIt/Pole/H_pole/H_Zoffset",1);
-						move.LIN("/_PickIt/Pole/H_pole",0.3);
-						plc.openGripper();
-						move.LIN("/_PickIt/Pole/H_pole/H_Xoffset",0.8);
-						reorientate();
-						move.LIN("/_PickIt/Pole/H_pole",0.3);
-						plc.closeGripper();
-						move.LIN("/_PickIt/Pole/H_pole/H_Zoffset",1);
-						move.LIN("/_PickIt/PumpJig/Approach_Z",1);
-						move.LIN("/_PickIt/PumpJig",0.3);
-						plc.openGripper();
-						move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
-					} else if (pickit.getObjType() == 1 && pickit.getPickID() == 3) {
-						
-					} else {
-						padLog("None");
-					}
+					place();
 					move.LINhome(1);
 				}
-				while (!pickit.isReady()) { waitMillis(100); padLog("Waiting.");}
+				// while (!pickit.isReady()) { waitMillis(100); padLog("Waiting.");}
 			} else if (box == -2){
-				failCounterFind ++;
+				failCounter ++;
 				scan(false);
 			} else if (box == -3) {
+				failCounter ++;
 				pad.info("Fill the box, Pick-It detected it empty!");
 				scan(false);
-			}
-			if (pickit.getRemainingObj() == 0) scan(false);
-			else {
-				//scan();							// If scan is mandatory after every pick and cannot be performed while robot is away from the POV
-				//pickit.doSendNextObj(); 			// If scan between single picks is not mandatory
 			}
 		}
 		pickit.terminate();
 	}
 	
 	private void scan(boolean async) {
-		if (!async || failCounterFind > 1) {
+		if (!async) failCounter ++;
+		if (!async || failCounter > 1) {
 			move.setTCP(PickitGripper, "/Cylinder");
 			move.PTPhome(1);
 		}
-		if (failCounterFind == 3) {
+		if (failCounter >= 3) {
 			vibrate();
-			failCounterFind = 0;
+			failCounter = -1;
 			scan(false);
 		}
 		if (!async) waitMillis(350);
 		pickit.doScanForObj();
 	}
 	
-	private boolean pick(Frame targetFrame, int offset) {
+	private int pick(Frame targetFrame) {
 		Frame postFrame = targetFrame.copyWithRedundancy();
-		postFrame.setZ(postFrame.getZ() + offset);
+		postFrame.setZ(300 - (postFrame.getY() - 400) * 0.6);
 		plc.openGripperAsync();
-		padLog("Picking model " + pickit.getObjType() + ", pickPoint "+ pickit.getPickID());
-		padLog("Rotation around Z is: " + pickit.getZrot());
 		move.setTCP(PickitGripper, "/Cylinder/Approach");
-		if (!move.PTP(targetFrame, 0.75)) {
-			padLog("Position not reachable");
-			move.setTCP(PickitGripper, "/Cylinder/Approach/Rot180");
-			padLog("Trying inverted");
-			if (!move.PTP(targetFrame, 0.75)) return false;
-			else rot180 = true;
-		}
-		if (!rot180) {
+		if (!move.PTP(targetFrame, 0.75)) return 0;
+		if (pickit.getObjType() == 1 && (pickit.getPickID() == 1 || pickit.getPickID() == 2)) {
 			move.setTCP(PickitGripper, "/Cylinder");
-			if (!move.LIN(targetFrame, 0.25)) return false;
-		} else {
-			move.setTCP(PickitGripper, "/Cylinder/Rot180");
-			if (!move.LIN(targetFrame, 0.25)) return false;
-		}
+		} else move.setTCP(PickitGripper, "/Cylinder/End");
+		if (!move.LINsafe(targetFrame, 0.25, false)) return -1;
 		plc.closeGripper();
-		if (!rot180) {
-			move.setTCP(PickitGripper, "/Cylinder");
-			if (!move.LIN(postFrame, 0.6)) return false;
-		} else {
-			move.setTCP(PickitGripper, "/Cylinder/Rot180");
-			postFrame.setAlphaRad(postFrame.getAlphaRad() + deg2rad(180));
-			if (!move.LIN(postFrame, 0.6)) return false;
+		if (!move.LIN(postFrame, 0.6)) {
+			plc.openGripper();
+			move.setTCP(PickitGripper, "/Cylinder/Approach");
+			move.LIN(targetFrame, 0.6);
+			return -2;
 		}
-		return true;
+		return 1;
+	}
+	
+	private void place() {
+		if ((pickit.getObjType() == 1 && pickit.getPickID() == 1)) {
+			move.PTP("/_PickIt/PumpJig/Approach_Z",1);
+			move.LIN("/_PickIt/PumpJig",0.3);
+			plc.openGripper();
+			move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
+		} else if (pickit.getObjType() == 1 && pickit.getPickID() == 2) {
+			move.PTP("/_PickIt/Pole/H_pole/H_Zoffset",1);
+			move.LIN("/_PickIt/Pole/H_pole",0.3);
+			plc.openGripper();
+			move.LIN("/_PickIt/Pole/H_pole/H_Xoffset",0.8);
+			reorientate();
+			move.LIN("/_PickIt/Pole/H_pole",0.3);
+			plc.closeGripper();
+			move.LIN("/_PickIt/Pole/H_pole/H_Zoffset",1);
+			move.LIN("/_PickIt/PumpJig/Approach_Z",1);
+			move.LIN("/_PickIt/PumpJig",0.3);
+			plc.openGripper();
+			move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
+		} else if (pickit.getObjType() == 3 && pickit.getPickID() == 1) {
+			move.setTCP(PickitGripper, "/Cylinder/End");
+			move.PTP("/_PickIt/Pole/V_Zoffset",1);
+			move.LIN("/_PickIt/Pole", 0.3);
+			plc.openGripper();
+			move.LIN("/_PickIt/Pole/V_Zoffset",0.8);
+		} else {
+			padLog("None");
+		}
 	}
 	
 	private void reorientate() {
