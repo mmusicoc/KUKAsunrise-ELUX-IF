@@ -11,9 +11,7 @@ import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class TCPtest extends RoboticsAPIApplication {
 	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
-	
-	@Inject @Named("PickItFlange") private Tool flange;
-	@Inject @Named("PickItGripper") private Tool gripper;
+	@Inject @Named("Pickit") private Tool gripper;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
@@ -23,9 +21,9 @@ public class TCPtest extends RoboticsAPIApplication {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
 		move.setJTConds(10.0);
 		move.setGlobalSpeed(1);
-		move.setTCP(flange);
+		move.setTCP(gripper, "/Flange");
 		move.PTPHOME(0.5);
-		move.setTCP(gripper);
+		move.setTCP(gripper, "/Cylinder");
 	}
 
 	@Override public void run() {

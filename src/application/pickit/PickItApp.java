@@ -10,6 +10,8 @@ import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
+
+import com.kuka.roboticsAPI.controllerModel.Controller;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.executionModel.CommandInvalidException;
 import com.kuka.roboticsAPI.geometricModel.Frame;
@@ -17,6 +19,7 @@ import com.kuka.roboticsAPI.geometricModel.Tool;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class PickItApp extends RoboticsAPIApplication {
+	private Controller kiwaController;
 	private LBR kiwa;
 	private HandlerPickIt pickit;
 	
@@ -24,8 +27,7 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Inject private Plc_inputIOGroup 	plcin;
 	@Inject private Plc_outputIOGroup 	plcout;
 	private MediaFlangeIOGroup 			mediaFlangeIOGroup;
-	@Inject	@Named("PickItFlange") 		private Tool flange;
-	@Inject	@Named("PickItGripper") 	private Tool gripper;
+	@Inject	@Named("Pickit") 	private Tool gripper;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
@@ -34,22 +36,23 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Inject private HandlerPad pad = new HandlerPad(mf);
 	
 	@Override public void initialize() {
-		move.setTCP(flange);
-		pickit = new HandlerPickIt(move);
+		kiwaController = (Controller) getContext().getControllers().toArray()[0];
+		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
+		move.setTCP(gripper, "/Flange");
+		pickit = new HandlerPickIt(kiwa, move);
 		pickit.init("192.168.2.12", 30001);
 	}
 
 	@Override public void run() {
+		int boxStatus;
 		Frame pickFrame;
 		padLog("Start picking sequence");
 		if(!move.PTP("/_PickIt/Scan", 0.25)) sleep();
 		if(!pickit.config(3, 2, "/_PickIt/Scan", 0.25, 350, 3000)) sleep();
-		padLog("Here1");
 		while (pickit.isRunning()) {
-			padLog("Here");
-			pickit.getBox(true);
+			boxStatus = pickit.getBox(true);
 			Transformation pickF = pickit.getPickFrame();
-			padLog("Received next Pick-it object ...");
+			padLog("Received next Pick-it object...");
 			sleep();
 								
 				if (pickit.hasFoundObj()) {

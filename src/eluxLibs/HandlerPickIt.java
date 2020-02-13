@@ -14,10 +14,11 @@ import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class HandlerPickIt {
+public class HandlerPickIt{
 	private LBR kiwa;
 	private HandlerMov move;
-	private _syncDataThread _syncData = new _syncDataThread();
+	private receiveDataThread pickit_data_thread = new receiveDataThread();
+	private sendDataThread robot_data_thread = new sendDataThread();
 	private String _scanFramePath;
 	private double _relSpeed;
 	private int _stabilizeTime;
@@ -27,6 +28,7 @@ public class HandlerPickIt {
 	private int _setup_id = 0;
 	private int _product_id = 0;
 	private volatile Transformation _pick_frame;
+	private volatile Frame pick_frame;
 	private volatile Transformation _approach_frame;
 	private volatile double _obj_age = 0;
 	private volatile int _obj_type = 0;
@@ -40,9 +42,9 @@ public class HandlerPickIt {
 	private byte[] _data_to_pickit = new byte[12 * 4];
 	private byte[] _data_from_pickit = new byte[16 * 4];
 
-	@Inject public HandlerPickIt(HandlerMov _move) {		// Constructor
+	@Inject public HandlerPickIt(LBR _kiwa, HandlerMov _move) {		// Constructor
+		this.kiwa = _kiwa;
 		this.move = _move;
-	//	this.kiwa = this.move.getMovObj();
 	}
 	
 	// GETTERS ------------------------------------------
@@ -61,7 +63,7 @@ public class HandlerPickIt {
 		
 		if (scan || this.getRemainingObj() == 0) {
 			move.PTP(_scanFramePath, _relSpeed);
-			waitMillis(350);
+			waitMillis(_stabilizeTime);
 			this.doScanForObj();
 		}
 		else this.doCalcNextObj();
@@ -87,8 +89,8 @@ public class HandlerPickIt {
 
 	public synchronized void doCalibration() {
 		waitMillis(50);		// default = 500ms
-		//_status = _WAITING;
-		//_command = _CALIBRATE;
+		_status = _WAITING;
+		_command = _CALIBRATE;
 		waitMillis(600);	// default = 6000ms
 	}
 
@@ -125,29 +127,28 @@ public class HandlerPickIt {
 		_timeout = timeout;
 		
 		_command = _CONFIGURE;
-	/*	while (_status != _CONFIG_OK) {
+		while (_status != _CONFIG_OK) {
 			if (_status == _CONFIG_FAILED) {
 				padErr("Pick-it did NOT configure correctly.");
 				return false;
 			}
-			waitMillis(1000);
-			padLog("Waiting for PickIt config confirmation");
-			padLog(_status);
-		}*/
-		
+			waitMillis(10);
+
+		}
 		padLog("PickIt configured with Setup ID = " + setup_id + "and Product ID = " + product_id);
 		return true;
 	}
 	
 	public boolean init(String pickit_ip, int pickit_port) {
-		padLog("Opening Ethernet communication _socket");
+		// padLog("Opening Ethernet communication _socket");
 		_obj_remaining = 0;
 		_status = _WAITING;
 		try {
 			_socket = new Socket(pickit_ip, pickit_port);
 			to_pickit = new DataOutputStream(_socket.getOutputStream());
 			from_pickit = new DataInputStream(_socket.getInputStream());
-			_syncData.start();
+			pickit_data_thread.start();
+			robot_data_thread.start();
 		} catch (Exception e) {
 			padErr(e.toString());
 			return false;
@@ -156,9 +157,11 @@ public class HandlerPickIt {
 	}
 
 	public void terminate() {
-		_syncData.terminate();
+		pickit_data_thread.terminate();
+	  	robot_data_thread.terminate();
 		try {
-			_syncData.join(200);
+			pickit_data_thread.join(200);
+			robot_data_thread.join(200);
 		} catch (Exception e) {
 			padErr("Failed to stop pickit threads");
 		}
@@ -184,13 +187,6 @@ public class HandlerPickIt {
 
 	private PickingConfig picking_config = new PickingConfig();
 	
-	/**
-	 * Function to compute the pick frame from object frame returned by Pick-it
-	 * @param picking_config
-	 * @param base_T_current_ee
-	 * @param pickit_pose
-	 * @return
-	 */
 	public Frame computePickPose(Frame base_T_current_ee, Transformation pickit_pose) {
 		Transformation base_T_object = pickit_pose;		
 		Frame pick_pose = base_T_current_ee.copy();
@@ -199,13 +195,7 @@ public class HandlerPickIt {
 			.compose(picking_config.ee_T_tool.invert())));
 		return pick_pose;
 	}
-	
-	/**
-	 * Function to compute a way-point above the pick frame
-	 * @param picking_config
-	 * @param pick_pose
-	 * @return
-	 */
+
 	public Frame computePrePickPose(Frame pick_pose) {
 		Frame pre_pick_pose = pick_pose.copy();
 		//pre_pick_pose.setZ(picking_config.pre_pick_offset);
@@ -232,12 +222,14 @@ public class HandlerPickIt {
 			padErr("The Pickit-it interface version does not match the version of this program.");
 		}
 		if (data[13] == _GET_PICKFRAME_OK) {		// Review
+			padLog("GETFRAMEOK");
 			_approach_frame = Transformation.ofDeg(
         		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
         		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR);
 			_pick_id = data[8];		// PICKFRAME
 			_pickref_id = (double)data[7]/_FACTOR;
 			_status = data[13];
+			pick_frame.setTransformationFromParent(_approach_frame);
 		} else {
 			_pick_frame = Transformation.ofDeg(
 				(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
@@ -249,11 +241,11 @@ public class HandlerPickIt {
 			obj_size[2] = (double)data[11]/_FACTOR;
 			_obj_remaining = data[12];
 			_status = data[13];
-		}
+		}	
 		return true;
 	}
 
-	private boolean sendData() throws Exception {
+	private boolean sendData() {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(_data_to_pickit);
 		Frame pose = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
 		byteBuffer.putInt((int)(_FACTOR * pose.getX() / 1000));                // from mm to m    
@@ -274,28 +266,40 @@ public class HandlerPickIt {
 		return true;
 	}
 	
-	private class _syncDataThread extends Thread {
+	private class receiveDataThread extends Thread {
 		private volatile boolean running = true;
 		public void terminate() {
-			padLog("Terminating _syncData Thread");
+			padLog("Terminating receiveDataThread");
 			running = false;
 		}
 		@Override public void run() {
-			padLog("Running _syncData Thread");
+			// padLog("Running receiveDataThread");
+			while(running) {
+				try { receiveData(); waitMillis(10); } 
+				catch (Exception e) { running = false; padLog("Interrupted receiveDataThread"); }
+			}
+			padLog("Stopped receiveDataThread");
+		}
+	}
+
+	private class sendDataThread extends Thread {
+		private volatile boolean running = true;
+		public void terminate() {
+			padLog("Terminating sendDataThread");
+	    	running = false;
+		}
+		@Override public void run() {
+			// padLog("Running sendDataThread");
 			while(running) {
 				try {
-					receiveData();
-					if (running && !sendData()) {
-						padErr("Failed to write");
+					if (!sendData()) {
+						System.err.println("Failed to write, stopping sendDataThread");
 						running = false;
 					}
-					Thread.sleep(10);
-				} catch (Exception e) {
-					padErr("Closed.");
-					running = false; 
-				}
+					waitMillis(10);
+				} catch (Exception e) { running = false; padLog("Interrupted sendDataThread"); }
 			}
-			padLog("Stopped RobotDataThread");
+			padLog("Stopped sendDataThread");
 		}
 	}
 	

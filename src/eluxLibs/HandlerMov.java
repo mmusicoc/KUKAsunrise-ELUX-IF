@@ -41,7 +41,8 @@ public class HandlerMov extends RoboticsAPIApplication {
 	@Inject private LBR kiwa;
 	@Inject private HandlerMFio mf;
 	@Inject private ITaskLogger log;
-	@Inject @Named("Flange4kg") private Tool tcp;
+	//@Inject @Named("Flange4kg") private Tool tcp;
+	private ObjectFrame tcp;
 	
 	// Private properties
 	private static final boolean log1 = false;
@@ -74,7 +75,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 
 	// GETTERS
 		
-	public Tool getTCP() { return this.tcp; }
+	public ObjectFrame getTCP() { return this.tcp; }
 	public PositionHold getPosHold() { return _posHold; }
 	public ICondition getJTConds() { return this._JTConds; }
 	public double[] scaleSpeed(double relSpeed) {
@@ -95,9 +96,10 @@ public class HandlerMov extends RoboticsAPIApplication {
 		kiwa.setHomePosition(getApplicationData().getFrame(targetFramePath));
 	}
 	
-	public void setTCP(Tool _tcp) {
-		tcp = _tcp;
-		tcp.attachTo(kiwa.getFlange());
+	public void setTCP(Tool _tool, String _tcp) {
+		_tool.attachTo(kiwa.getFlange());
+		tcp = _tool.getFrame(_tcp);
+		padLog("TCP set to " + _tool.getName() + ", frame " + tcp.getName());
 	}
 	
 	public void swapLockDir()  {

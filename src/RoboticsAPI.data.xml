@@ -1923,7 +1923,7 @@
             </frames>
             <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="-60.0" cogY="0.0" cogZ="100.0" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="0.91"/>
         </workpieceTemplate>
-        <toolTemplate class="" defaultMotionFrameRef="/Pump_cylinder_gripper" name="PickItGripper">
+        <toolTemplate class="" defaultMotionFrameRef="/Cylinder" name="Pickit">
             <frames>
                 <frame id="_9816be01-a6ed-4c21-b66c-81fd48542b15" name="JawBack">
                     <transformation a="0.0" b="0.0" c="0.0" x="-100.0" y="0.0" z="110.0"/>
@@ -1937,7 +1937,7 @@
                         <info key="Radius" type="java.lang.Integer" value="40"/>
                     </additionalInformation>
                 </frame>
-                <frame id="_a2e43369-88e7-4ae4-ac2e-f8427bb9cb59" name="Pump_cylinder_gripper">
+                <frame id="_a2e43369-88e7-4ae4-ac2e-f8427bb9cb59" name="Cylinder">
                     <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="223.0"/>
                 </frame>
                 <frame id="_6fb09667-a96f-4aaa-9122-dce7bdda153e" name="JawFront">
@@ -1949,34 +1949,7 @@
                 <frame id="_6d39c445-ff6a-441a-aaa2-7af6c3a897ab" name="Flange">
                     <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
                 </frame>
-            </frames>
-            <additionalInformation/>
-            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="-7.45" cogY="-6.3" cogZ="77.9" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="4.0"/>
-        </toolTemplate>
-        <toolTemplate class="" defaultMotionFrameRef="/Flange" name="PickItFlange">
-            <frames>
-                <frame id="_cfbc0b58-7177-46e5-9eda-579f8034dfd8" name="JawBack">
-                    <transformation a="0.0" b="0.0" c="0.0" x="-100.0" y="0.0" z="110.0"/>
-                    <additionalInformation>
-                        <info key="Radius" type="java.lang.Integer" value="40"/>
-                    </additionalInformation>
-                </frame>
-                <frame id="_148cf982-09a5-405a-82c0-4076860e548b" name="GripperCenter">
-                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="110.0"/>
-                    <additionalInformation>
-                        <info key="Radius" type="java.lang.Integer" value="40"/>
-                    </additionalInformation>
-                </frame>
-                <frame id="_76e045b2-3a10-4f71-b6d8-c7cb53c541c1" name="Pump_cylinder_gripper">
-                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="223.0"/>
-                </frame>
-                <frame id="_37b6a0ca-f77c-45cc-bc74-32be1b8a8a3f" name="JawFront">
-                    <transformation a="0.0" b="0.0" c="0.0" x="100.0" y="0.0" z="110.0"/>
-                    <additionalInformation>
-                        <info key="Radius" type="java.lang.Integer" value="40"/>
-                    </additionalInformation>
-                </frame>
-                <frame id="_d5288f49-8fe0-48e8-a1ad-514ce1eb37c5" name="Flange">
+                <frame id="_1c7192b1-6036-472e-b313-b61116cff364" name="End">
                     <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
                 </frame>
             </frames>

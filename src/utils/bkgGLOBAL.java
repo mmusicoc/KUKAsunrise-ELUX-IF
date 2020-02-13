@@ -3,7 +3,7 @@ package utils;
 import static eluxLibs.Utils.*;
 import eluxLibs.*;
 //import application.*;
-import application.Training.*;
+//import application.Training.*;
 
 import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
@@ -74,9 +74,9 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 					appHome.run();
 					break;
 				case 3:
-					Tr3_BasicMotions runApp3 = new Tr3_BasicMotions();
-					runApp3.initialize();
-					runApp3.run();
+	//				Tr3_BasicMotions runApp3 = new Tr3_BasicMotions();
+	//				runApp3.initialize();
+	//				runApp3.run();
 					break;
 				default:
 					break;
