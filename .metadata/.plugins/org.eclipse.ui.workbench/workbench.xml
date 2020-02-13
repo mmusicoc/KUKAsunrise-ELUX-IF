@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<workbench progressCount="9" version="2.0">
+<workbench progressCount="8" version="2.0">
 <workbenchAdvisor/>
-<window height="878" width="1608" x="-4" y="-4">
+<window height="878" maximized="true" width="1608" x="3491" y="-42">
 <fastViewData fastViewLocation="1024"/>
 <intro standby="false"/>
 <perspectiveBar>
@@ -20,7 +20,7 @@
 <coolItem id="group.help" itemType="typeGroupMarker"/>
 <coolItem id="org.eclipse.ui.workbench.help" itemType="typeToolBarContribution" x="-1" y="-1"/>
 </coolbarLayout>
-<page aggregateWorkingSetId="Aggregate for window 1569240620244" focus="true" label="Workspace - Programming">
+<page aggregateWorkingSetId="Aggregate for window 1569240504366" focus="true" label="Workspace - Programming">
 <editors>
 <editorArea activeWorkbook="DefaultEditorWorkbook">
 <info part="DefaultEditorWorkbook">

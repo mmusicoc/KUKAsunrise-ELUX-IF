@@ -61,6 +61,14 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 		lbr.setHomePosition(home);
 		System.out.println("initialization");
 		forceCondition = ForceCondition.createSpatialForceCondition(lbr.getFlange(),50);
+
+		plcout.setPinza_Chiudi(false);
+		ThreadUtil.milliSleep(1500);
+		plcout.setPinza_Apri(true);
+		ThreadUtil.milliSleep(1500);
+		plcout.setPinza_Chiudi(false);
+		ThreadUtil.milliSleep(1500);
+		plcout.setPinza_Apri(true);
 	}
 
 	@Override
@@ -69,81 +77,83 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 		while(true){
 			resetPlcOutput();
 			System.out.println("Waiting for a mission");
-			mWait();
-			Mission=plcin.getMission_Index();
+			//mWait();
+			//Mission=plcin.getMission_Index();
+			Mission = 1;
 			switch (Mission){
 			case 1://repositioning
 				System.out.println("reset");
 				actPos = lbr.getCurrentCartesianPosition(lbr.getFlange());
 				if(plcin.getPinza_NoPart() || plcin.getPinza_Error()||plcin.getPinza_Idle()){
 					if(actPos.getX()<-200){//withdrawl
-						mWaitPosAllow();
+						//mWaitPosAllow();
 						//movimenti
 						lbr.move(linRel(0,0,-30).setCartVelocity(50));
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Svincolo")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Approccio")).setJointVelocityRel(0.1));
 						ThreadUtil.milliSleep(50);
-						mAtPos();
+						//mAtPos();
 						ThreadUtil.milliSleep(50);
 		
-						mWaitExitAllow();
+						//mWaitExitAllow();
 						//movimenti
 						ThreadUtil.milliSleep(50);
 		
-						mExitDone();
+						//mExitDone();
 						ThreadUtil.milliSleep(50);
 		
-						mMissionEnd();
+						//mMissionEnd();
 					}
 					if(actPos.getX()>-200&&actPos.getY()>0){//joint
-						mWaitPosAllow();
+						//mWaitPosAllow();
 						//movimenti
 						
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioCarrozzeria/ApproccioPart2")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioCarrozzeria/Approcciopart1")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						ThreadUtil.milliSleep(50);
-						mAtPos();
+						//mAtPos();
 						ThreadUtil.milliSleep(50);
 		
-						mWaitExitAllow();
+						//mWaitExitAllow();
 						//movimenti
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Svincolo")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Approccio")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						lbr.move(ptpHome().setJointVelocityRel(0.1));
 						ThreadUtil.milliSleep(50);
 		
-						mExitDone();
+						//mExitDone();
 						ThreadUtil.milliSleep(50);
 		
-						mMissionEnd();
+						//mMissionEnd();
 					}
 					if(actPos.getX()>-200&&actPos.getY()<0){//deposito
-						mWaitPosAllow();
+						//mWaitPosAllow();
 						//movimenti
 						
 						lbr.move(ptp(getApplicationData().getFrame("/DepositoFinale/Approccio")).setJointVelocityRel(0.1));
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioCarrozzeria/ApproccioPart2")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioCarrozzeria/Approcciopart1")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						ThreadUtil.milliSleep(50);
-						mAtPos();
+						//mAtPos();
 						ThreadUtil.milliSleep(50);
 		
-						mWaitExitAllow();
+						//mWaitExitAllow();
 						//movimenti
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Svincolo")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Approccio")).setJointAccelerationRel(0.1).setJointVelocityRel(0.1));
 						lbr.move(ptpHome().setJointVelocityRel(0.1));
 						ThreadUtil.milliSleep(50);
 		
-						mExitDone();
+						//mExitDone();
 						ThreadUtil.milliSleep(50);
 		
-						mMissionEnd();
+						//mMissionEnd();
 					}
 				}
 				
 				lbr.move(ptpHome().setJointVelocityRel(0.1));
 				System.out.println("end of reset");
+				Mission = 11;
 			break;
 			case 11: //piece picking
 				lastMission=11;
@@ -152,8 +162,8 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 				plcout.setPinza_Apri(true);
 				lbr.move(ptp(getApplicationData().getFrame("/home")).setJointVelocityRel(0.2));
 				plcout.setPinza_Apri(false);
-				System.out.println("waiting for posAllow");
-				mWaitPosAllow();
+				//System.out.println("waiting for posAllow");
+				//mWaitPosAllow();
 				//movimenti
 				pause = lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Approccio")).setJointVelocityRel(0.2).breakWhen(forceCondition));
 				IFiredConditionInfo info = pause.getFiredBreakConditionInfo();
@@ -176,7 +186,7 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 					info = stop.getFiredBreakConditionInfo();
 				}
 				mfio.setLEDRed(false);
-				mAtPos();
+				//mAtPos();
 				
 				plcout.setPinza_Chiudi(true);
 				ThreadUtil.milliSleep(100);
@@ -188,7 +198,7 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 					plcout.setMission_Result(3);
 				}
 				plcout.setPinza_Chiudi(false);
-				mWaitExitAllow();
+				//mWaitExitAllow();
 				//movimenti
 				if(plcin.getPinza_Holding()){
 					System.out.println("piece in caliper");
@@ -207,22 +217,22 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 					}
 					mfio.setLEDRed(false);
 					lbr.moveAsync(linRel(-100,-10,-10).setCartAcceleration(250).setCartVelocity(250).setBlendingCart(15));
-					mExitDone();
-					mMissionEnd();
+					//mExitDone();
+					//mMissionEnd();
 				}
 				if(plcin.getPinza_NoPart()){
 					lbr.move(ptp(getApplicationData().getFrame("/home")).setJointVelocityRel(0.25));
-					mExitDone();
-					mMissionEnd();
+					//mExitDone();
+					//mMissionEnd();
 				}
 				
-				
+				Mission = 21;
 			break;
 			case 21://incastro sul pezzo
 				lastMission=21;
 				f1.setParent(getApplicationData().getFrame("/AggancioCarrozzeria").copy());
 				System.out.println("interlocking");
-				mWaitPosAllow();
+				//mWaitPosAllow();
 				//movimenti
 				lbr.moveAsync(ptp(getApplicationData().getFrame("/AggancioCarrozzeria/Approcciopart1")).setBlendingCart(50).setJointVelocityRel(0.2));
 				
@@ -249,20 +259,21 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 				mfio.setLEDRed(false);
 				
 				lbr.move(lin(getApplicationData().getFrame("/AggancioCarrozzeria")).setCartVelocity(100));
-				mAtPos();
+				//mAtPos();
 				ThreadUtil.milliSleep(500);
-				mWaitExitAllow();
+				//mWaitExitAllow();
 				//movimenti
 				lbr.moveAsync(lin(getApplicationData().getFrame("/AggancioCarrozzeria/ApproccioPart2")).setBlendingCart(10).setCartVelocity(250));
 				lbr.moveAsync(linRel(0,-50,0).setBlendingCart(10).setCartVelocity(250).setCartAcceleration(250));
-				mExitDone();
-				mMissionEnd();
+				//mExitDone();
+				//mMissionEnd();
+				Mission = 31;
 			break;
 			case 31://deposito finale
 				lastMission=31;
 
 				System.out.println("deposit");
-				mWaitPosAllow();
+				//mWaitPosAllow();
 				//movimenti
 				System.out.println("i m out of mWaitPosAllow");
 				pause = lbr.move(lin(getApplicationData().getFrame("/DepositoFinale/Lineare")).setCartVelocity(250).breakWhen(forceCondition));
@@ -291,13 +302,13 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 				mfio.setLEDRed(false);
 				System.out.println("going to deposit");
 				lbr.move(lin(getApplicationData().getFrame("/DepositoFinale")).setJointVelocityRel(0.25));
-				mAtPos();
+				//mAtPos();
 				plcout.setPinza_Apri(true);
 				while(plcin.getPinza_Idle()==false){
 					ThreadUtil.milliSleep(20);
 				}
 				plcout.setPinza_Apri(false);
-				mWaitExitAllow();
+				//mWaitExitAllow();
 				//movimenti
 				pause = lbr.move(ptp(getApplicationData().getFrame("/DepositoFinale/Approccio")).setJointVelocityRel(0.25).breakWhen(forceCondition));
 				info = pause.getFiredBreakConditionInfo();
@@ -338,8 +349,9 @@ public class RobotApplication_test extends RoboticsAPIApplication {
 				lbr.moveAsync(ptp(getApplicationData().getFrame("/AggancioHousing/Svincolo")).setJointVelocityRel(0.25).setBlendingCart(50));
 				lbr.move(ptp(getApplicationData().getFrame("/home")).setJointVelocityRel(0.25));
 				
-				mExitDone();
-				mMissionEnd();
+				//mExitDone();
+				//mMissionEnd();
+			Mission = 1;
 			break;
 			}//end switch
 			
