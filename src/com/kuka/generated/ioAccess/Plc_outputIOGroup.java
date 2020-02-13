@@ -13,7 +13,7 @@ import com.kuka.roboticsAPI.ioModel.OutputReservedException;
  * <i>Please, do not modify!</i>
  * <p>
  * <b>I/O group description:</b><br>
- * ./.
+ * Plc_output
  */
 @Singleton
 public class Plc_outputIOGroup extends AbstractIOGroup
@@ -37,13 +37,13 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 		addDigitalOutput("Life_BitFBK", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("App_ResetDone", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Robot_InHome", IOTypes.BOOLEAN, 1);
-		addDigitalOutput("Pinza_Apri", IOTypes.BOOLEAN, 1);
-		addDigitalOutput("Pinza_Chiudi", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_IndexFBK", IOTypes.UNSIGNED_INTEGER, 16);
 		addDigitalOutput("Mission_Run", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_AtPos", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_ExitDone", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_Result", IOTypes.UNSIGNED_INTEGER, 8);
+		addDigitalOutput("Pinza_Apri", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("Pinza_Chiudi", IOTypes.BOOLEAN, 1);
 	}
 
 	/**
@@ -366,88 +366,6 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital output '<i>Pinza_Apri</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital output
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital output 'Pinza_Apri'
-	 */
-	public boolean getPinza_Apri()
-	{
-		return getBooleanIOValue("Pinza_Apri", true);
-	}
-
-	/**
-	 * Sets the value of the <b>digital output '<i>Pinza_Apri</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital output
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @param value
-	 *            the value, which has to be written to the digital output 'Pinza_Apri'
-	 */
-	public void setPinza_Apri(java.lang.Boolean value)
-	{
-		setDigitalOutput("Pinza_Apri", value);
-	}
-
-	/**
-	 * Gets the value of the <b>digital output '<i>Pinza_Chiudi</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital output
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital output 'Pinza_Chiudi'
-	 */
-	public boolean getPinza_Chiudi()
-	{
-		return getBooleanIOValue("Pinza_Chiudi", true);
-	}
-
-	/**
-	 * Sets the value of the <b>digital output '<i>Pinza_Chiudi</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital output
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @param value
-	 *            the value, which has to be written to the digital output 'Pinza_Chiudi'
-	 */
-	public void setPinza_Chiudi(java.lang.Boolean value)
-	{
-		setDigitalOutput("Pinza_Chiudi", value);
-	}
-
-	/**
 	 * Gets the value of the <b>digital output '<i>Mission_IndexFBK</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
@@ -650,6 +568,88 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 	public void setMission_Result(java.lang.Integer value)
 	{
 		setDigitalOutput("Mission_Result", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>Pinza_Apri</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'Pinza_Apri'
+	 */
+	public boolean getPinza_Apri()
+	{
+		return getBooleanIOValue("Pinza_Apri", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>Pinza_Apri</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'Pinza_Apri'
+	 */
+	public void setPinza_Apri(java.lang.Boolean value)
+	{
+		setDigitalOutput("Pinza_Apri", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>Pinza_Chiudi</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'Pinza_Chiudi'
+	 */
+	public boolean getPinza_Chiudi()
+	{
+		return getBooleanIOValue("Pinza_Chiudi", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>Pinza_Chiudi</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'Pinza_Chiudi'
+	 */
+	public void setPinza_Chiudi(java.lang.Boolean value)
+	{
+		setDigitalOutput("Pinza_Chiudi", value);
 	}
 
 }
