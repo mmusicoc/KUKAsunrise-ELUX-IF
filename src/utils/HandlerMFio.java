@@ -10,10 +10,12 @@ package utils;
 * int ckeckButtonInput() <p>
 */
 
-import static utils.Utils.*;
+import static utils.Utils.padLog;
+import static utils.Utils.waitMillis;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 
 @Singleton

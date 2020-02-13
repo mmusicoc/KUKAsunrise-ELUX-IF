@@ -1,29 +1,27 @@
 package application.Training;
 
 import static utils.Utils.*;
-import utils.HandlerMFio;
-import utils.HandlerPLCio;
-import utils.HandlerMov;
-import utils.HandlerPad;
-import utils.FrameList;
+import utils.*;
 
-import javax.inject.Inject; 
-import javax.inject.Named;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.deviceModel.LBR;
-import com.kuka.roboticsAPI.motionModel.*;
+import com.kuka.roboticsAPI.geometricModel.CartDOF;
+import com.kuka.roboticsAPI.geometricModel.Frame;
+import com.kuka.roboticsAPI.geometricModel.Tool;
+import com.kuka.roboticsAPI.motionModel.IMotionContainer;
+import com.kuka.roboticsAPI.motionModel.PositionHold;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
-import com.kuka.roboticsAPI.geometricModel.*;
 import com.kuka.roboticsAPI.uiModel.userKeys.*;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 	// #Define parameters
 	private static final boolean log1 = true;	// Log level 1: main events
 	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
-//	private static final boolean log3 = false;	// Log level 3: basic events, redundant info
 	
 	// Standard KUKA API objects
 	@Inject private LBR 				kiwa;
@@ -60,7 +58,7 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 		padLog("Initializing...");
 		gripper.attachTo(kiwa.getFlange());
 		configPadKeysGENERAL();
-		configPadKeysCONSTRAIN();
+	//	configPadKeysCONSTRAIN();
 		state = States.state_home;
 		move.setHome(homeFramePath);
 		
@@ -76,9 +74,9 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 		stiffMode.parametrize(CartDOF.TRANSL).setStiffness(5000).setDamping(1);		// GestureControl
 		stiffMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1); 
 		
+		relSpeed = 0.25; //pad.askSpeed();
 	//	double maxTorque = pad.askTorque();
-		move.setJTConds(10.0);
-		relSpeed = 0.25; //pad.askSpeed();					
+		move.setJTConds(10.0);					
 	}
 	
 	private void progInfo() {
@@ -249,6 +247,7 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 							if (state == States.state_loop) {
 								state = States.state_home;
 								endLoopRoutine = true;
+								break;
 							} else padLog("Key not available in this mode.");
 							break;
 						case 1: 						// KEY - DELETE PREVIOUS
@@ -271,6 +270,8 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 		};
 		pad.keyBarSetup(padKeysListener, "GENERAL", "Teach", "Delete Previous", "Speed", "Torque");
 	}
+	
+	/*
 	
 	private void configPadKeysCONSTRAIN() {
 		IUserKeyListener padKeysListener = new IUserKeyListener() {
@@ -301,6 +302,7 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 	private void lockDirection() {
 		int promptAns = pad.question("Do you want to force any direction?", "X", "Y", "Z", "XY", "XZ", "YZ", "NONE");
 		softMode.parametrize(CartDOF.TRANSL).setStiffness(0.1).setDamping(1);
+		softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
 		switch (promptAns) {
 			case 0:
 				softMode.parametrize(CartDOF.Y).setStiffness(5000).setDamping(0.5);
@@ -323,6 +325,7 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 			case 6: break;
 		}
 		posHoldMotion.cancel();
+		posHold = new PositionHold(softMode, -1, null);
 		posHoldMotion = kiwa.moveAsync(posHold);
 	}
 	
@@ -338,4 +341,6 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 			default: break;
 		}
 	}
+	
+	*/
 }

@@ -1,16 +1,14 @@
 package application.Training;
 
 import static utils.Utils.*;
-import utils.HandlerMFio;
-import utils.HandlerMov;
-import utils.HandlerPad;
+import utils.*;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Tool;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 public class Tr3_CollisionDetection extends RoboticsAPIApplication {
 	// Standard KUKA API objects

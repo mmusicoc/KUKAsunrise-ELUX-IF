@@ -1,44 +1,43 @@
 package application.Training;
 
 
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.lin;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.linRel;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.positionHold;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
+
 import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import utils.FrameWrapper;
-import javax.inject.Inject; 
-import javax.inject.Named; 
 
 import com.kuka.common.ThreadUtil;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
-import static com.kuka.roboticsAPI.motionModel.HRCMotions.*;
-
-import com.kuka.roboticsAPI.conditionModel.ForceCondition;
+import com.kuka.roboticsAPI.applicationModel.tasks.UseRoboticsAPIContext;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.deviceModel.JointEnum;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
-import com.kuka.roboticsAPI.geometricModel.CartDOF; 
+import com.kuka.roboticsAPI.geometricModel.CartDOF;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 import com.kuka.roboticsAPI.geometricModel.Workpiece;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
-import com.kuka.roboticsAPI.motionModel.*;
+import com.kuka.roboticsAPI.motionModel.IMotionContainer;
+import com.kuka.roboticsAPI.motionModel.PositionHold;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
-import com.kuka.roboticsAPI.motionModel.controlModeModel.HandGuidingControlMode;
 import com.kuka.roboticsAPI.uiModel.ApplicationDialogType;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKey;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyBar;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyAlignment;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
-import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyLED;
-import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyLEDSize;
 import com.kuka.task.ITaskLogger;
-import com.sun.java.swing.plaf.nimbus.ButtonPainter;
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import com.sun.org.apache.bcel.internal.generic.Select;
 
 /**
  * Implementation of a robot application.

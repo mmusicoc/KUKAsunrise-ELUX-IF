@@ -1,9 +1,13 @@
 package utils;
 
 import javax.inject.Inject;
+
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.uiModel.ApplicationDialogType;
-import com.kuka.roboticsAPI.uiModel.userKeys.*;
+import com.kuka.roboticsAPI.uiModel.userKeys.IUserKey;
+import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyBar;
+import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
+import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyAlignment;
 
 public class HandlerPad extends RoboticsAPIApplication {
 	// Standard KUKA API objects
@@ -48,10 +52,10 @@ public class HandlerPad extends RoboticsAPIApplication {
 		IUserKey padKey2 = padKeyBar.addUserKey(1, padKeysListener, true);
 		IUserKey padKey3 = padKeyBar.addUserKey(2, padKeysListener, true);
 		IUserKey padKey4 = padKeyBar.addUserKey(3, padKeysListener, true);
-		padKey1.setText(UserKeyAlignment.TopMiddle, key0); 
-		padKey2.setText(UserKeyAlignment.TopMiddle, key1); 
-		padKey3.setText(UserKeyAlignment.TopMiddle, key2);
-		padKey4.setText(UserKeyAlignment.TopMiddle, key3);
+		padKey1.setText(UserKeyAlignment.Middle, key0); 
+		padKey2.setText(UserKeyAlignment.Middle, key1); 
+		padKey3.setText(UserKeyAlignment.Middle, key2);
+		padKey4.setText(UserKeyAlignment.Middle, key3);
 		padKeyBar.publish();
 	}
 	
@@ -121,6 +125,16 @@ public class HandlerPad extends RoboticsAPIApplication {
 		mf.setRGB("B");
 		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
 			.QUESTION, question, ans0, ans1, ans2, ans3, ans4, ans5, ans6);
+		mf.resetRGB();
+		return  promptAns;
+	}
+	
+	public int question(String question, String ans0, String ans1, String ans2, String ans3, String ans4, String ans5, String ans6, String ans7) {
+		int promptAns;
+		mf.saveRGB();
+		mf.setRGB("B");
+		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
+			.QUESTION, question, ans0, ans1, ans2, ans3, ans4, ans5, ans6, ans7);
 		mf.resetRGB();
 		return  promptAns;
 	}

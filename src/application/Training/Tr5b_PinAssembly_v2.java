@@ -1,30 +1,38 @@
 package application.Training;
 
-import static utils.Utils.*;
-import utils.HandlerMFio;
-import utils.HandlerPLCio;
-import utils.HandlerMov;
-import utils.HandlerPad;
-import utils.FrameList;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.lin;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.linRel;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
+import static utils.Utils.padLog;
+import static utils.Utils.waitMillis;
 
-import javax.inject.Inject; 
-import javax.inject.Named; 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import utils.FrameList;
+import utils.HandlerMFio;
+import utils.HandlerMov;
+import utils.HandlerPLCio;
+import utils.HandlerPad;
+
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
-import com.kuka.roboticsAPI.deviceModel.LBR;
-import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
-//import static com.kuka.roboticsAPI.motionModel.HRCMotions.*;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.deviceModel.JointEnum;
-import com.kuka.roboticsAPI.geometricModel.*;
-import com.kuka.roboticsAPI.motionModel.*;
+import com.kuka.roboticsAPI.deviceModel.LBR;
+import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
+import com.kuka.roboticsAPI.geometricModel.CartDOF;
+import com.kuka.roboticsAPI.geometricModel.Frame;
+import com.kuka.roboticsAPI.geometricModel.Tool;
+import com.kuka.roboticsAPI.geometricModel.Workpiece;
+import com.kuka.roboticsAPI.motionModel.IMotionContainer;
+import com.kuka.roboticsAPI.motionModel.PositionHold;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
-//import com.kuka.roboticsAPI.motionModel.controlModeModel.HandGuidingControlMode;
-import com.kuka.roboticsAPI.uiModel.userKeys.*;
-//import com.kuka.task.ITaskLogger;
+import com.kuka.roboticsAPI.uiModel.userKeys.IUserKey;
+import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
+import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
 public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 	// #Define parameters

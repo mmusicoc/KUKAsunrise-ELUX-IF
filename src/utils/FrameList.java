@@ -1,7 +1,9 @@
 package utils;
 
-import java.util.ArrayList;			// Check documentation at https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html#add-int-E-
-import static utils.Utils.*;
+import static utils.Utils.padLog;
+
+import java.util.ArrayList;
+
 import com.kuka.roboticsAPI.geometricModel.Frame;
 
 public class FrameList {

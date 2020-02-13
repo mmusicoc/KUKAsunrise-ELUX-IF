@@ -1032,27 +1032,5 @@
             </frames>
             <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="-60.0" cogY="0.0" cogZ="100.0" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="0.91"/>
         </workpieceTemplate>
-        <toolTemplate class="com.kuka.grippertoolbox.gripper.CustomIoGripper" defaultMotionFrameRef="/TCP" name="CustomIOgripper">
-            <frames>
-                <frame id="_5ef59b66-1985-44a1-acad-95e343c66577" name="TCP">
-                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
-                </frame>
-            </frames>
-            <additionalInformation>
-                <info key="gtb.templateId" type="java.lang.String" value="CustomIOgripper"/>
-            </additionalInformation>
-            <userInformation>
-                <info key="gtb.type" type="java.lang.String" value="pneumatic"/>
-                <info key="gtb.output.GRIP" type="java.lang.String" value="Unused"/>
-                <info key="gtb.output.RELEASE" type="java.lang.String" value="Unused"/>
-                <info key="gtb.input.GRIPPED" type="java.lang.String" value="Unused"/>
-                <info key="gtb.input.GRIPPED_ITEM" type="java.lang.String" value="Unused"/>
-                <info key="gtb.input.RELEASED" type="java.lang.String" value="Unused"/>
-                <info key="gtb.parameter.DEBOUNCE_TIME" type="java.lang.Long" value="200"/>
-                <info key="gtb.parameter.STATE_TIMEOUT" type="java.lang.Long" value="1000"/>
-                <info key="gtb.parameter.IO_TIMEOUT" type="java.lang.Long" value="1000"/>
-            </userInformation>
-            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="0.0" cogY="0.0" cogZ="0.0" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="0.0"/>
-        </toolTemplate>
     </objectTemplates>
 </RoboticsAPIData>

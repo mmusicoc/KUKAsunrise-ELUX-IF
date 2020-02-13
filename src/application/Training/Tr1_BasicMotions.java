@@ -1,14 +1,13 @@
 package application.Training;
 
 import static utils.Utils.*;
-import utils.HandlerMFio;
-import utils.HandlerMov;
-import javax.inject.Inject;
+import utils.*;
 
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
+import javax.inject.Inject;
 
 public class Tr1_BasicMotions extends RoboticsAPIApplication {
 	@Inject	private LBR 	kiwa;

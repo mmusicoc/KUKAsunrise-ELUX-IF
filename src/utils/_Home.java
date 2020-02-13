@@ -8,7 +8,7 @@ import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.uiModel.ApplicationDialogType;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 
-public class Home extends RoboticsAPIApplication {
+public class _Home extends RoboticsAPIApplication {
 	@Inject	private LBR 				kiwa;
 	@Inject private MediaFlangeIOGroup	mfio;
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
@@ -17,7 +17,7 @@ public class Home extends RoboticsAPIApplication {
 			
 	@Override
 	public void initialize() {
-		relSpeed = 0.4;
+		relSpeed = 0.5;
 		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType.QUESTION, 
 						"Where do you want to go? Collision detection is NOT enabled for this operation", 
 						"Shutoff REST", "Teach LEFT", "Teach CENTRAL", "Teach RIGHT", "VERTICAL", "HORIZONTAL");

@@ -1,9 +1,10 @@
 package utils;
 
-import static utils.Utils.*;
+import static utils.Utils.waitMillis;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 

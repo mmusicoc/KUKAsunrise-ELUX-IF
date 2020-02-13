@@ -1,7 +1,6 @@
 package utils;
 
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
-
 import com.kuka.common.ThreadUtil;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.controllerModel.Controller;
@@ -21,7 +20,7 @@ import com.kuka.roboticsAPI.motionModel.PTP;
  * The time between two measurements must be less than 15 seconds.
  */
  
-public class JointsReferencing extends RoboticsAPIApplication {
+public class _JointsReferencing extends RoboticsAPIApplication {
     private Controller kukaController;
     private LBR lbr_iiwa;
 
@@ -97,6 +96,7 @@ public class JointsReferencing extends RoboticsAPIApplication {
             
             getLogger().info("Moving to home position");
             lbr_iiwa.move(ptpHome().setJointVelocityRel(relSpeed));		// Move to home position at the end
+            getLogger().info("Finished.");
         }
     }
 

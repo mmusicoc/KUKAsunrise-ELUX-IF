@@ -14,21 +14,28 @@ package utils;
 * void checkComponentZ (int probeDist, double relSpeed) <p>
 */
 
-import static utils.Utils.*;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.circ;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.lin;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.linRel;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.positionHold;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptpHome;
+import static utils.Utils.padLog;
+import static utils.Utils.waitMillis;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
-import com.kuka.roboticsAPI.deviceModel.LBR;
-import com.kuka.roboticsAPI.deviceModel.JointEnum;
 import com.kuka.roboticsAPI.conditionModel.ICondition;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
+import com.kuka.roboticsAPI.deviceModel.JointEnum;
+import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
-import com.kuka.roboticsAPI.geometricModel.*;
+import com.kuka.roboticsAPI.geometricModel.Frame;
+import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 import com.kuka.roboticsAPI.motionModel.IMotionContainer;
-//import com.kuka.roboticsAPI.motionModel.PositionHold;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
 import com.kuka.task.ITaskLogger;
 
@@ -153,7 +160,6 @@ public class HandlerMov extends RoboticsAPIApplication {
 	public boolean ckeckHole(double tolerance, double relSpeed, double maxTorque) {
 		padLog("Testing hole insertion...");
 		mf.blinkRGB("GB", 250);
-		boolean check = false;
 		ICondition tempJTConds = this.JTConds;
 		this.setJTConds(maxTorque);
 		mf.setRGB("G");
@@ -207,6 +213,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 	}
 	
 	public void checkComponentZ(int probeDist, double relSpeed, CartesianImpedanceControlMode stiffMode){
+		Frame currentFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
 		boolean pieceFound = false;
 		log.info("Checking component presence...");
 		do {
@@ -216,12 +223,12 @@ public class HandlerMov extends RoboticsAPIApplication {
 			if (JTBreak != null) {
 				log.info("Component detected. " ); 
 				mf.blinkRGB("GB", 800);
-				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(relSpeed));
+				kiwa.move(lin(currentFrame).setJointVelocityRel(relSpeed));
 				pieceFound = true;
 			} else {
 				mf.setRGB("RB");
 				log.warn("No components detected, Reposition the workpiece correctly and push the cobot (gesture control)." );
-				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(relSpeed));
+				kiwa.move(lin(currentFrame).setJointVelocityRel(relSpeed));
 				kiwa.move(positionHold(stiffMode, -1, null).breakWhen(JTConds));
 			}
 		} while (!pieceFound);
