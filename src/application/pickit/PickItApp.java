@@ -33,6 +33,7 @@ public class PickItApp extends RoboticsAPIApplication {
 	
 	int failCounterFind = 0;
 	int failCounterPick = 0;
+	boolean rot180 = false;
 	
 	@Override public void initialize() {
 		kiwaController = (Controller) getContext().getControllers().toArray()[0];
@@ -51,9 +52,11 @@ public class PickItApp extends RoboticsAPIApplication {
 
 	@Override public void run() {
 		padLog("Start picking sequence");
+		int box = 0;
 		scan(false);
 		while (pickit.isRunning()) {
-			if (pickit.getBox() > 0) {
+			box = pickit.getBox();
+			if (box > 0) {
 				failCounterFind = 0;
 				if (!pick(pickit.getPickFrame(), 200)) {
 					padLog("Error when picking piece.");
@@ -67,33 +70,48 @@ public class PickItApp extends RoboticsAPIApplication {
 						move.LIN("/_PickIt/PumpJig",0.3);
 						plc.openGripper();
 						move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
-					} else if (pickit.getObjType() == 1 && pickit.getPickID() != 1) {
+					} else if (pickit.getObjType() == 1 && pickit.getPickID() == 2) {
 						move.PTP("/_PickIt/Pole/H_pole/H_Zoffset",1);
 						move.LIN("/_PickIt/Pole/H_pole",0.3);
 						plc.openGripper();
-						reorientate();
 						move.LIN("/_PickIt/Pole/H_pole/H_Xoffset",0.8);
-						move.LIN("/_PickIt/Pole/Transition_XZ",1);
+						reorientate();
+						move.LIN("/_PickIt/Pole/H_pole",0.3);
+						plc.closeGripper();
+						move.LIN("/_PickIt/Pole/H_pole/H_Zoffset",1);
+						move.LIN("/_PickIt/PumpJig/Approach_Z",1);
+						move.LIN("/_PickIt/PumpJig",0.3);
+						plc.openGripper();
+						move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
+					} else if (pickit.getObjType() == 1 && pickit.getPickID() == 3) {
+						
 					} else {
 						padLog("None");
 					}
 					move.LINhome(1);
 				}
 				while (!pickit.isReady()) { waitMillis(100); padLog("Waiting.");}
-			} else {
+			} else if (box == -2){
 				failCounterFind ++;
+				scan(false);
+			} else if (box == -3) {
+				pad.info("Fill the box, Pick-It detected it empty!");
+				scan(false);
 			}
 			if (pickit.getRemainingObj() == 0) scan(false);
 			else {
 				//scan();							// If scan is mandatory after every pick and cannot be performed while robot is away from the POV
-				pickit.doSendNextObj(); 			// If scan between single picks is not mandatory
+				//pickit.doSendNextObj(); 			// If scan between single picks is not mandatory
 			}
 		}
 		pickit.terminate();
 	}
 	
 	private void scan(boolean async) {
-		if (!async || failCounterFind > 1) move.PTPhome(1);
+		if (!async || failCounterFind > 1) {
+			move.setTCP(PickitGripper, "/Cylinder");
+			move.PTPhome(1);
+		}
 		if (failCounterFind == 3) {
 			vibrate();
 			failCounterFind = 0;
@@ -110,44 +128,35 @@ public class PickItApp extends RoboticsAPIApplication {
 		padLog("Picking model " + pickit.getObjType() + ", pickPoint "+ pickit.getPickID());
 		padLog("Rotation around Z is: " + pickit.getZrot());
 		move.setTCP(PickitGripper, "/Cylinder/Approach");
-		if (!move.PTP(targetFrame, 0.75)) return false;
-		move.setTCP(PickitGripper, "/Cylinder");
-		if (!move.LIN(targetFrame, 0.25)) return false;
+		if (!move.PTP(targetFrame, 0.75)) {
+			padLog("Position not reachable");
+			move.setTCP(PickitGripper, "/Cylinder/Approach/Rot180");
+			padLog("Trying inverted");
+			if (!move.PTP(targetFrame, 0.75)) return false;
+			else rot180 = true;
+		}
+		if (!rot180) {
+			move.setTCP(PickitGripper, "/Cylinder");
+			if (!move.LIN(targetFrame, 0.25)) return false;
+		} else {
+			move.setTCP(PickitGripper, "/Cylinder/Rot180");
+			if (!move.LIN(targetFrame, 0.25)) return false;
+		}
 		plc.closeGripper();
-		if (!move.LIN(postFrame, 0.6)) return false;
+		if (!rot180) {
+			move.setTCP(PickitGripper, "/Cylinder");
+			if (!move.LIN(postFrame, 0.6)) return false;
+		} else {
+			move.setTCP(PickitGripper, "/Cylinder/Rot180");
+			postFrame.setAlphaRad(postFrame.getAlphaRad() + deg2rad(180));
+			if (!move.LIN(postFrame, 0.6)) return false;
+		}
 		return true;
 	}
 	
 	private void reorientate() {
-		double remainingAngle = pickit.getZrot();
-		Frame origin = getApplicationData().getFrame("/_PickIt/Pole/H_pole/Redundant").copyWithRedundancy();
-		move.setTCP(PickitGripper, "/Cylinder");
-		move.LIN(origin, 1);
-		do {
-			if (remainingAngle >= 60) {
-				rotate(origin, 60);
-				remainingAngle -= 60;
-			} else if (remainingAngle <= -60) {
-				rotate(origin, -60);
-				remainingAngle += 60;
-			} else {
-				rotate (origin, remainingAngle);
-				remainingAngle = 0;
-			}
-		} while (remainingAngle != 0);
-		move.LIN("/_PickIt/Pole/H_pole/Redundant",0.5);
-		move.LIN("/_PickIt/Pole/H_pole",1);
-	}
-	
-	private void rotate(Frame origin, double angle) {
-		Frame targetFrame1 = origin.copyWithRedundancy();
-		Frame targetFrame2 = origin.copyWithRedundancy();
-		targetFrame1.setBetaRad(targetFrame1.getBetaRad() + deg2rad(angle / 2));
-		targetFrame2.setBetaRad(targetFrame1.getBetaRad() - deg2rad(angle / 2));
-		move.LIN(targetFrame1, 0.5);
-		plc.closeGripper();
-		move.LIN(targetFrame2, 0.5);
-		plc.openGripper();
+		pad.info("Reorientate the piece in the pole for " + pickit.getZrot() + " deg." +
+					"\n\nIn a final implementation, a servomotor could be used to rotate the required angle");
 	}
 	
 	private void vibrate() {

@@ -1221,9 +1221,9 @@
                     </redundancyData>
                 </frame>
                 <frame id="_ba3b07c2-3d90-4a0b-bebc-a0435361ee1f" name="H_pole">
-                    <transformation a="0.0" b="0.0" c="1.5707963267948966" x="0.0" y="0.0" z="-104.0"/>
+                    <transformation a="0.0" b="0.0" c="1.5707963267948966" x="0.0" y="0.0" z="-108.0"/>
                     <additionalInformation>
-                        <info key="LastModificationTime" type="java.lang.Long" value="1578996616720"/>
+                        <info key="LastModificationTime" type="java.lang.Long" value="1578998714997"/>
                         <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                             <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                         </info>
@@ -1236,9 +1236,9 @@
                         </redundancy>
                     </redundancyData>
                     <frame id="_cbd5e25f-71c4-4ef5-8189-68cfa3ae336c" name="H_Xoffset">
-                        <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="160.0"/>
+                        <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="100.0"/>
                         <additionalInformation>
-                            <info key="LastModificationTime" type="java.lang.Long" value="1578996624831"/>
+                            <info key="LastModificationTime" type="java.lang.Long" value="1578998555795"/>
                             <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                                 <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                             </info>
@@ -1254,7 +1254,7 @@
                     <frame id="_53fb71eb-3643-4f76-a012-3fae5ebfc416" name="H_Zoffset">
                         <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="75.0" z="0.0"/>
                         <additionalInformation>
-                            <info key="LastModificationTime" type="java.lang.Long" value="1578996649650"/>
+                            <info key="LastModificationTime" type="java.lang.Long" value="1578996649661"/>
                             <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="PickitGripper/Cylinder" tool="PickitGripper" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                                 <tcpTransformation a="3.141592653589793" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="223.0"/>
                             </info>
@@ -2052,10 +2052,21 @@
                     </additionalInformation>
                 </frame>
                 <frame id="_a2e43369-88e7-4ae4-ac2e-f8427bb9cb59" name="Cylinder">
-                    <transformation a="0.0" b="3.141592653589793" c="0.0" x="0.0" y="0.0" z="223.0"/>
+                    <transformation a="0.0" b="3.141592653589793" c="0.0" x="0.0" y="0.0" z="280.0"/>
                     <frames>
                         <frame id="_b7836561-091f-4421-ab09-40b09c4064be" name="Approach">
                             <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="-150.0"/>
+                            <frames>
+                                <frame id="_297690bb-853b-40e6-86f4-2ba974cc52a5" name="Rot180">
+                                    <transformation a="3.141592653589793" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+                                </frame>
+                            </frames>
+                        </frame>
+                        <frame id="_171d2d45-7e5c-46d8-8754-c4d30900aa0e" name="Rot180">
+                            <transformation a="3.141592653589793" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+                        </frame>
+                        <frame id="_140cf3ec-7b7d-44e3-8a91-c232aa21e334" name="End">
+                            <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="-20.0"/>
                         </frame>
                     </frames>
                 </frame>
@@ -2066,9 +2077,6 @@
                     </additionalInformation>
                 </frame>
                 <frame id="_6d39c445-ff6a-441a-aaa2-7af6c3a897ab" name="Flange">
-                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
-                </frame>
-                <frame id="_1c7192b1-6036-472e-b313-b61116cff364" name="End">
                     <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
                 </frame>
             </frames>

@@ -23,6 +23,7 @@ public class HandlerPickIt{
 	/// Pickit data ///
 	private int _setup_id = 0;
 	private int _product_id = 0;
+	private volatile boolean _obj_found = false;
 	private volatile int _obj_remaining = 0;
 	private volatile int _obj_type = 0;
 	private volatile int _pick_id = 0;
@@ -53,32 +54,37 @@ public class HandlerPickIt{
 	public int getRemainingObj() { return _obj_remaining; }
 	public boolean isRunning() { return _status != _STOPPED && _status != _ERROR; }
 	public boolean isReady() { return _status != _WAITING; }
-	public boolean hasFoundObj() { return _status == _OBJ_FOUND; }
 	public Frame getPickFrame() { return _pick_frame; }
 	public double getZrot() { return (deg(_pick_offset[4] + 180)); }
 	
 	public int getBox() {
 		int timeCounter = 0;
 		int remaining = 0;
-		while(!this.isReady()) {
-			waitMillis(10);
-			timeCounter += 10;
-			if (timeCounter >= _timeout) {
-				padErr("Timeout is overdue, PickIt didn't answer");
-				return -1;
+		if (!this.isReady()) {
+			while(!this.isReady()) {
+				waitMillis(10);
+				timeCounter += 10;
+				if (timeCounter >= _timeout) {
+					padErr("Timeout is overdue, PickIt didn't answer");
+					return -1;
+				}
 			}
+			padLog("Answer delayed " + timeCounter + "ms");
 		}
-		padLog("Answer took " + timeCounter + "ms");
-		if (this.hasFoundObj()) {
+		if (_status == _OBJ_FOUND) {
 			this.doSendPickFrameData();
 			remaining = getRemainingObj() + 1;
 			padLog("Found " + remaining + " objects");
 			return remaining;
-		}
-		else {
-			padLog("Pickit was unable to find any reachable objects");
-			return 0;
-		}
+		} else if (_status == _OBJ_FOUND_NONE){
+			padLog("Pick-It was unable to find any reachable objects");
+			waitMillis(1000);
+			return -2;
+		} else if (_status == _ROI_EMPTY){
+			padLog("Pick-It found the box empty");
+			waitMillis(1000);
+			return -3;
+		} else return 0;
 		
 	}
 	
@@ -93,6 +99,7 @@ public class HandlerPickIt{
 
 	public synchronized void doScanForObj() {
 		// padLog("Pickit scan for objects");
+		_obj_found = false;
 		_status = _WAITING;
 		_command = _SCAN_FOR_OBJ;
 	}
@@ -110,7 +117,7 @@ public class HandlerPickIt{
 	}
   
 	public synchronized void doSendPickFrameData() {
-	    padLog("Pickit get pick frame data");
+	    // padLog("Pickit get pick frame data");
 	    _status = _WAITING;
 	    _command = _GET_PICKFRAME;
 	}
@@ -185,13 +192,18 @@ public class HandlerPickIt{
 		_status = data[13];
 		// this.printData(data);
 		if (_status == _OBJ_FOUND) {
+			_obj_found = true;
 			_obj_age = (double)data[7]/_FACTOR;
 			_obj_type = data[8];
 			_obj_remaining = data[12];
 			_pick_frame.setTransformationFromParent(Transformation.ofDeg(
 	        		(double)data[0]/_FACTOR * 1000, (double)data[1]/_FACTOR * 1000, (double)data[2]/_FACTOR * 1000,
 	        		(double)data[3]/_FACTOR,        (double)data[4]/_FACTOR,        (double)data[5]/_FACTOR));
-		} else if (_status == _GET_PICKFRAME_OK) {
+			padLog(rad2deg((double)data[4]/_FACTOR));
+		} else if (_status == _OBJ_FOUND_NONE) {
+			_obj_found = false;
+		}
+		else if (_status == _GET_PICKFRAME_OK) {
 			for (int i = 0; i < 3; i++) _pick_offset[i] = (double)data[i]/_FACTOR * 1000;
 			for (int i = 3; i < 6; i++) _pick_offset[i] = (double)data[i]/_FACTOR;
 			_pick_offset_tr = Transformation.ofDeg(_pick_offset[0], 
@@ -303,6 +315,7 @@ public class HandlerPickIt{
 	private static final int _WAITING = 0;
 	private static final int _OBJ_FOUND = 20;
 	private static final int _OBJ_FOUND_NONE = 21;
+	private static final int _ROI_EMPTY = 23;
 	private static final int _ERROR = 30;
 	private static final int _STOPPED = 31;
 	private static final int _CONFIG_OK = 40;
