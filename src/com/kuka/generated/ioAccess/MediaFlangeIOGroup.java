@@ -12,7 +12,7 @@ import com.kuka.roboticsAPI.ioModel.IOTypes;
  * <i>Please, do not modify!</i>
  * <p>
  * <b>I/O group description:</b><br>
- * This I/O Group contains the In-/Outputs for the Multimedia Flange Touch Pneumatic.
+ * This I/O Group contains the In-/Outputs for the Media-Flange Touch.
  */
 @Singleton
 public class MediaFlangeIOGroup extends AbstractIOGroup
@@ -29,78 +29,20 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	{
 		super(controller, "MediaFlange");
 
-		addInput("PinzaChiusa", IOTypes.BOOLEAN, 1);
-		addInput("PinzaAperta", IOTypes.BOOLEAN, 1);
-		addInput("InputX3Pin13", IOTypes.BOOLEAN, 1);
 		addInput("InputX3Pin3", IOTypes.BOOLEAN, 1);
 		addInput("InputX3Pin4", IOTypes.BOOLEAN, 1);
+		addInput("InputX3Pin10", IOTypes.BOOLEAN, 1);
+		addInput("InputX3Pin13", IOTypes.BOOLEAN, 1);
+		addInput("InputX3Pin16", IOTypes.BOOLEAN, 1);
+		addInput("UserButton", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("LEDBlue", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("SwitchOffX3Voltage", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("OutputX3Pin1", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("OutputX3Pin2", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("OutputX3Pin11", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("OutputX3Pin12", IOTypes.BOOLEAN, 1);
-		addDigitalOutput("OutputX3Pin2", IOTypes.BOOLEAN, 1);
-		addDigitalOutput("LEDBlue", IOTypes.BOOLEAN, 1);
-		addInput("UserButton", IOTypes.BOOLEAN, 1);
-		addDigitalOutput("SwitchOffX3Voltage", IOTypes.BOOLEAN, 1);
-	}
-
-	/**
-	 * Gets the value of the <b>digital input '<i>PinzaChiusa</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'PinzaChiusa'
-	 */
-	public boolean getPinzaChiusa()
-	{
-		return getBooleanIOValue("PinzaChiusa", false);
-	}
-
-	/**
-	 * Gets the value of the <b>digital input '<i>PinzaAperta</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'PinzaAperta'
-	 */
-	public boolean getPinzaAperta()
-	{
-		return getBooleanIOValue("PinzaAperta", false);
-	}
-
-	/**
-	 * Gets the value of the <b>digital input '<i>InputX3Pin13</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'InputX3Pin13'
-	 */
-	public boolean getInputX3Pin13()
-	{
-		return getBooleanIOValue("InputX3Pin13", false);
+		addDigitalOutput("LEDGreen", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("LEDRed", IOTypes.BOOLEAN, 1);
 	}
 
 	/**
@@ -144,6 +86,168 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	}
 
 	/**
+	 * Gets the value of the <b>digital input '<i>InputX3Pin10</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'InputX3Pin10'
+	 */
+	public boolean getInputX3Pin10()
+	{
+		return getBooleanIOValue("InputX3Pin10", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>InputX3Pin13</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'InputX3Pin13'
+	 */
+	public boolean getInputX3Pin13()
+	{
+		return getBooleanIOValue("InputX3Pin13", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>InputX3Pin16</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'InputX3Pin16'
+	 */
+	public boolean getInputX3Pin16()
+	{
+		return getBooleanIOValue("InputX3Pin16", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>UserButton</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'UserButton'
+	 */
+	public boolean getUserButton()
+	{
+		return getBooleanIOValue("UserButton", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>LEDBlue</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'LEDBlue'
+	 */
+	public boolean getLEDBlue()
+	{
+		return getBooleanIOValue("LEDBlue", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>LEDBlue</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'LEDBlue'
+	 */
+	public void setLEDBlue(java.lang.Boolean value)
+	{
+		setDigitalOutput("LEDBlue", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>SwitchOffX3Voltage</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'SwitchOffX3Voltage'
+	 */
+	public boolean getSwitchOffX3Voltage()
+	{
+		return getBooleanIOValue("SwitchOffX3Voltage", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>SwitchOffX3Voltage</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'SwitchOffX3Voltage'
+	 */
+	public void setSwitchOffX3Voltage(java.lang.Boolean value)
+	{
+		setDigitalOutput("SwitchOffX3Voltage", value);
+	}
+
+	/**
 	 * Gets the value of the <b>digital output '<i>OutputX3Pin1</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
@@ -182,6 +286,47 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	public void setOutputX3Pin1(java.lang.Boolean value)
 	{
 		setDigitalOutput("OutputX3Pin1", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>OutputX3Pin2</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'OutputX3Pin2'
+	 */
+	public boolean getOutputX3Pin2()
+	{
+		return getBooleanIOValue("OutputX3Pin2", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>OutputX3Pin2</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'OutputX3Pin2'
+	 */
+	public void setOutputX3Pin2(java.lang.Boolean value)
+	{
+		setDigitalOutput("OutputX3Pin2", value);
 	}
 
 	/**
@@ -267,7 +412,7 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital output '<i>OutputX3Pin2</i>'</b>.<br>
+	 * Gets the value of the <b>digital output '<i>LEDGreen</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -279,56 +424,15 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital output 'OutputX3Pin2'
+	 * @return current value of the digital output 'LEDGreen'
 	 */
-	public boolean getOutputX3Pin2()
+	public boolean getLEDGreen()
 	{
-		return getBooleanIOValue("OutputX3Pin2", true);
+		return getBooleanIOValue("LEDGreen", true);
 	}
 
 	/**
-	 * Sets the value of the <b>digital output '<i>OutputX3Pin2</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital output
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @param value
-	 *            the value, which has to be written to the digital output 'OutputX3Pin2'
-	 */
-	public void setOutputX3Pin2(java.lang.Boolean value)
-	{
-		setDigitalOutput("OutputX3Pin2", value);
-	}
-
-	/**
-	 * Gets the value of the <b>digital output '<i>LEDBlue</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital output
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital output 'LEDBlue'
-	 */
-	public boolean getLEDBlue()
-	{
-		return getBooleanIOValue("LEDBlue", true);
-	}
-
-	/**
-	 * Sets the value of the <b>digital output '<i>LEDBlue</i>'</b>.<br>
+	 * Sets the value of the <b>digital output '<i>LEDGreen</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -341,35 +445,15 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	 * [false; true]
 	 *
 	 * @param value
-	 *            the value, which has to be written to the digital output 'LEDBlue'
+	 *            the value, which has to be written to the digital output 'LEDGreen'
 	 */
-	public void setLEDBlue(java.lang.Boolean value)
+	public void setLEDGreen(java.lang.Boolean value)
 	{
-		setDigitalOutput("LEDBlue", value);
+		setDigitalOutput("LEDGreen", value);
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>UserButton</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'UserButton'
-	 */
-	public boolean getUserButton()
-	{
-		return getBooleanIOValue("UserButton", false);
-	}
-
-	/**
-	 * Gets the value of the <b>digital output '<i>SwitchOffX3Voltage</i>'</b>.<br>
+	 * Gets the value of the <b>digital output '<i>LEDRed</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -381,15 +465,15 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital output 'SwitchOffX3Voltage'
+	 * @return current value of the digital output 'LEDRed'
 	 */
-	public boolean getSwitchOffX3Voltage()
+	public boolean getLEDRed()
 	{
-		return getBooleanIOValue("SwitchOffX3Voltage", true);
+		return getBooleanIOValue("LEDRed", true);
 	}
 
 	/**
-	 * Sets the value of the <b>digital output '<i>SwitchOffX3Voltage</i>'</b>.<br>
+	 * Sets the value of the <b>digital output '<i>LEDRed</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -402,11 +486,11 @@ public class MediaFlangeIOGroup extends AbstractIOGroup
 	 * [false; true]
 	 *
 	 * @param value
-	 *            the value, which has to be written to the digital output 'SwitchOffX3Voltage'
+	 *            the value, which has to be written to the digital output 'LEDRed'
 	 */
-	public void setSwitchOffX3Voltage(java.lang.Boolean value)
+	public void setLEDRed(java.lang.Boolean value)
 	{
-		setDigitalOutput("SwitchOffX3Voltage", value);
+		setDigitalOutput("LEDRed", value);
 	}
 
 }
