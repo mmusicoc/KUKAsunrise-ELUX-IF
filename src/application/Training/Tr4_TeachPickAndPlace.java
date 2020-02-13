@@ -15,16 +15,18 @@ import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 import com.kuka.roboticsAPI.deviceModel.LBR;
-import com.kuka.roboticsAPI.deviceModel.JointEnum;
-import com.kuka.roboticsAPI.conditionModel.ICondition;
-import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
 import com.kuka.roboticsAPI.motionModel.*;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
-import com.kuka.roboticsAPI.uiModel.userKeys.*;
 import com.kuka.roboticsAPI.geometricModel.*;
+import com.kuka.roboticsAPI.uiModel.userKeys.*;
 
 public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
+	// #Define parameters
+	private static final boolean log1 = true;	// Log level 1: main events
+	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
+//	private static final boolean log3 = false;	// Log level 3: basic events, redundant info
+	
 	// Standard KUKA API objects
 	@Inject private LBR 				kiwa;
 	@Inject private Plc_inputIOGroup 	plcin;
@@ -34,16 +36,16 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 	// @Inject @Named("VacuumBody") 	private Workpiece 	VacuumBody;
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerPad pad = new HandlerPad();
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
-	@Inject private HandlerPLCio plc = new HandlerPLCio(plcin, plcout);
+	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
 	@Inject private HandlerMov move = new HandlerMov(mf);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
 	private enum States {state_home, state_teach, state_loop};
 	private States state; 
-	private double defSpeed = 0.25;
+	private double relSpeed = 0.25;
 	private String homeFramePath;
 	private boolean endLoopRoutine = false;
 	private boolean workpieceGripped = false;
@@ -53,13 +55,12 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 	private CartesianImpedanceControlMode stiffMode = new CartesianImpedanceControlMode();  // for gesture control
 	private PositionHold posHold = new PositionHold(softMode, -1, null);  
 	private IMotionContainer posHoldMotion;			// Motion container for position hold
-	private IMotionContainer torqueBreakMotion;		// Motion container with torque break condition
-	private ICondition JTConds;
 
 	@Override
 	public void initialize() {
-		double maxTorque;
-		pad.log("Initializing...");
+		double maxTorque = 10.0;
+		int promptAns;
+		padLog("Initializing...");
 		Gripper.attachTo(kiwa.getFlange());
 		configPadKeysTEACH();
 		state = States.state_home;
@@ -67,22 +68,21 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 		move.setHome(homeFramePath);
 		
 		// Setting the stiffness in HandGuiding mode
-		softMode.parametrize(CartDOF.TRANSL).setStiffness(0.1).setDamping(1);		// HandGuiding
-		softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
-		softMode.parametrize(CartDOF.Z).setStiffness(0.1).setDamping(1);
+		softMode.parametrize(CartDOF.ALL).setStiffness(0.1).setDamping(1);		// HandGuiding
+		promptAns = pad.question("Lock DOF A", "YES", "NO");  
+		switch (promptAns) {
+			case 0:
+				softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
+				softMode.parametrize(CartDOF.A).setStiffness(0.1).setDamping(1);
+				break;
+			case 1: break;
+		}
 		stiffMode.parametrize(CartDOF.TRANSL).setStiffness(5000).setDamping(1);		// GestureControl
 		stiffMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1); 
-
-		// Setting joint torque break condition
-		int promptAns = pad.question("Set max External Torque ", "5 Nm", "10 Nm", "15 Nm", "20 Nm");  
-		switch (promptAns) {
-			case 0: maxTorque = 5.0; break;
-			case 1: maxTorque = 10.0; break;
-			case 2: maxTorque = 15.0; break;
-			case 3: maxTorque = 20.0; break;
-			default: maxTorque = 10.0; break;
-		}
-		move.setupJTconds(JTConds, maxTorque);
+		
+		maxTorque = pad.askTorque();
+		move.setJTConds(maxTorque);
+		relSpeed = pad.askSpeed();
 	}
 
 	@Override
@@ -90,101 +90,88 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 		while (true) {
 			switch (state) {
 				case state_home:
-					mf.setRGB("G");
-					plc.askOpenAsync();
-					pad.log("Going home.");
-					movePTPwithJTConds(homeFramePath);
+					plc.askOpen();
+					padLog("Going home.");
+					move.PTPwithJTConds(homeFramePath, relSpeed);
 					state = States.state_teach;
 					break;
 				case state_teach:
 					frameList.free();
-					handGuidingPhase(); 
+					teachRoutine(); 
 					state = States.state_loop;
 					break;
 				case state_loop:
 					endLoopRoutine = false;
-					loopRoutine(false);
-					break;
-				default:
-					pad.log("Default case.");
-					state = States.state_home;
+					loopRoutine();
 					break;
 			}
 		}
 	}
 	
-	private void handGuidingPhase(){
+	private void teachRoutine(){			// HANDGUIDING PHASE
 		int btnInput;
-		mf.setRGB("B");
 		mf.waitUserButton();
-		mf.blinkRGB("G", 500);
-		pad.log("Start hand guiding."); 
+		padLog("Start hand guiding."); 
 		posHoldMotion = kiwa.moveAsync(posHold);
 		
 		teachLoop:
 		while (true) {
 			if (mf.getUserButton()) {
 				Frame newFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-				btnInput = mf.checkBtnInput();				// Run the button press check
+				btnInput = mf.checkButtonInput();		// Run the button press check
 				switch (btnInput) {
 					case 10: 							// Exit handguiding phase
-						if (frameList.size() > 1) {
-							pad.log("Exiting handguiding teaching mode...");
-							posHoldMotion.cancel();
-							mf.setRGB("G");
-							movePTPwithJTConds(homeFramePath);
-							break teachLoop;
-						}else {
-						pad.log("Record at least 2 positions to start running.");
-						waitMillis(200);
-						}
+						if (frameList.size() > 2) break teachLoop;
+						else padLog("Record at least 2 positions to start running.");
 						break;
 					case 01: 					// Record current position
-						frameList.add(newFrame, true);
+						frameList.add(newFrame, log1);
 						break;
 					case 02:					// Record current position & Close Gripper
 						newCloseFrame(newFrame);
-						frameList.add(newFrame, true);
+						frameList.add(newFrame, log1);
 						break;
 					case 03:					// Record current position & Open Gripper
 						newOpenFrame(newFrame);
-						frameList.add(newFrame, true);
+						frameList.add(newFrame, log1);
 						break;
 					default:
-						pad.log("Command not valid, try again");
+						padLog("Command not valid, try again");
 						continue teachLoop;
 				}
 			}
 		} 
+		padLog("Exiting handguiding teaching mode...");
+		posHoldMotion.cancel();
+		move.PTPwithJTConds(homeFramePath, relSpeed);
 	}
 	
-	private void loopRoutine(boolean log){
-		mf.setRGB("G");
-		pad.log("Loop backwards.");
-		for (int j = frameList.size()-1; j >= 0; j--) { 		// loop for going the opposite direction
+	private void loopRoutine(){
+		padLog("Loop backwards.");
+		for (int i = frameList.size()-1; i >= 0; i--) { 		// loop for going the opposite direction
 			if (endLoopRoutine) {
 				endLoopRoutine = false;
 				return;
 			}
-			if (log) pad.log("Going to Frame "+ j +".");
-			movePTPwithJTConds(frameList.get(j));
-			if (frameList.get(j).hasAdditionalParameter("Close Gripper")) {	// going the opposite direction so opposite command
+			if (log2) padLog("Going to Frame "+ i +".");
+			move.PTPwithJTConds(frameList.get(i), relSpeed);
+			if (frameList.get(i).hasAdditionalParameter("Close Gripper")) {	// going the opposite direction so opposite command
 				openGripperCheck(false);
 			}
-			if (frameList.get(j).hasAdditionalParameter("Open Gripper")) { // going the opposite direction so opposite command
+			if (frameList.get(i).hasAdditionalParameter("Open Gripper")) { // going the opposite direction so opposite command
 				checkComponent(25);
 				closeGripperCheck(false);
 			}
 		}
 		
-		pad.log("Loop forward");
+		padLog("Loop forward");
 		for (int i = 0; i < frameList.size(); i++) {
 			if (endLoopRoutine) {
 				endLoopRoutine = false;
 				return;
 			}
-			if (log) pad.log("Going to Frame "+ i +".");
-			movePTPwithJTConds(frameList.get(i));
+			if (log2) padLog("Going to Frame "+ i +".");
+			move.PTPwithJTConds(frameList.get(i), relSpeed);
 			if (frameList.get(i).hasAdditionalParameter("Open Gripper")) {
 				openGripperCheck(false);
 			}
@@ -193,34 +180,6 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 				closeGripperCheck(false);
 			}
 		} 
-	}
-	
-	private void closeGripperCheck(boolean isPosHold) {
-		plc.closeGripperAsync();
-		while (!plcin.getPinza_NoPart() & !plcin.getPinza_Holding()) {
-			waitMillis(50);
-		}
-		if (plcin.getPinza_Holding()){
-			pad.log("Workpiece gripped");
-			workpieceGripped = true;
-			if (isPosHold) posHoldMotion.cancel();
-		//	VacuumBody.attachTo(Gripper.getDefaultMotionFrame()); 
-			if (isPosHold) posHoldMotion = kiwa.moveAsync(posHold);
-		} else {
-			pad.log("Workpiece NOT gripped");
-		}
-	}
-	
-	private void openGripperCheck(boolean isPosHold) {
-		plc.openGripperAsync();
-		if (!isPosHold) waitMillis(2000);
-		if (workpieceGripped) {
-			workpieceGripped = false;
-			if (isPosHold) posHoldMotion.cancel();
-			pad.log("Workpiece released");
-		//	VacuumBody.detach(); 
-			if (isPosHold) posHoldMotion = kiwa.moveAsync(posHold);
-		}
 	}
 	
 	private void newCloseFrame(Frame newFrame) {
@@ -235,102 +194,102 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 		openGripperCheck(true);
 	}
 	
+	private void closeGripperCheck(boolean isPosHold) {
+		plc.closeGripperAsync();
+		while (!plcin.getPinza_NoPart() & !plcin.getPinza_Holding()) {
+			waitMillis(50);
+		}
+		if (plcin.getPinza_Holding()){
+			padLog("Workpiece gripped");
+			workpieceGripped = true;
+			if (isPosHold) posHoldMotion.cancel();
+		//	VacuumBody.attachTo(Gripper.getDefaultMotionFrame()); 
+			if (isPosHold) posHoldMotion = kiwa.moveAsync(posHold);
+		} else {
+			padLog("Workpiece NOT gripped");
+		}
+	}
+	
+	private void openGripperCheck(boolean isPosHold) {
+		plc.openGripperAsync();
+		if (!isPosHold) waitMillis(2000);
+		if (workpieceGripped) {
+			workpieceGripped = false;
+			if (isPosHold) posHoldMotion.cancel();
+			padLog("Workpiece released");
+		//	VacuumBody.detach(); 
+			if (isPosHold) posHoldMotion = kiwa.moveAsync(posHold);
+		}
+	}
+	
+	private void checkComponent(int probeDist){
+		boolean pieceFound = false;
+		IMotionContainer torqueBreakMotion;		// Motion container with torque break condition
+		IFiredConditionInfo JTBreak;
+		padLog("Checking component...");
+		do {
+			mf.setRGB("G");
+			torqueBreakMotion = kiwa.move(linRel(0, 0, probeDist).setJointVelocityRel(0.01).breakWhen(move.getJTConds())); 
+			JTBreak = torqueBreakMotion.getFiredBreakConditionInfo();
+			if (JTBreak != null) {
+				System.out.println("Component detected. " ); 
+				mf.blinkRGB("GB", 800);
+				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(relSpeed));
+				pieceFound = true;
+			} else {
+				mf.setRGB("RB");
+				System.out.println("No components detected, Reposition the workpiece correctly and push the cobot (gesture control)." );
+				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(relSpeed));
+				kiwa.move(positionHold(stiffMode, -1, null).breakWhen(move.getJTConds()));
+			}
+		} while (!pieceFound);
+		waitMillis(250);
+	}
+	
 	private void configPadKeysTEACH() { 					// TEACH buttons						
 		IUserKeyListener padKeysListener = new IUserKeyListener() {
 			boolean padKeyPressed = false;
 			@Override
 			public void onKeyEvent(IUserKey key, UserKeyEvent event) {
-				if (state == States.state_teach) {
-					if (!padKeyPressed) {
-						padKeyPressed = true;
-						Frame newFrame;
-						switch (key.getSlot()) {
-							case 0: 						// KEY - DELETE PREVIOUS
+				if (!padKeyPressed) {
+					padKeyPressed = true;
+					Frame newFrame;
+					switch (key.getSlot()) {
+						case 0:  						// KEY - TEACH MODE
+							if (state == States.state_loop) {
+								state = States.state_home;
+								endLoopRoutine = true;
+								break;
+							} else padLog("Key not available in this mode.");
+						case 1: 						// KEY - DELETE PREVIOUS
+							if (state == States.state_teach) {
 								if (frameList.getLast().hasAdditionalParameter("Close Gripper")) plc.openGripper();	
 								else if (frameList.getLast().hasAdditionalParameter("Open Gripper")) plc.closeGripper();	
 								frameList.removeLast();
 								break;
-							case 1:  						// KEY - TEACH MODE			 
-								state = States.state_home;
-								endLoopRoutine = true;
-								break;
-							case 2:							// KEY - OPEN GRIPPER 
+							} else padLog("Key not available in this mode.");
+						case 2:							// KEY - OPEN GRIPPER 
+							if (state == States.state_teach) {
 								newFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
 								newOpenFrame(newFrame);
 								frameList.add(newFrame, true);
 								break;
-							case 3:  						//KEY - CLOSE GRIPPER
+							} else padLog("Key not available in this mode.");
+						case 3:  						//KEY - CLOSE GRIPPER
+							if (state == States.state_teach) {
 								newFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
 								newCloseFrame(newFrame);
 								frameList.add(newFrame, true);
-							default:
 								break;
-						}
-					} else {
-						padKeyPressed = false;
+							} else padLog("Key not available in this mode.");
+						default:
+							break;
 					}
+				} else {
+					padKeyPressed = false;
 				}
 			}
 		};
-		pad.keyBarSetup(padKeysListener, "TEACH", "Delete Previous", "TEACH", "Open Gripper", "Close Gripper");
-	}
-	
-	private void setupJTconds (double maxTorque){
-		JointTorqueCondition JTCond[] = new JointTorqueCondition[8];
-		JTCond[1] = new JointTorqueCondition(JointEnum.J1, -maxTorque, maxTorque);	
-		JTCond[2] = new JointTorqueCondition(JointEnum.J2, -maxTorque, maxTorque);
-		JTCond[3] = new JointTorqueCondition(JointEnum.J3, -maxTorque, maxTorque);	
-		JTCond[4] = new JointTorqueCondition(JointEnum.J4, -maxTorque, maxTorque);
-		JTCond[5] = new JointTorqueCondition(JointEnum.J5, -maxTorque, maxTorque);	
-		JTCond[6] = new JointTorqueCondition(JointEnum.J6, -maxTorque, maxTorque);
-		JTCond[7] = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
-		JTConds = JTCond[1].or(JTCond[2]).or(JTCond[3]).or(JTCond[4]).or(JTCond[5]).or(JTCond[6]).or(JTCond[7]);
-		pad.log("Max Axis Torque set to " + maxTorque + " Nm.");
-	}
-
-	private void movePTPwithJTConds (Frame nextFrame){		// overloading for taught points
-		IFiredConditionInfo JTBreak;
-		do {
-			torqueBreakMotion = kiwa.move(ptp(nextFrame).setJointVelocityRel(defSpeed).breakWhen(JTConds)); 
-			JTBreak = torqueBreakMotion.getFiredBreakConditionInfo();
-			if (JTBreak != null) {
-				pad.log("Collision detected!"); 
-				mf.saveRGB();
-				mf.setRGB("R");
-				mf.waitUserButton();
-				posHoldMotion = kiwa.moveAsync(posHold);	// Enable unpinching
-				mf.waitUserButton();
-				posHoldMotion.cancel();
-				movePTPwithJTConds(nextFrame);
-				mf.resetRGB();
-			}
-		} while (JTBreak != null);
-	}
-	
-	private void movePTPwithJTConds (String framePath){
-		ObjectFrame nextFrame = getApplicationData().getFrame(framePath);
-		movePTPwithJTConds(nextFrame.copyWithRedundancy());
-	}
-	
-	private void checkComponent(int probeDist){
-		boolean pieceFound = false;
-		IFiredConditionInfo JTBreak;
-		pad.log("Checking component...");
-		do {
-			torqueBreakMotion = kiwa.move(linRel(0, 0, probeDist).setJointVelocityRel(0.01).breakWhen(JTConds)); 
-			JTBreak = torqueBreakMotion.getFiredBreakConditionInfo();
-			if (JTBreak != null) {
-				System.out.println("Component detected. " ); 
-				mf.blinkRGB("GB", 800);
-				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(defSpeed));
-				pieceFound = true;
-			} else {
-				mf.setRGB("RB");
-				System.out.println("No components detected, Reposition the workpiece correctly and push the cobot (gesture control)." );
-				kiwa.move(linRel(0, 0, -probeDist).setJointVelocityRel(defSpeed));
-				kiwa.move(positionHold(stiffMode, -1, null).breakWhen(JTConds));
-			}
-		} while (!pieceFound);
-		waitMillis(250);
+		pad.keyBarSetup(padKeysListener, "TEACH", "TEACH", "Delete Previous", "Open Gripper", "Close Gripper");
 	}
 }

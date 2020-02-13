@@ -85,7 +85,7 @@ public class Tr3_CollisionDetection extends RoboticsAPIApplication {
 		IFiredConditionInfo breakInfo = moveCmdContainer.getFiredBreakConditionInfo();
 		while (breakInfo != null) {
 			setRGB("R");
-			logPad("Collision detected." );
+			padLog("Collision detected." );
 			waitUserButton();
 			setRGB("B");
 			moveCmdContainer = kiwa.move(ptp(destinationFrame)
@@ -100,7 +100,7 @@ public class Tr3_CollisionDetection extends RoboticsAPIApplication {
 	***********************************************/
 	
 	public void waitUserButton() {
-		logPad("Press USER GREEN BUTTON to continue");
+		padLog("Press USER GREEN BUTTON to continue");
 		while (true) {
 			if (mfio.getUserButton()) break;
 			waitMillis(50);
@@ -115,7 +115,7 @@ public class Tr3_CollisionDetection extends RoboticsAPIApplication {
 	}
 
 	public void setRGB(String color, boolean log) {
-		if (log) logPad("MediaFlange LED ring to " + color);
+		if (log) padLog("MediaFlange LED ring to " + color);
 		if (color.equalsIgnoreCase("R")) setRGB(true,false,false);
 		else if (color.equalsIgnoreCase("G")) setRGB(false,true,false);
 		else if (color.equalsIgnoreCase("B")) setRGB(false,false,true);

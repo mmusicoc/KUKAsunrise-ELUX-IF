@@ -19,6 +19,7 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 import static com.kuka.roboticsAPI.motionModel.HRCMotions.*;
 import com.kuka.roboticsAPI.conditionModel.ForceCondition;
+import com.kuka.roboticsAPI.conditionModel.ICondition;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.deviceModel.JointEnum;
 import com.kuka.roboticsAPI.deviceModel.LBR;
@@ -45,6 +46,11 @@ import com.sun.org.apache.bcel.internal.generic.NEW;
 import com.sun.org.apache.bcel.internal.generic.Select;
 
 public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
+	// #Define parameters
+	private static final boolean log1 = true;	// Log level 1: main events
+	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
+	private static final boolean log3 = false;	// Log level 3: basic events, redundant info
+	
 	// Standard KUKA API objects
 	@Inject private LBR 				kiwa;
 	@Inject private Plc_inputIOGroup 	plcin;
@@ -55,16 +61,16 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 	// @Inject	private ITaskLogger 		logger;
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerPad pad = new HandlerPad();
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
-	@Inject private HandlerPLCio plc = new HandlerPLCio(plcin, plcout);
-	@Inject private HandlerMov move = new HandlerMov(mfio);
+	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
+	@Inject private HandlerMov move = new HandlerMov(mf);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
 	private enum States {state_home, state_teach, state_loop};
 	private States state;
-	private double defSpeed = 0.25;
+	private double relSpeed = 0.25;
 	private String homeFramePath;
 	
 	// Motion related KUKA API objects
@@ -72,7 +78,6 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 	private CartesianImpedanceControlMode stiffMode = new CartesianImpedanceControlMode();  // for gesture control
 	private PositionHold posHold = new PositionHold(softMode, -1, null);  
 	private IMotionContainer posHoldMotion;			// Motion container for position hold
-	private IMotionContainer torqueBreakMotion;		// Motion container with torque break condition
 	private ICondition JTConds;
 	
 	
@@ -82,19 +87,19 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 	private int promptAns;
 	private double maxTorque = 10.0;
 	private Frame nextFrame;
-	private FrameWrapper fwo = new FrameWrapper();
 	private CartesianImpedanceControlMode ctrMode = new CartesianImpedanceControlMode();  	// for stiffless handguiding
 	private CartesianImpedanceControlMode ctrModeStiff = new CartesianImpedanceControlMode();  // for gesture control
 	private IMotionContainer positionHoldContainer, moveCmdContainer;		//positionHoldContainer- for stiffless posHold;  moveCmdContainer - for torque break condition
 	private JointTorqueCondition torqueBreakCondition1, torqueBreakCondition2, torqueBreakCondition3, torqueBreakCondition4, torqueBreakCondition5, torqueBreakCondition6, torqueBreakCondition7 ;					// for torque break condition
 	private IFiredConditionInfo info;
+	private IMotionContainer torqueBreakMotion;		// Motion container with torque break condition
+
 	
 	@Override
 	public void initialize() {
 		double maxTorque;
-		pad.log("Initializing...");
+		padLog("Initializing...");
 		Gripper.attachTo(kiwa.getFlange());
-		configPadKeysTEACH();
 		configPadKeysTORQUE();
 		state = States.state_home;
 		homeFramePath = "/PinAssem";
@@ -102,382 +107,134 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 		
 		// Setting the stiffness in HandGuiding mode
 		softMode.parametrize(CartDOF.TRANSL).setStiffness(0.1).setDamping(1);		// HandGuiding
-		softMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1);
-		softMode.parametrize(CartDOF.Z).setStiffness(0.1).setDamping(1);
+		softMode.parametrize(CartDOF.ROT).setStiffness(0.1).setDamping(1);
 		stiffMode.parametrize(CartDOF.TRANSL).setStiffness(5000).setDamping(1);		// GestureControl
 		stiffMode.parametrize(CartDOF.ROT).setStiffness(300).setDamping(1); 
 		
-		// Setting joint torque break condition
-		int promptAns = pad.question("Set max External Torque ", "5 Nm", "10 Nm", "15 Nm", "20 Nm");  
-		switch (promptAns) {
-			case 0: maxTorque = 5.0; break;
-			case 1: maxTorque = 10.0; break;
-			case 2: maxTorque = 15.0; break;
-			case 3: maxTorque = 20.0; break;
-			default: maxTorque = 10.0; break;
-		}
-	//	move.setupJTconds(JTConds, maxTorque);
-
-		torqueBreakCondition1 = new JointTorqueCondition(JointEnum.J1, -maxTorque, maxTorque);	
-		torqueBreakCondition2 = new JointTorqueCondition(JointEnum.J2, -maxTorque, maxTorque);
-		torqueBreakCondition3 = new JointTorqueCondition(JointEnum.J3, -maxTorque, maxTorque);	
-		torqueBreakCondition4 = new JointTorqueCondition(JointEnum.J4, -maxTorque, maxTorque);
-		torqueBreakCondition5 = new JointTorqueCondition(JointEnum.J5, -maxTorque, maxTorque);	
-		torqueBreakCondition6 = new JointTorqueCondition(JointEnum.J6, -maxTorque, maxTorque);
-		torqueBreakCondition7 = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
-			
-		
-		enableTEACHbuttons(); 
-		enableTORQUEbuttons();
-		fwo.Free();
-		Gripper.attachTo(kiwa.getFlange()); 	
-		
-		setRGB(false, true, false);		 
+		maxTorque = pad.askTorque();
+		move.setJTConds(maxTorque);
+		relSpeed = pad.askSpeed(); 
 	}
 
 	@Override
 	public void run() {
-		// your application execution starts here
 		while (true) {
 			switch (state) {
-			case state_home:
-				System.out.println("Going home.");  
-				movePtpWithTorqueCondition(homeFramePath);
-				
-				//attach the tool if not already done
-				setRGB(false, false, true);
-				promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType.QUESTION, "Is the tool attached?", "Yes", "No");
-				setRGB(false, true, false);
-				System.out.println("Prompt ans : "+promptAns);
-				if (promptAns==0){
-					isAttachedTool = true;
-				}else{
-					isAttachedTool = false;
-				}
-				if (isAttachedTool == false) {
-					isAttachedTool = true;
-					plcout.setPinza_Chiudi(false);
-					plcout.setPinza_Apri(true);
-					ThreadUtil.milliSleep(1000);
-
-					setRGB(false, false, true);
-					System.out.println("Insert the tool.");
-					kiwa.move(positionHold(ctrModeStiff, -1, TimeUnit.SECONDS).breakWhen(torqueBreakCondition1).breakWhen(torqueBreakCondition2).breakWhen(torqueBreakCondition3).breakWhen(torqueBreakCondition4).breakWhen(torqueBreakCondition5).breakWhen(torqueBreakCondition6).breakWhen(torqueBreakCondition7));
-					plcout.setPinza_Apri(false);
-					plcout.setPinza_Chiudi(true);
-					ThreadUtil.milliSleep(1000);
-					setRGB(false, true, false);
-				}
-				
-				state = States.state_teach;
-				break;
-
-			case state_teach:
-				System.out.println("In teaching mode."); 
-				movePtpWithTorqueCondition(homeFramePath); 
-				fwo.Free();
-				myHandGuiding(); 
-				System.out.println("Exiting teach."); 
-				state = States.state_run;
-
-				break;
-
-
-			case state_loop:
-				System.out.println("Running."); 
-				setRGB(false, true, false); 
-				ThreadUtil.milliSleep(50);
-				
-				for (int i = 0; i < fwo.GetCounter(); i++) { 							// last saved frame is  Counter-1
-					
-					if (fwo.GetFrame(i).hasAdditionalParameter("pick Pin")) {
-						pickPin(fwo.GetFrame(i)); 	 										// go to pick the pin
-						while (true) {
-							if (checkInsertion() == false){									// check if pin is there
-								setRGB(true, false, false); 
-								moveLinRelWithCollisionDetection(0,0,50);								// go back after failed insertion check 
-								ThreadUtil.milliSleep(500); 
-								while(!mfio.getUserButton()){
-									ThreadUtil.milliSleep(20);
-								} 
-								setRGB(true, false, false); 
-								reducedSpeed = true; 					// set to false after 1 run
-								pickPin(fwo.GetFrame(i));  
-							}else { 
-								moveLinRelWithCollisionDetection(0,0,50);
-								break;
-							}
-						}  
-					} else if (fwo.GetFrame(i).hasAdditionalParameter("insert Pin")) {
-						insertPin(fwo.GetFrame(i));				
-						while (true) {
-							if (checkInsertion() == false){									// check if pin is inserted
-								setRGB(true, false, false); 
-								moveLinRelWithCollisionDetection(0,50,0);								// go back after failed insertion check 
-								ThreadUtil.milliSleep(500); 
-								while(!mfio.getUserButton()){
-									ThreadUtil.milliSleep(20);
-								} 
-								setRGB(true, false, false); 
-								reducedSpeed = true; 					// set to false after 1 run
-								insertPin(fwo.GetFrame(i)); 
-							}else {
-								twistPin();
-								ThreadUtil.milliSleep(500);
-								moveLinRelWithCollisionDetection(0,50,0);
-								
-								break;
-							}
-						}
-						
-					}else { 
-						System.out.println("Going to Frame "+ i +".");
-						movePtpWithTorqueCondition(fwo.GetFrame(i));
-					}  
-						 
-				} 
-				break;
-				
-			case state_pause:
-				ThreadUtil.milliSleep(50);
-				break;
-
-			default:
-				System.out.println("Default case.");
-				state = States.state_home;
-				break;
+				case state_home:
+					padLog("Going home.");
+					move.PTPwithJTConds(homeFramePath, relSpeed);
+					plc.askClose(true);
+					state = States.state_teach;
+					break;
+				case state_teach:
+					frameList.free();
+					teachRoutine(); 
+					state = States.state_loop;
+					break;
+				case state_loop:
+					loopRoutine();
+					break;
 			}
 		}
 	}
 	
-	private void pickPin(Frame targetFrame) { 
-		System.out.println("Picking up a pin.");   
-		Frame preTargetFrame = targetFrame.copy();
-		preTargetFrame.setZ(preTargetFrame.getZ()+40);			// 40 mm above
-		movePtpWithTorqueCondition (preTargetFrame);
+	private void teachRoutine(){			// HANDGUIDING PHASE
+		int btnInput;
+		mf.waitUserButton();
+		padLog("Start hand guiding."); 
+		posHoldMotion = kiwa.moveAsync(posHold);
 		
-		moveLinRelWithCollisionDetection(0,0,-40); 								// 45 mm downwards
-		
-	}
-	
-	private void insertPin(Frame targetFrame) { 
-		System.out.println("Inserting pin.");   
-		Frame preTargetFrame = targetFrame.copy();
-		preTargetFrame.setY(preTargetFrame.getY()+40);			// 40 mm infront
-		movePtpWithTorqueCondition (preTargetFrame);
-		
-		moveLinRelWithCollisionDetection(0,-40,0); 								// 40 mm towards
-		
-	}
-
-	private void movePtpWithTorqueCondition (Frame nextFrame){		// overloading for taught points
-		double prevSpeed = defSpeed;
-		if (reducedSpeed) {
-			defSpeed = 0.05;
-			reducedSpeed = false;
-		}
-		moveCmdContainer = kiwa.move(ptp(nextFrame).setJointVelocityRel(defSpeed).breakWhen(torqueBreakCondition1).breakWhen(torqueBreakCondition2).breakWhen(torqueBreakCondition3).breakWhen(torqueBreakCondition4).breakWhen(torqueBreakCondition5).breakWhen(torqueBreakCondition6).breakWhen(torqueBreakCondition7)); 
-		info = moveCmdContainer.getFiredBreakConditionInfo();
-		while (info != null) {
-			System.out.println("Collision detected . " ); 
-			setRGB(true, false, false);
-			while(!mfio.getUserButton()){
-				ThreadUtil.milliSleep(20);
-			} 
-			ThreadUtil.milliSleep(500);			// This is necessary, OW. the next breakConditions are again triggered
-			setRGB(false, true, false);
-			moveCmdContainer = kiwa.move(ptp(nextFrame).setJointVelocityRel(defSpeed).breakWhen(torqueBreakCondition1).breakWhen(torqueBreakCondition2).breakWhen(torqueBreakCondition3).breakWhen(torqueBreakCondition4).breakWhen(torqueBreakCondition5).breakWhen(torqueBreakCondition6).breakWhen(torqueBreakCondition7)); 
-			info = moveCmdContainer.getFiredBreakConditionInfo();
-		}
-		defSpeed = prevSpeed;
-	}
-	
-	private void movePtpWithTorqueCondition (String framePath){		// overloading for appData points
-		double prevSpeed = defSpeed;
-		if (reducedSpeed) {
-			defSpeed = 0.05;
-			reducedSpeed = false;
-		}
-		moveCmdContainer = kiwa.move(ptp(getApplicationData().getFrame(framePath)).setJointVelocityRel(defSpeed).breakWhen(torqueBreakCondition1).breakWhen(torqueBreakCondition2).breakWhen(torqueBreakCondition3).breakWhen(torqueBreakCondition4).breakWhen(torqueBreakCondition5).breakWhen(torqueBreakCondition6).breakWhen(torqueBreakCondition7)); 
-		info = moveCmdContainer.getFiredBreakConditionInfo();
-		while (info != null) {
-			System.out.println("Collision detected . " ); 
-			setRGB(true, false, false);
-			while(!mfio.getUserButton()){
-				ThreadUtil.milliSleep(20);
-			} 
-			ThreadUtil.milliSleep(500);			// This is necessary, OW. the next breakConditions are again triggered
-			setRGB(false, true, false);
-			moveCmdContainer = kiwa.move(ptp(getApplicationData().getFrame(framePath)).setJointVelocityRel(defSpeed).breakWhen(torqueBreakCondition1).breakWhen(torqueBreakCondition2).breakWhen(torqueBreakCondition3).breakWhen(torqueBreakCondition4).breakWhen(torqueBreakCondition5).breakWhen(torqueBreakCondition6).breakWhen(torqueBreakCondition7)); 
-			info = moveCmdContainer.getFiredBreakConditionInfo();
-		}
-		defSpeed = prevSpeed;
-	}
-	
-	private void myHandGuiding(){											// handguiding function
-		System.out.println("Push USER button and start handguiding.");
-		setRGB(false, true, true);
+		teachLoop:
 		while (true) {
-			ThreadUtil.milliSleep(50); 
-			if ( mfio.getUserButton()) {
-				ThreadUtil.milliSleep(800);
-				System.out.println("Starting stiffless handguiding"); 
-				setRGB(false, false, false);
-				positionHoldContainer = kiwa.moveAsync(posHold); 
-				break;
-			}
-		}
-		
-		while (true) {
-			ThreadUtil.milliSleep(50);
-			// points are recorded through the buttons
-			if ( mfio.getUserButton()) {
-				ButtonInput buttonInputCheck = userButtonInput();						// run the button press check
-				if (buttonInputCheck == ButtonInput.long_press) { 						// exit myHandGuiding
-					if (fwo.GetCounter() >1) {
-						positionHoldContainer.cancel();   
-						ThreadUtil.milliSleep(500);
-						System.out.println("Exiting stiffless handguiding"); 
-						setRGB(false, true, false);
-						movePtpWithTorqueCondition(homeFramePath); 
+			if (mf.getUserButton()) {
+				Frame newFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
+				btnInput = mf.checkButtonInput();			// Run the button press check
+				switch (btnInput) {
+					case 10: 							// Exit handguiding phase
+						if (frameList.size() > 2) break teachLoop;
+						else padLog("Record at least 2 positions to start running.");
 						break;
-					}else {
-						System.out.println("Record at least 2 positions to start running.");
-						ThreadUtil.milliSleep(200);
-					}
-				}else if (buttonInputCheck== ButtonInput.short_press) { 							// Record current position
-					Frame tempFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange()); 
-					fwo.Add(tempFrame);
-					System.out.println("Added Frame "+fwo.GetCounter()+".");
-				}else if (buttonInputCheck == ButtonInput.double_click) {					// Record current position & Pick Pin
-					Frame tempFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-					tempFrame.setAdditionalParameter("pick Pin", 1); 
-					fwo.Add(tempFrame);
-					System.out.println("Added Frame "+fwo.GetCounter()+"."); 
- 					System.out.println("Pin will be picked up from this location.");
-					
-				}else if (buttonInputCheck == ButtonInput.triple_click) {					// Record current position &  Insert Pin
-					Frame tempFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-					tempFrame.setAdditionalParameter("insert Pin", 1); 
-					fwo.Add(tempFrame);
-					System.out.println("Added Frame "+fwo.GetCounter()+"."); 
-					System.out.println("Pin will be inserted in this location.");
-					
-				} else {
-					//do nothing
+					case 01: 					// Record current position
+						frameList.add(newFrame, log1);
+						break;
+					case 02:
+						newFrame.setAdditionalParameter("Pick Pin", 1);
+						mf.blinkRGB("GB", 500);
+						frameList.add(newFrame, log1);
+						break;
+					case 03:
+						newFrame.setAdditionalParameter("Insert Pin", 1);
+						mf.blinkRGB("RB", 500);
+						frameList.add(newFrame, log1);
+						break;
 				}
+			}
+		}
+		padLog("Exiting handguiding teaching mode...");
+		posHoldMotion.cancel();
+		move.PTPwithJTConds(homeFramePath, relSpeed);
+	}
+	
+	private void loopRoutine(){
+		padLog("Loop routine running.");
+		for (int i = 0; i < frameList.size(); i++) { 							// last saved frame is  Counter-1
+			if (frameList.get(i).hasAdditionalParameter("Pick Pin")) {
+				pickPin(frameList.get(i)); 	 										// go to pick the pin
+				while (true) {
+					if (checkInsertion() == false){									// check if pin is there
+						mf.setRGB("R"); 
+						moveLinRelWithCollisionDetection(0,0,50);								// go back after failed insertion check 
+						mf.waitUserButton();
+						mf.setRGB("R"); 
+						reducedSpeed = true; 					// set to false after 1 run
+						pickPin(frameList.get(i));  
+					} else { 
+						moveLinRelWithCollisionDetection(0,0,50);
+						break;
+					}
+				}  
+			} else if (frameList.get(i).hasAdditionalParameter("Insert Pin")) {
+				insertPin(frameList.get(i));				
+				while (true) {
+					if (checkInsertion() == false){									// check if pin is inserted
+						mf.setRGB("R"); 
+						moveLinRelWithCollisionDetection(0,50,0);								// go back after failed insertion check 
+						mf.waitUserButton();
+						mf.setRGB("R"); 
+						reducedSpeed = true; 					// set to false after 1 run
+						insertPin(frameList.get(i)); 
+					} else {
+						twistPin();
+						ThreadUtil.milliSleep(500);
+						moveLinRelWithCollisionDetection(0,50,0);
+						break;
+					}
+				}
+			} else { 
+				if (log2) padLog("Going to Frame "+ i +".");
+				move.PTPwithJTConds(frameList.get(i), relSpeed);
 			}
 		} 
 	}
-  
-	private void configPadKeysTEACH() { 										// TEACH buttons
-		IUserKeyBar keyBar2 = getApplicationUI().createUserKeyBar("TEACH");
-
-		IUserKeyListener listener2 = new IUserKeyListener() {
-
-			@Override
-			public void onKeyEvent(IUserKey key, UserKeyEvent event) {
-				if (0 == key.getSlot()) { 						//KEY - DELETE PREVIOUS
-
-					if (!keyAlreadyPressed && state == States.state_teach) {
-						fwo.deleteLastFrame();
-						keyAlreadyPressed = true;	 
-						
-					} else if (keyAlreadyPressed) {
-						keyAlreadyPressed = false; 
-					}
-				}
-				if (1 == key.getSlot()) {  						//KEY - TEACH MODE			 
-					state = States.state_teach;
-					System.out.println("Going to TEACH mode after this cycle.");
-					
-				}
-				if (2 == key.getSlot()) {   					//KEY - OPEN GRIPPER 
-					
-					if (!keyAlreadyPressed) {
-						
-						Frame tempFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-						tempFrame.setAdditionalParameter("open Gripper", 1); 
-						fwo.Add(tempFrame);
-						System.out.println("Added Frame "+fwo.GetCounter()+"." );
-			
-						setRGB(false, false, false);
-						ThreadUtil.milliSleep(150);
-						setRGB(false, true, false);
-						ThreadUtil.milliSleep(150);
-						setRGB(false, true, true);
-						
-						positionHoldContainer.cancel(); 
-//						VacuumBody.detach();
-//						System.out.println("Workpiece Detached."); 
-						positionHoldContainer = kiwa.moveAsync(posHold); 
-						plcout.setPinza_Chiudi(false);
-						plcout.setPinza_Apri(true);
-						ThreadUtil.milliSleep(2000);							 
-						 
-					//	pointCounter++;
-						keyAlreadyPressed = true;	
-					} else if (keyAlreadyPressed) {
-						keyAlreadyPressed = false; 
-					}
-				}
-				if (3 == key.getSlot()) {   					//KEY - CLOSE GRIPPER
-					
-					if (!keyAlreadyPressed) {
-						
-						Frame tempFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-						tempFrame.setAdditionalParameter("close Gripper", 1); 
-						fwo.Add(tempFrame);
-						System.out.println("Added Frame "+fwo.GetCounter()+" : " + fwo.Last().toString());
-						
-		
-						setRGB(false, false, false);
-						ThreadUtil.milliSleep(150);
-						setRGB(false, true, false);
-						ThreadUtil.milliSleep(150);
-						setRGB(false, true, true);
-						
-						plcout.setPinza_Apri(false); 
-						plcout.setPinza_Chiudi(true);
-						ThreadUtil.milliSleep(1800);							// to wait while gripper closing so workpiece can be attached
-						if (plcin.getPinza_Holding()) {
-							positionHoldContainer.cancel(); 
-//							VacuumBody.attachTo(Gripper.getDefaultMotionFrame()); 
-//							System.out.println("Workpiece Not Attached.");
-							positionHoldContainer = kiwa.moveAsync(posHold); 
-						}else { 
-//							System.out.println("Workpiece Not Attached.");
-						}
-
-					//	pointCounter++;
-						keyAlreadyPressed = true;	
-					} else if (keyAlreadyPressed) {
-						keyAlreadyPressed = false; 
-					}
-				}
-			}
-		};
-
-		IUserKey button0 = keyBar2.addUserKey(0, listener2, true);
-		IUserKey button1 = keyBar2.addUserKey(1, listener2, true);
-		IUserKey button2 = keyBar2.addUserKey(2, listener2, true);
-		IUserKey button3 = keyBar2.addUserKey(3, listener2, true);
-
-		button0.setText(UserKeyAlignment.TopMiddle, "Delete Previous"); 
-		button1.setText(UserKeyAlignment.TopMiddle, "TEACH"); 
-		button2.setText(UserKeyAlignment.TopMiddle, "Open Gripper");
-		button3.setText(UserKeyAlignment.TopMiddle, "Close Gripper");
-
-
-		keyBar2.publish();
-
+	
+	private void pickPin(Frame targetFrame) { 
+		padLog("Picking up a pin.");   
+		Frame preTargetFrame = targetFrame.copy();
+		preTargetFrame.setZ(preTargetFrame.getZ()+40);			// 40 mm above
+		move.PTPwithJTConds(preTargetFrame, relSpeed);
+		moveLinRelWithCollisionDetection(0,0,-40); 								// 45 mm downwards
 	}
-
+	
+	private void insertPin(Frame targetFrame) { 
+		padLog("Inserting pin.");   
+		Frame preTargetFrame = targetFrame.copy();
+		preTargetFrame.setY(preTargetFrame.getY()+40);			// 40 mm infront
+		move.PTPwithJTConds(preTargetFrame, relSpeed);
+		moveLinRelWithCollisionDetection(0,-40,0); 								// 40 mm towards
+	}
+	
 	private void configPadKeysTORQUE() { 									// TORQUE/SPEED Buttons
-		IUserKeyBar keyBar = getApplicationUI().createUserKeyBar("TRQ./SPD.");
-
-		IUserKeyListener listener1 = new IUserKeyListener() {
-
+		IUserKeyListener padKeysListener = new IUserKeyListener() {
 			@Override
 			public void onKeyEvent(IUserKey key, UserKeyEvent event) {
 				if (0 == key.getSlot()) {  						//KEY - TORQUE								
@@ -505,134 +262,42 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 					torqueBreakCondition6 = new JointTorqueCondition(JointEnum.J6, -maxTorque, maxTorque);
 					torqueBreakCondition7 = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
 
-					System.out.println("Max Torque set to "+maxTorque+" Nm.");
+					padLog("Max Torque set to "+maxTorque+" Nm.");
 				}				
 				if (1 == key.getSlot()) {  						//KEY - SPEED
 					promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType.QUESTION, "Set the relative axes speed ", "5%", "15%", "25%");  
 					switch (promptAns) {
 					case 0:
-						defSpeed = 0.05; 
+						relSpeed = 0.05; 
 						break;
 					case 1:
-						defSpeed = 0.15; 
+						relSpeed = 0.15; 
 						break;
 					case 2:
-						defSpeed = 0.25; 
+						relSpeed = 0.25; 
 						break;
 					default:
 						break;
 					}
 
-				System.out.println("Relative speed set to "+defSpeed*100+"%.");
+				padLog("Relative speed set to "+relSpeed*100+"%.");
 				}
 				if (2 == key.getSlot()) {  						//KEY - Default torque			 
 					maxTorque = 10;
-					System.out.println("Max Torque set to "+maxTorque+" Nm.");
+					padLog("Max Torque set to "+maxTorque+" Nm.");
 				}
 				if (3 == key.getSlot()) {  						//KEY - Default speed				
-					defSpeed = 0.15;
-					System.out.println("Relative speed set to "+defSpeed*100+"%.");
+					relSpeed = 0.15;
+					padLog("Relative speed set to "+relSpeed*100+"%.");
 				} 
 			}
 		};
-
-		IUserKey button0 = keyBar.addUserKey(0, listener1, true);
-		IUserKey button1 = keyBar.addUserKey(1, listener1, true);
-		IUserKey button2 = keyBar.addUserKey(2, listener1, true);
-		IUserKey button3 = keyBar.addUserKey(3, listener1, true);
-
-		button0.setText(UserKeyAlignment.TopMiddle, "Set TORQUE"); 
-		button1.setText(UserKeyAlignment.TopMiddle, "Set SPEED"); 
-		button2.setText(UserKeyAlignment.TopMiddle, "Default TORQUE");
-		button3.setText(UserKeyAlignment.TopMiddle, "Default SPEED");
-
-
-		keyBar.publish();
-
-	}
-	
-	private void setRGB(boolean r, boolean g, boolean b){
-		mfio.setLEDRed(r);
-		mfio.setLEDGreen(g);
-		mfio.setLEDBlue(b);
-	}
-	 
-	private ButtonInput userButtonInput(){						// determine whether user button is only pressed or pressed and held
-		boolean R,G,B = false;
-		R = mfio.getLEDRed();
-		G = mfio.getLEDGreen();
-		B = mfio.getLEDBlue();
-		setRGB(false, false, false);
-		long pressedTime =0, unpressedTime = 0;
-		int buttonChangeCount = 1;
-		boolean returnValue = false;
-		
-		setRGB(false, true, true);	 
-		
-		while (true) { 
-			pressedTime = pressedTime + 1; 
-			unpressedTime = 0;
-			if (!mfio.getUserButton()) {
-				setRGB(false, false, false);
-				buttonChangeCount++;
-				if (pressedTime>7 && buttonChangeCount ==2) {			// long press
-					returnValue = true; 
-				}else{
-					pressedTime = 0;
-					while (true) {
-						ThreadUtil.milliSleep(100);
-						unpressedTime = unpressedTime + 1; 
-						if (unpressedTime >7) {							// break if button has been released for too long
-							returnValue = true;
-							setRGB(true, true, true);
-							ThreadUtil.milliSleep(250);
-							break;				
-						}
-						if (mfio.getUserButton()) {
-							setRGB(false, true, true); 
-							buttonChangeCount++;
-							break;							
-						}
-					}
-				}
-
-			}
-			if (returnValue) {
-				break;
-			}
-			if (pressedTime>6) {
-				setRGB(true, false, true);				// turn red to indicate long press reached
-			}
-			ThreadUtil.milliSleep(50);
-		}
-
-		if (buttonChangeCount == 2 && pressedTime>7) {
-//			System.out.println("Long button press. : "+ pressedTime * 100 +" ms."); 
-			setRGB(R, G, B);
-			return ButtonInput.long_press;
-		}else if (buttonChangeCount == 2 && unpressedTime >7 ) {
-//			System.out.println("Short button press."); 
-			setRGB(R, G, B);
-			return ButtonInput.short_press;
-		}else if (buttonChangeCount == 4) {
-//			System.out.println("Double button press."); 
-			setRGB(R, G, B);
-			return ButtonInput.double_click;
-		}else if (buttonChangeCount == 6) {
-//			System.out.println("Triple button press."); 
-			setRGB(R, G, B);
-			return ButtonInput.triple_click;
-		}else {
-			System.out.println("Invalid button Input."); 
-			setRGB(R, G, B);
-			return ButtonInput.invalid;
-		}
-		 
+		pad.keyBarSetup(padKeysListener, "SET PARAMS", "Set TORQUE", "Set SPEED", "Default TORQUE", "Default SPEED");
 	}
  
 	private boolean checkInsertion(){							 
-		System.out.println("Checking Insertion");
-		setRGB(false, true, true);
+		padLog("Checking Insertion");
+		mf.setRGB("GB");
 		IMotionContainer motionCmd; 
 		boolean checkPositive = false;
 		JointTorqueCondition breakCondition1, breakCondition2, breakCondition3, breakCondition4, breakCondition5, breakCondition6, breakCondition7 ;					// for torque break condition
@@ -643,29 +308,26 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 		breakCondition5 = new JointTorqueCondition(JointEnum.J5, -3, 3);	
 		breakCondition6 = new JointTorqueCondition(JointEnum.J6, -3, 3);
 		breakCondition7 = new JointTorqueCondition(JointEnum.J7, -3, 3);
-			
-   
 		Frame lastCheckpoint = kiwa.getCurrentCartesianPosition(kiwa.getFlange());	// Save the location of center of the hole
-		
 		motionCmd = kiwa.move(linRel(-5, -5, 0).setJointVelocityRel(0.02).breakWhen(breakCondition1).breakWhen(breakCondition2).breakWhen(breakCondition3).breakWhen(breakCondition4).breakWhen(breakCondition5).breakWhen(breakCondition6).breakWhen(breakCondition7)); 
 		info = motionCmd.getFiredBreakConditionInfo(); 
 
 		if (info != null) {
 			checkPositive = true;
-			System.out.println("Check 1 successful");
-			setRGB(false, true, false);
+			padLog("Check 1 successful");
+			mf.setRGB("G");
 			ThreadUtil.milliSleep(500); 
 			kiwa.move(ptp(lastCheckpoint).setJointVelocityRel(0.02)); //Go back to the center of the hole
 			ThreadUtil.milliSleep(500); 
-			setRGB(false, true, true);
+			mf.setRGB("GB");
 		}  
 		if (checkPositive == false) {
-			System.out.println("Check 1 unsuccessful");
-			setRGB(true, false, false);
+			padLog("Check 1 unsuccessful");
+			mf.setRGB("R");
 			ThreadUtil.milliSleep(500);
 			kiwa.move(ptp(lastCheckpoint).setJointVelocityRel(0.02)); //Go back to the center of the hole
 			ThreadUtil.milliSleep(500); 
-			setRGB(true, false, false);
+			mf.setRGB("R");
 			return false;
 		} else {
 			  
@@ -673,60 +335,44 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 
 			info = motionCmd.getFiredBreakConditionInfo(); 
 			if (info != null) {
-				System.out.println("Check 2 successful");
-				setRGB(false, true, false);
+				padLog("Check 2 successful");
+				mf.setRGB("G");
 				ThreadUtil.milliSleep(500); 
 				kiwa.move(ptp(lastCheckpoint).setJointVelocityRel(0.02)); //Go back to the center of the hole
 				ThreadUtil.milliSleep(500); 
-				System.out.println("Insertion check successful");
+				padLog("Insertion check successful");
 				
 				return true;
 			}else{
-				System.out.println("Check 2 unsuccessful");
-				setRGB(true, false, false);
+				padLog("Check 2 unsuccessful");
+				mf.setRGB("R");
 				ThreadUtil.milliSleep(500);
 				kiwa.move(ptp(lastCheckpoint).setJointVelocityRel(0.02)); //Go back to the center of the hole
 				ThreadUtil.milliSleep(500); 
-				setRGB(true, false, false);
+				mf.setRGB("R");
 				return false;
 			}
 		}
-
 	}
 	
 	private void twistPin(){
-
-		System.out.println("Twisting the pin");
-		setRGB(false, true, true);
+		padLog("Twisting the pin");
+		mf.setRGB("GB");
 		IMotionContainer motionCmd;
 		JointTorqueCondition breakCondition;
 		IFiredConditionInfo info;
-
 		ThreadUtil.milliSleep(500); 
-
 		breakCondition = new JointTorqueCondition(JointEnum.J7, -0.7, 0.7); 
-
 		motionCmd = kiwa.move(linRel(Transformation.ofDeg(0, 0, 0, 60, 0, 0)).setJointVelocityRel(0.15).breakWhen(breakCondition));	// x,y,z,a,b,c
 		info = motionCmd.getFiredBreakConditionInfo(); 
 		if (info != null) {
-			System.out.println("Cannot twist anymore");
-			System.out.println("Current torque: " + kiwa.getExternalTorque().getSingleTorqueValue(JointEnum.J7));
-			setRGB(true, true, true);
+			padLog("Cannot twist anymore");
+			padLog("Current torque: " + kiwa.getExternalTorque().getSingleTorqueValue(JointEnum.J7));
+			mf.setRGB("RGB");
 			ThreadUtil.milliSleep(500);
 		}
-		setRGB(false, true, false);
+		mf.setRGB("G");
 	}
-
-	private Frame makeTargetFrame (double x, double y, double z) {
-		Frame targetFrame, currentFrame;
-		currentFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-		targetFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange()).setX(currentFrame.getX()+x).setY(currentFrame.getY()+y).setZ(currentFrame.getZ()+z);
-
-		//System.out.println("Current coordinates: " + currentFrame.getX()+", "+currentFrame.getY()+", "+currentFrame.getZ());
-		//System.out.println("Target coordinates: " + targetFrame.getX()+", "+targetFrame.getY()+", "+targetFrame.getZ()+", " + targetFrame.distanceTo(currentFrame));
-
-		return targetFrame;
-	} 
 
 	private void moveLinRelWithCollisionDetection (double x, double y, double z){
 		IMotionContainer motionCmd;
@@ -740,20 +386,18 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 		breakCondition6 = new JointTorqueCondition(JointEnum.J6, -3, 3);
 		breakCondition7 = new JointTorqueCondition(JointEnum.J7, -3, 3);
 		IFiredConditionInfo info; 
-
-		goToFrame = makeTargetFrame(x, y, z); 
-	
+		currentFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
+		goToFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange()).setX(currentFrame.getX()+x).setY(currentFrame.getY()+y).setZ(currentFrame.getZ()+z);
 		ThreadUtil.milliSleep(500); 
-		 
 		motionCmd = kiwa.move(lin(goToFrame).setJointVelocityRel(0.05).breakWhen(breakCondition1).breakWhen(breakCondition2).breakWhen(breakCondition3).breakWhen(breakCondition4).breakWhen(breakCondition5).breakWhen(breakCondition6).breakWhen(breakCondition7));  
 		info = motionCmd.getFiredBreakConditionInfo(); 
 		while (info != null){ 
-			setRGB(true, false, false);
+			mf.setRGB("R");
 
 			currentFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
 			if (Math.abs(currentFrame.getX() - goToFrame.getX()) < 7 && Math.abs(currentFrame.getY() - goToFrame.getY()) < 7 && Math.abs(currentFrame.getZ() - goToFrame.getZ()) < 7) {
-				System.out.println("Pin/Hole found by Force detection.");	
-				setRGB(false, false, true);
+				padLog("Pin/Hole found by Force detection.");	
+				mf.setRGB("B");
 				ThreadUtil.milliSleep(1000); 
 				break;
 			} else {
@@ -764,15 +408,13 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 						ThreadUtil.milliSleep(20);
 					} 
 				
-				setRGB(false, true, false);
+				mf.setRGB("G");
 				ThreadUtil.milliSleep(500);			// This is necessary, OW. the next breakConditions are again triggered 
 				motionCmd = kiwa.move(lin(goToFrame).setJointVelocityRel(0.05).breakWhen(breakCondition1).breakWhen(breakCondition2).breakWhen(breakCondition3).breakWhen(breakCondition4).breakWhen(breakCondition5).breakWhen(breakCondition6).breakWhen(breakCondition7)); 
 				info = motionCmd.getFiredBreakConditionInfo();
 			}
-
 		}
-//		System.out.println("Position reached.");
-		setRGB(false, true, false); 
+//		padLog("Position reached.");
+		mf.setRGB("G"); 
 	}
-
 }

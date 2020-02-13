@@ -7,11 +7,16 @@ import javax.inject.Singleton;
 
 @Singleton
 public class HandlerMFio {
+	// Standard KUKA API objects
 	private MediaFlangeIOGroup MFio;
+	
+	// Private properties
 	private boolean[] prevRGB;
 	
-	@Inject
-	public HandlerMFio(MediaFlangeIOGroup _MFio){ this.MFio = _MFio; } // CONSTRUCTOR
+	@Inject			// CONSTRUCTOR
+	public HandlerMFio(MediaFlangeIOGroup _MFio) { 
+		this.MFio = _MFio;
+	}
 	
 	/***************************************************************************
 	* STANDARD METHODS BY mario.musico@electrolux.com <p>
@@ -20,12 +25,16 @@ public class HandlerMFio {
 	public boolean getUserButton() { return MFio.getUserButton(); }
 	
 	public void waitUserButton() {
-		logPad("Press USER GREEN BUTTON to continue");
+		this.saveRGB();
+		if(prevRGB[0] == true && prevRGB[1] == false && prevRGB[2] == false) ;
+		else this.setRGB("B");
+		padLog("Press USER GREEN BUTTON to continue");
 		while (true) {
 			if (this.getUserButton()) break;
 			waitMillis(50);
 		}
-		waitMillis(500, false);		// Wait for torque to stabilize
+		this.blinkRGB("GB", 500);		// Wait for torque to stabilize and notify input
+		this.resetRGB();
 	}
 	
 	public boolean [] getRGB() {
@@ -51,7 +60,7 @@ public class HandlerMFio {
 	}
 
 	public void setRGB(String color, boolean log) {
-		if (log) logPad("MediaFlange LED ring to " + color);
+		if (log) padLog("MediaFlange LED ring to " + color);
 		if (color.equalsIgnoreCase("R")) this.setRGB(true,false,false);
 		else if (color.equalsIgnoreCase("G")) this.setRGB(false,true,false);
 		else if (color.equalsIgnoreCase("B")) this.setRGB(false,false,true);
@@ -60,7 +69,7 @@ public class HandlerMFio {
 		else if (color.equalsIgnoreCase("GB")) this.setRGB(false,true,true);
 		else if (color.equalsIgnoreCase("RGB")) this.setRGB(true,true,true);
 		else if (color.equalsIgnoreCase("OFF")) this.setRGB(false,false,false);
-		else logPad("MediaFlange color not valid");
+		else padLog("MediaFlange color not valid");
 	}
 	
 	public void setRGB(String color) { this.setRGB(color, false); }
@@ -71,13 +80,13 @@ public class HandlerMFio {
 	
 	public void blinkRGB(String color, int millis, boolean log) {
 		this.saveRGB();
-		if (log) logPad("MediaFlange LED blink " + color + " for " + millis + " millis");
+		if (log) padLog("MediaFlange LED blink " + color + " for " + millis + " millis");
 		this.setRGB(color);
 		waitMillis(millis);
 		this.resetRGB();
 	}
 	
-	public int checkBtnInput(){						// determine user button input
+	public int checkButtonInput(){						// determine user button input
 		int timeCount = 0;
 		int pressCountShort = 0;
 		int pressCountLong = 0;
@@ -110,7 +119,7 @@ public class HandlerMFio {
 			}
 		}
 		this.resetRGB();
-		// logPad("#Short = " + pressCountShort + ", #Long = " + pressCountLong);
+		// padLog("#Short = " + pressCountShort + ", #Long = " + pressCountLong);
 		return (pressCountLong * 10 + pressCountShort);
 	}
 }

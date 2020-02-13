@@ -17,15 +17,15 @@ public class Tr1_BasicMotions extends RoboticsAPIApplication {
 	@Inject private HandlerMov move = new HandlerMov(mf);
 	
 	public void initialize() {
-		logPad("Initializing..");
+		padLog("Initializing..");
 		move.setHome("/Rest");
 	}
 
 	public void run() {
-		logPad("Move PTP home");
+		padLog("Move PTP home");
 		kiwa.move(ptpHome());
 		for (double relSpeed  = 0.2; relSpeed < 1 ; relSpeed += 0.195){
-			logPad("Speed is " + relSpeed + "/1");
+			padLog("Speed is " + relSpeed + "/1");
 			move.PTP("/_HOME/_0_Shutoff_REST", relSpeed);
 			waitMillis(1000, true);
 			move.LIN("/_HOME/_1_Teach_LEFT", relSpeed);
@@ -33,7 +33,7 @@ public class Tr1_BasicMotions extends RoboticsAPIApplication {
 			move.CIRC("/_HOME/_2_Teach_CENTRAL", "/_HOME/_3_Teach_RIGHT", relSpeed);
 		}
 		kiwa.move(ptpHome());
-		logPad("Finished program");
+		padLog("Finished program");
 		return;
 	}
 }

@@ -25,11 +25,11 @@ public class Home extends RoboticsAPIApplication {
 
 	@Override
 	public void run() {
-		//logPad("Move PTP to HOME-REST position");
+		//padLog("Move PTP to HOME-REST position");
 		mf.setRGB("G");
 		switch (promptAns) {
 			case 0:
-				logPad("Moving to Shutoff REST");
+				padLog("Moving to Shutoff REST");
 				kiwa.move(ptp( 	Math.toRadians(90),	// A1
 								Math.toRadians(-36),// A2
 								Math.toRadians(0),	// A3
@@ -39,7 +39,7 @@ public class Home extends RoboticsAPIApplication {
 								Math.toRadians(0))	// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 1:
-				logPad("Moving to Teach LEFT");
+				padLog("Moving to Teach LEFT");
 				kiwa.move(ptp( 	Math.toRadians(65),	// A1
 								Math.toRadians(45),	// A2
 								Math.toRadians(0),	// A3
@@ -49,7 +49,7 @@ public class Home extends RoboticsAPIApplication {
 								Math.toRadians(-25))// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 2:
-				logPad("Moving to Teach CENTRAL");
+				padLog("Moving to Teach CENTRAL");
 				kiwa.move(ptp( 	Math.toRadians(90),	// A1
 								Math.toRadians(45),	// A2
 								Math.toRadians(0),	// A3
@@ -59,7 +59,7 @@ public class Home extends RoboticsAPIApplication {
 								Math.toRadians(0))	// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 3:
-				logPad("Moving to Teach RIGHT");
+				padLog("Moving to Teach RIGHT");
 				kiwa.move(ptp( 	Math.toRadians(115),// A1
 								Math.toRadians(45),	// A2
 								Math.toRadians(0),	// A3
@@ -69,7 +69,7 @@ public class Home extends RoboticsAPIApplication {
 								Math.toRadians(25))	// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 4:
-				logPad("Moving to VERTICAL");
+				padLog("Moving to VERTICAL");
 				kiwa.move(ptp( 	Math.toRadians(0),	// A1
 								Math.toRadians(0),	// A2
 								Math.toRadians(0),	// A3
@@ -79,7 +79,7 @@ public class Home extends RoboticsAPIApplication {
 								Math.toRadians(0))	// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 5:
-				logPad("Moving to HORIZONTAL");
+				padLog("Moving to HORIZONTAL");
 				kiwa.move(ptp( 	Math.toRadians(90),	// A1
 								Math.toRadians(90),	// A2
 								Math.toRadians(0),	// A3
@@ -91,7 +91,7 @@ public class Home extends RoboticsAPIApplication {
 		}
 		
 		mf.setRGB("OFF");
-		logPad("Finished program.");
+		padLog("Finished program.");
 		return;
 	}
 }

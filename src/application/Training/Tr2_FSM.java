@@ -29,7 +29,7 @@ public class Tr2_FSM extends RoboticsAPIApplication {
 		while (true) {				// Endless loop
 			switch (state) {
 				case state_A:		// Close gripper, LED to Red, wait for button
-					logPad("Current state : state A");
+					padLog("Current state : state A");
 					setRGB("R");
 					closeGripper();
 					waitUserButton();
@@ -37,21 +37,21 @@ public class Tr2_FSM extends RoboticsAPIApplication {
 					break;
 					
 				case state_B:		// LED to Green, wait for button
-					logPad("Current state : state B");
+					padLog("Current state : state B");
 					setRGB("G");
 					waitUserButton();
 					state = States.state_C; 
 					break;
 					
 				case state_C: 		// LED to Blue, wait for button
-					logPad("Current state : state C");
+					padLog("Current state : state C");
 					setRGB("B");
 					waitUserButton();
 					state = States.state_D; 
 					break;
 					
 				case state_D:		// All LEDs on, open gripper, wait for button and loop back to state_A
-					logPad("Current state : state D");
+					padLog("Current state : state D");
 					setRGB("RGB");
 					openGripper();
 					waitUserButton();
@@ -69,7 +69,7 @@ public class Tr2_FSM extends RoboticsAPIApplication {
 	***********************************************/
 	
 	public void waitUserButton() {
-		logPad("Press green button to continue");
+		padLog("Press green button to continue");
 		while (true) {
 			if (mfio.getUserButton()) break;
 			waitMillis(50);
@@ -84,7 +84,7 @@ public class Tr2_FSM extends RoboticsAPIApplication {
 	}
 
 	public void setRGB(String color) {
-		logPad("MediaFlange LED ring to " + color);
+		padLog("MediaFlange LED ring to " + color);
 		if (color.equalsIgnoreCase("R")) setRGB(true,false,false);
 		else if (color.equalsIgnoreCase("G")) setRGB(false,true,false);
 		else if (color.equalsIgnoreCase("B")) setRGB(false,false,true);
@@ -100,7 +100,7 @@ public class Tr2_FSM extends RoboticsAPIApplication {
 		plcout.setPinza_Chiudi(false);
 		waitMillis(10);
 		plcout.setPinza_Apri(true);
-		logPad("Opening gripper");
+		padLog("Opening gripper");
 		waitMillis(2000, true);
 	}
 	
@@ -108,7 +108,7 @@ public class Tr2_FSM extends RoboticsAPIApplication {
 		plcout.setPinza_Apri(false);
 		waitMillis(10);
 		plcout.setPinza_Chiudi(true);
-		logPad("Closing gripper");
+		padLog("Closing gripper");
 		waitMillis(2000, true);
 	}
 }

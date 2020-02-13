@@ -26,7 +26,7 @@ public class JointsReferencing extends RoboticsAPIApplication {
     private LBR lbr_iiwa;
 
     private final static double sideOffset = Math.toRadians(5);       // offset in radians for side motion
-    private static double joggingVelocity = 0.2;                      // relative velocity
+    private static double relSpeed = 0.25;                      // relative velocity
     private final static int axisId[] = {0, 1, 2, 3, 4, 5, 6};        // axes to be referenced
     private final static int GMS_REFERENCING_COMMAND = 2;             // safety command for GMS referencing
     private final static int COMMAND_SUCCESSFUL = 1;
@@ -45,11 +45,11 @@ public class JointsReferencing extends RoboticsAPIApplication {
             if (!isMastered) getLogger().warn("Axis with axisId " + axisId[i] + " is not mastered, therefore it cannot be referenced");
             allAxesMastered &= isMastered;
         }
-        if (OperationMode.T1 == lbr_iiwa.getOperationMode()) joggingVelocity = 0.4;				// We can move faster, if operation mode is T1
+        if (OperationMode.T1 == lbr_iiwa.getOperationMode()) relSpeed = 0.4;				// We can move faster, if operation mode is T1
         if (allAxesMastered) {
             getLogger().info("Perform position and GMS referencing with 5 positions");
             getLogger().info("Moving to home position");
-            lbr_iiwa.move(ptpHome().setJointVelocityRel(joggingVelocity));	// Move to home position
+            lbr_iiwa.move(ptpHome().setJointVelocityRel(relSpeed));	// Move to home position
 
             // In this example 5 positions are defined, though each one 
             // will be reached from negative and from positive axis 
@@ -96,13 +96,13 @@ public class JointsReferencing extends RoboticsAPIApplication {
                                             Math.toRadians(1.57)));
             
             getLogger().info("Moving to home position");
-            lbr_iiwa.move(ptpHome().setJointVelocityRel(joggingVelocity));		// Move to home position at the end
+            lbr_iiwa.move(ptpHome().setJointVelocityRel(relSpeed));		// Move to home position at the end
         }
     }
 
     private void performMotion(JointPosition position) {
         getLogger().info("Moving to position #" + (++positionCounter));
-        PTP mainMotion = new PTP(position).setJointVelocityRel(joggingVelocity);
+        PTP mainMotion = new PTP(position).setJointVelocityRel(relSpeed);
         lbr_iiwa.move(mainMotion);
 		
         getLogger().info("Moving to current position from negative direction");
@@ -110,10 +110,10 @@ public class JointsReferencing extends RoboticsAPIApplication {
         for (int i = 0; i < lbr_iiwa.getJointCount(); ++i) {
             position1.set(i, position.get(i) - sideOffset);
         }
-        PTP motion1 = new PTP(position1).setJointVelocityRel(joggingVelocity);
+        PTP motion1 = new PTP(position1).setJointVelocityRel(relSpeed);
         lbr_iiwa.move(motion1);
         lbr_iiwa.move(mainMotion);
-        ThreadUtil.milliSleep(2500);		// Wait a little to reduce robot vibration after stop.
+        ThreadUtil.milliSleep(1000);		// Wait a little to reduce robot vibration after stop.
         sendSafetyCommand();				// Send the command to safety to trigger the measurement
 
         getLogger().info("Moving to current position from positive direction");
@@ -121,10 +121,10 @@ public class JointsReferencing extends RoboticsAPIApplication {
         for (int i = 0; i < lbr_iiwa.getJointCount(); ++i) {
             position2.set(i, position.get(i) + sideOffset);
         }
-        PTP motion2 = new PTP(position2).setJointVelocityRel(joggingVelocity);
+        PTP motion2 = new PTP(position2).setJointVelocityRel(relSpeed);
         lbr_iiwa.move(motion2);
         lbr_iiwa.move(mainMotion);
-        ThreadUtil.milliSleep(2500);		// Wait a little to reduce robot vibration after stop
+        ThreadUtil.milliSleep(1000);		// Wait a little to reduce robot vibration after stop
         sendSafetyCommand();				// Send the command to safety to trigger the measurement
     }
     

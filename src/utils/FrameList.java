@@ -18,16 +18,16 @@ public class FrameList {
 	// Setter methods
 	public void add(Frame newFrame, boolean log) { 
 		frameList.add(newFrame); 
-		logPad("Added Frame #" + this.size() + " : " + this.getLast().toString());
+		padLog("Added Frame #" + this.size() + " : " + this.getLast().toString());
 	}
 	public void add(Frame newFrame) { this.add(newFrame, false); }
 	public void inject(int index, Frame newFrame) { frameList.add(index, newFrame); }
 	public void set(int index, Frame newFrame) { frameList.set(index, newFrame); }
 	public void remove(int index) { 
 		if (frameList.isEmpty()) {
-			logPad("Frames list is empty.");
+			padLog("Frames list is empty.");
 		} else {
-			logPad("Deleted Frame #" + index + " : " + this.get(index - 1).toString());
+			padLog("Deleted Frame #" + index + " : " + this.get(index - 1).toString());
 			frameList.remove(index - 1);
 		}
 		frameList.trimToSize();
