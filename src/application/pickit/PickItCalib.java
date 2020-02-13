@@ -21,6 +21,7 @@ public class PickItCalib extends RoboticsAPIApplication {
 	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
 	@Inject private HandlerMov move = new HandlerMov(mf);
 	@Inject private HandlerPickIt pickit = new HandlerPickIt(kiwa, move);
+	@Inject private HandlerPad pad = new HandlerPad(mf);
 	
 	@Override public void initialize() {
 		move.setTCP(pickitGripper, "/Flange");
@@ -28,8 +29,11 @@ public class PickItCalib extends RoboticsAPIApplication {
 	}
 
 	@Override public void run() {
+		int ans = 0;
 		try {
-			calibrate();
+			ans = pad.question("Where is the camera mounted?", "Robot flange", "Static pole");
+			if (ans == 0) 	calibrate("/_PickIt/Calib/Robot");		// Robot mounted camera
+			else 			calibrate("/_PickIt/Calib/Static");		// Static mounted camera
 		} catch (InterruptedException e) {
 			padErr("Unable to perform requested callibration.");
 			e.printStackTrace();
@@ -40,26 +44,27 @@ public class PickItCalib extends RoboticsAPIApplication {
 	 * Calibration function, requires 5 calibration poses to be taught-in, named Calib_pose1 to Calib_pose5
 	 * @throws InterruptedException
 	 */
-	public void calibrate() throws InterruptedException {
-		final double calibSpeed = 1;
+	public void calibrate(String basePath) throws InterruptedException {
 		move.setGlobalSpeed(1);
+		move.PTP(basePath, 1);
+		waitMillis(1000);
 		padLog("Starting Multi Pose Calibration ... ");
-		move.PTP("/_PickIt/Calib/P1", calibSpeed);
+		move.PTP(basePath + "/P1", 1);
 		padLog("Calib in P1");
 		pickit.doCalibration();
-		move.PTP("/_PickIt/Calib/P2", calibSpeed);
+		move.PTP(basePath + "/P2", 1);
 		padLog("Calib in P2");
 		pickit.doCalibration();		
-		move.PTP("/_PickIt/Calib/P3", calibSpeed);
+		move.PTP(basePath + "/P3", 1);
 		padLog("Calib in P3");
 		pickit.doCalibration();
-		move.PTP("/_PickIt/Calib/P4", calibSpeed);
+		move.PTP(basePath + "/P4", 1);
 		padLog("Calib in P4");
 		pickit.doCalibration();
-		move.PTP("/_PickIt/Calib/P5", calibSpeed);
+		move.PTP(basePath + "/P5", 1);
 		padLog("Calib in P5");
 		pickit.doCalibration();
-		move.PTP("/_PickIt/Calib", calibSpeed);
+		move.PTP(basePath, 1);
         padLog("Finished callibration");
 	}
 	

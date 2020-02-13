@@ -38,63 +38,66 @@ public class PickItApp extends RoboticsAPIApplication {
 		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
 		move.setJTConds(10.0);
 		move.setGlobalSpeed(1);
+		move.setHome("/_PickIt/Scan");
 		move.setTCP(PickitGripper, "/Flange");
+		if(!move.PTPhome(1)) stop();
+		move.PTP("/_PickIt/Scan/Release", 1);
 		plc.askOpen();
-		if(!move.PTP("/_PickIt/Scan", 1)) stop();
+		move.PTPhome(1);
 		pickit = new HandlerPickIt(kiwa, move);
 		pickit.init("192.168.2.12", 30001);
+		if(!pickit.config(3, 3, 5000)) stop();
 	}
 
 	@Override public void run() {
 		padLog("Start picking sequence");
-		if(!move.PTP("/_PickIt/Scan", 1)) stop();
-		if(!pickit.config(3, 2, 5000)) stop();
+	//	if(!move.PTP("/_PickIt/Scan/S1", 1)) stop();
+		scan(false);
 		while (pickit.isRunning()) {
-			if (pickit.getRemainingObj() == 0) scan();
-			else {
-				scan();
-				// pickit.doSendNextObj(); 			// If scan between single picks is not mandatory
-			}
 			if (pickit.getBox() > 0) {
 				failCounterFind = 0;
 				if (!pick(pickit.getPickFrame(), 200)) padLog("Error when picking piece.");
 				else {
 					move.setTCP(PickitGripper, "/Flange");
-					if ((pickit.getObjType() == 1 && pickit.getPickID() == 1) ||
-						(pickit.getObjType() == 3 && pickit.getPickID() == 1)) {
+					move.PTPhome(1);
+					scan(true);
+					if ((pickit.getObjType() == 1 && pickit.getPickID() == 1)) {
 						move.PTP("/_PickIt/PumpJig/Approach_Z",1);
 						move.LIN("/_PickIt/PumpJig",0.3);
 						plc.openGripper();
 						move.LIN("/_PickIt/PumpJig/Approach_Z",0.8);
-					} else if ((pickit.getObjType() == 2 && pickit.getPickID() == 1) ||
-							   (pickit.getObjType() == 3 && pickit.getPickID() == 2) ||
-							   (pickit.getObjType() == 4 && pickit.getPickID() == 1)) {
-						move.PTP("/_PickIt/Pole_H/_3_Approach_Z",1);
-						move.LIN("/_PickIt/Pole_H",0.3);
+					} else if (pickit.getObjType() == 1 && pickit.getPickID() != 1) {
+						move.PTP("/_PickIt/Pole/H_Zoffset",1);
+						move.LIN("/_PickIt/Pole/H_pole",0.3);
 						plc.openGripper();
-						move.PTP("/_PickIt/Pole_H/_1_Approach_X",0.8);
+						move.LIN("/_PickIt/Pole/H_Xoffset",0.8);
+						move.LIN("/_PickIt/Pole/Transition_XZ",1);
 					} else {
 						padLog("None");
 					}
+					move.LINhome(1);
 				}
-				while (!pickit.isReady()) { waitMillis(100); padLog("Waiting.");}
-			}
-			else {
+				//while (!pickit.isReady()) { waitMillis(100); padLog("Waiting.");}
+			} else {
 				failCounterFind ++;
+			}
+			if (pickit.getRemainingObj() == 0) scan(false);
+			else {
+				//scan();
+				pickit.doSendNextObj(); 			// If scan between single picks is not mandatory
 			}
 		}
 		pickit.terminate();
 	}
 	
-	private void scan() {
-		if (failCounterFind < 3) move.PTP("/_PickIt/Scan", 1);
-		else if (failCounterFind < 6) move.PTP("/_PickIt/Scan/P1", 1);
-		else {
+	private void scan(boolean async) {
+		if (!async || failCounterFind > 1) move.PTPhome(1);
+		if (failCounterFind == 3) {
 			vibrate();
 			failCounterFind = 0;
-			scan();
+			scan(false);
 		}
-		waitMillis(350);
+		if (!async) waitMillis(350);
 		pickit.doScanForObj();
 	}
 	

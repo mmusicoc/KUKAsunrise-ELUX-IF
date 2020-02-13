@@ -135,8 +135,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		return this.PTP(targetFrame.copyWithRedundancy(), relSpeed);
 	}
-	
-	public boolean PTPHOME(double relSpeed) {
+	public boolean PTPhome(double relSpeed) {
 		return this.PTP(_homeFramePath, relSpeed);
 	}
 	
@@ -147,7 +146,10 @@ public class HandlerMov extends RoboticsAPIApplication {
 	public boolean LIN(String targetFramePath, double relSpeed) {
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		return this.LIN(targetFrame.copyWithRedundancy(), relSpeed);
-	}	
+	}
+	public boolean LINhome(double relSpeed) {
+		return this.LIN(_homeFramePath, relSpeed);
+	}
 	
 	public boolean LINREL(double x, double y, double z, double relSpeed) {
 		try { tcp.move(linRel(x, y, z).setJointVelocityRel(scaleSpeed(relSpeed))); return true; }

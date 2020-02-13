@@ -47,7 +47,7 @@ public class HandlerPickIt{
 	
 	public int getPickID() { return _pick_id; }
 	public int getObjType() { return _obj_type; }
-	public int getRemainingObj() { return _obj_remaining + 1; }
+	public int getRemainingObj() { return _obj_remaining; }
 	public boolean isRunning() { return _status != _STOPPED && _status != _ERROR; }
 	public boolean isReady() { return _status != _WAITING; }
 	public boolean hasFoundObj() { return _status == _OBJ_FOUND; }
@@ -55,6 +55,7 @@ public class HandlerPickIt{
 	
 	public int getBox() {
 		int timeCounter = 0;
+		int remaining = 0;
 		while(!this.isReady()) {
 			waitMillis(10);
 			timeCounter += 10;
@@ -66,8 +67,9 @@ public class HandlerPickIt{
 		padLog("Answer took " + timeCounter + "ms");
 		if (this.hasFoundObj()) {
 			this.doSendPickFrameData();
-			padLog("Found " + getRemainingObj() + " objects");
-			return getRemainingObj();
+			remaining = getRemainingObj() + 1;
+			padLog("Found " + remaining + " objects");
+			return remaining;
 		}
 		else {
 			padLog("Pickit was unable to find any reachable objects");
@@ -82,7 +84,7 @@ public class HandlerPickIt{
 		waitMillis(50);		// default = 500ms
 		_status = _WAITING;
 		_command = _CALIBRATE;
-		waitMillis(600);	// default = 6000ms
+		waitMillis(6000);	// default = 6000ms
 	}
 
 	public synchronized void doScanForObj() {

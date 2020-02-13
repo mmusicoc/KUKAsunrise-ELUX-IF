@@ -1,4 +1,4 @@
-package application.Pickit;
+package utils;
 
 import eluxLibs.*;
 
@@ -22,7 +22,7 @@ public class TCPtest extends RoboticsAPIApplication {
 		move.setJTConds(10.0);
 		move.setGlobalSpeed(1);
 		move.setTCP(pickitGripper, "/Flange");
-		move.PTPHOME(0.5);
+		move.PTPhome(0.5);
 		move.setTCP(pickitGripper, "/Cylinder");
 	}
 
