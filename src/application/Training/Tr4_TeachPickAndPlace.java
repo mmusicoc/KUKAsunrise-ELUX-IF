@@ -28,8 +28,7 @@ public class Tr4_TeachPickAndPlace extends RoboticsAPIApplication {
 	@Inject private Plc_inputIOGroup 	plcin;
 	@Inject private Plc_outputIOGroup 	plcout;
 	@Inject private MediaFlangeIOGroup 	mfio;
-	@Inject	@Named("Pinza") 		private Tool 		gripper;
-	// @Inject @Named("VacuumBody") 	private Workpiece 	workpiece;
+	@Inject	@Named("Gripper") 		private Tool 		gripper;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);

@@ -10,11 +10,11 @@ import com.kuka.roboticsAPI.geometricModel.Tool;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-public class Tr3_CollisionDetection extends RoboticsAPIApplication {
+public class Tr2_CollisionDetection extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Inject private LBR 					kiwa;
 	@Inject private MediaFlangeIOGroup 		mfio;
-	@Inject	@Named("Pinza") private Tool 	Gripper;
+	@Inject	@Named("Gripper") private Tool 	gripper;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
@@ -25,7 +25,7 @@ public class Tr3_CollisionDetection extends RoboticsAPIApplication {
 	private double relSpeed = 0.15;
 	
 	@Override public void initialize() {
-		Gripper.attachTo(kiwa.getFlange());
+		gripper.attachTo(kiwa.getFlange());
 		double maxTorque = pad.askTorque();
 		move.setJTConds(maxTorque);
 	}

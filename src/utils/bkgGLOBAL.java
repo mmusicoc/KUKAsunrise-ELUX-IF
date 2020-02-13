@@ -78,7 +78,7 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 					appHome.run();
 					break;
 				case 3:
-					Tr1_BasicMotions runApp3 = new Tr1_BasicMotions();
+					Tr3_BasicMotions runApp3 = new Tr3_BasicMotions();
 					runApp3.initialize();
 					runApp3.run();
 					break;

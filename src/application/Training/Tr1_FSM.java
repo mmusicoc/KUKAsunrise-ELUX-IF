@@ -9,7 +9,7 @@ import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 
-public class Tr2_FSM extends RoboticsAPIApplication {
+public class Tr1_FSM extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Inject private Plc_inputIOGroup 	plcin;
 	@Inject private Plc_outputIOGroup 	plcout;

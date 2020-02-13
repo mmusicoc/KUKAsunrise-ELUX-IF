@@ -12,9 +12,7 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.CartDOF;
 import com.kuka.roboticsAPI.geometricModel.Frame;
-import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
-// import com.kuka.roboticsAPI.geometricModel.Workpiece;
 import com.kuka.roboticsAPI.motionModel.IMotionContainer;
 import com.kuka.roboticsAPI.motionModel.PositionHold;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
@@ -22,20 +20,17 @@ import com.kuka.roboticsAPI.uiModel.userKeys.IUserKey;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
-public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
+public class Tr6_PinAssemblyTeach extends RoboticsAPIApplication {
 	// #Define parameters
 	private static final boolean log1 = true;	// Log level 1: main events
 	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
-	//private static final boolean log3 = false;	// Log level 3: basic events, redundant info
 	
 	// Standard KUKA API objects
 	@Inject private LBR 				kiwa;
 	@Inject private Plc_inputIOGroup 	plcin;
 	@Inject private Plc_outputIOGroup 	plcout;
 	@Inject private MediaFlangeIOGroup 	mfio;
-	@Inject	@Named("Pinza") 		private Tool 		Gripper;
-	//@Inject @Named("VacuumBody")	private Workpiece 	VacuumBody;
-	// @Inject	private ITaskLogger 		logger;
+	@Inject	@Named("Gripper") 		private Tool 		gripper;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
@@ -51,7 +46,7 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 	private double relSpeed = 0.25;
 	private final double approachOffset = 40;
 	private final double approachSpeed = 0.1;
-	private final String homeFramePath = "/_PinAssembly/Pick";
+	private final String homeFramePath = "/_PinAssembly/PrePick";
 	
 	// Motion related KUKA API objects
 	private CartesianImpedanceControlMode softMode = new CartesianImpedanceControlMode();  	// for stiffless handguiding
@@ -63,18 +58,20 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 					"\tTeaching mode:\n" +
 						"\t\t1 click: Register frame\n" +
 						"\t\t2 click: Register frame where pin is picked\n" +
-						"\t\t3 click: Register frame where pin is inserted and twisted\n" +
+						"\t\t3 click: Register frame when pin is in hole\n" +
+						"\t\t\tNOTE: twisting task will be performed automatically" +
 						"\t\tLong press: Exit teaching mode\n" +
 					"\tRun mode:\n" +
 						"\t\tLoop back and forward along recorded frame list\n" +
 						"\t\tPress TEACH Key to return to teach mode\n" +
 						"\t\tDefault relSpeed = 0.25\n" +
-						"\t\tDefault maxTorque = 10.0 Nm");
+						"\t\tDefault maxTorque = 10.0 Nm\n" +
+				"\nATTENTION: robot will perform move to PrePick");
 	}
 	
 	@Override public void initialize() {
 		progInfo();
-		Gripper.attachTo(kiwa.getFlange());
+		gripper.attachTo(kiwa.getFlange());
 		configPadKeysGENERAL();
 		state = States.home;
 		move.setHome(homeFramePath);
@@ -184,12 +181,6 @@ public class Tr5b_PinAssembly_v2 extends RoboticsAPIApplication {
 		move.LINwithJTConds(targetFrame, approachSpeed);
 		move.checkPinPick(5, 0.01);
 		move.LINwithJTConds(preFrame, approachSpeed);
-	}
-	
-	private void pickPinZ(String targetFramePath) {
-		padLog("Move LIN to " + targetFramePath);
-		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
-		this.pickPinZ(targetFrame.copyWithRedundancy());
 	}
 	
 	private void placePinY(Frame targetFrame) {

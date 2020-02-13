@@ -14,30 +14,21 @@ package eluxLibs;
 * void probeZ (int probeDist, double relSpeed) <p>
 */
 
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.circ;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.lin;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.linRel;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.positionHold;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptpHome;
-import static eluxLibs.Utils.padLog;
-import static eluxLibs.Utils.waitMillis;
+import static eluxLibs.Utils.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
+import com.kuka.roboticsAPI.deviceModel.LBR;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
+import com.kuka.roboticsAPI.motionModel.IMotionContainer;
+import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
 import com.kuka.roboticsAPI.conditionModel.ICondition;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
 import com.kuka.roboticsAPI.deviceModel.JointEnum;
-import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
-import com.kuka.roboticsAPI.geometricModel.CartDOF;
-import com.kuka.roboticsAPI.geometricModel.Frame;
-import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
+import com.kuka.roboticsAPI.geometricModel.*;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
-import com.kuka.roboticsAPI.motionModel.IMotionContainer;
-import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
 import com.kuka.task.ITaskLogger;
 
 @Singleton
@@ -162,6 +153,33 @@ public class HandlerMov extends RoboticsAPIApplication {
 				LINwithJTConds(targetFrame, relSpeed);
 			}
 		} while (JTBreak != null);
+	}
+	
+	public void LINwithJTConds(String targetFramePath, double relSpeed){
+		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
+		this.LINwithJTConds(targetFrame.copyWithRedundancy(), relSpeed);
+	}
+	
+	public void CIRCwithJTConds(Frame targetFrame1, Frame targetFrame2, double relSpeed){		// overloading for taught points
+		do {
+			mf.setRGB("G");
+			this.JTBMotion = kiwa.move(circ(targetFrame1, targetFrame2).setJointVelocityRel(relSpeed).breakWhen(this.JTConds)); 
+			this.JTBreak = this.JTBMotion.getFiredBreakConditionInfo();
+			if (JTBreak != null) {
+				mf.setRGB("RB");
+				this.LINREL(0, 0, -30, 1);
+				log.warn("Collision detected!"); 
+				mf.waitUserButton();
+				relSpeed *= 0.5;
+				LINwithJTConds(targetFrame2, relSpeed);			// SECURITY MEASURE, NEW CIRC CAN OVERSHOOT!!
+			}
+		} while (JTBreak != null);
+	}
+	
+	public void CIRCwithJTConds(String targetFramePath1, String targetFramePath2, double relSpeed){
+		ObjectFrame targetFrame1 = getApplicationData().getFrame(targetFramePath1);
+		ObjectFrame targetFrame2 = getApplicationData().getFrame(targetFramePath2);
+		this.CIRCwithJTConds(targetFrame1.copyWithRedundancy(), targetFrame2.copyWithRedundancy(), relSpeed);
 	}
 	
 	public void waitPushGesture() {
