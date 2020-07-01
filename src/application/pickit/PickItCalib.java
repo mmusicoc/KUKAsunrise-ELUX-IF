@@ -15,7 +15,7 @@ public class PickItCalib extends RoboticsAPIApplication {
 	private LBR kiwa;
 	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
 	
-	@Inject	@Named("PickitGripper") 		private Tool pickitGripper;
+	@Inject	@Named("GripperPickit") 		private Tool GripperPickit;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
@@ -24,7 +24,8 @@ public class PickItCalib extends RoboticsAPIApplication {
 	@Inject private HandlerPickIt pickit = new HandlerPickIt(kiwa);
 	
 	@Override public void initialize() {
-		move.setTCP(pickitGripper, "/Flange");
+		move.setTool(GripperPickit);
+		move.setTCP("/Flange");
 		pickit.init("192.168.2.12", 30001);
 	}
 
