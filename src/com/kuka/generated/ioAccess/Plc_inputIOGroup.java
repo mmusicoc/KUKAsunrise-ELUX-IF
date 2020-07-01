@@ -29,23 +29,43 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	{
 		super(controller, "Plc_input");
 
+		addInput("App_Auto", IOTypes.BOOLEAN, 1);
 		addInput("App_Enable", IOTypes.BOOLEAN, 1);
+		addInput("App_Reset", IOTypes.BOOLEAN, 1);
 		addInput("App_Start", IOTypes.BOOLEAN, 1);
 		addInput("Life_bit", IOTypes.BOOLEAN, 1);
-		addInput("App_Reset", IOTypes.BOOLEAN, 1);
-		addInput("App_Auto", IOTypes.BOOLEAN, 1);
-		addInput("Mission_Index", IOTypes.UNSIGNED_INTEGER, 16);
-		addInput("Mission_Start", IOTypes.BOOLEAN, 1);
-		addInput("Mission_PosAllow", IOTypes.BOOLEAN, 1);
 		addInput("Mission_ExitAllow", IOTypes.BOOLEAN, 1);
-		addInput("Pinza_Idle", IOTypes.BOOLEAN, 1);
+		addInput("Mission_Index", IOTypes.UNSIGNED_INTEGER, 16);
+		addInput("Mission_PosAllow", IOTypes.BOOLEAN, 1);
+		addInput("Mission_Start", IOTypes.BOOLEAN, 1);
+		addInput("Pinza_Error", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_Gripping", IOTypes.BOOLEAN, 1);
+		addInput("Pinza_Holding", IOTypes.BOOLEAN, 1);
+		addInput("Pinza_Idle", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_NoPart", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_PartLost", IOTypes.BOOLEAN, 1);
-		addInput("Pinza_Holding", IOTypes.BOOLEAN, 1);
-		addInput("Pinza_Releasing", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_Positionig", IOTypes.BOOLEAN, 1);
-		addInput("Pinza_Error", IOTypes.BOOLEAN, 1);
+		addInput("Pinza_Releasing", IOTypes.BOOLEAN, 1);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>App_Auto</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'App_Auto'
+	 */
+	public boolean getApp_Auto()
+	{
+		return getBooleanIOValue("App_Auto", false);
 	}
 
 	/**
@@ -66,6 +86,26 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	public boolean getApp_Enable()
 	{
 		return getBooleanIOValue("App_Enable", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>App_Reset</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'App_Reset'
+	 */
+	public boolean getApp_Reset()
+	{
+		return getBooleanIOValue("App_Reset", false);
 	}
 
 	/**
@@ -109,7 +149,7 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>App_Reset</i>'</b>.<br>
+	 * Gets the value of the <b>digital input '<i>Mission_ExitAllow</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -121,31 +161,11 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital input 'App_Reset'
+	 * @return current value of the digital input 'Mission_ExitAllow'
 	 */
-	public boolean getApp_Reset()
+	public boolean getMission_ExitAllow()
 	{
-		return getBooleanIOValue("App_Reset", false);
-	}
-
-	/**
-	 * Gets the value of the <b>digital input '<i>App_Auto</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'App_Auto'
-	 */
-	public boolean getApp_Auto()
-	{
-		return getBooleanIOValue("App_Auto", false);
+		return getBooleanIOValue("Mission_ExitAllow", false);
 	}
 
 	/**
@@ -169,26 +189,6 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>Mission_Start</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'Mission_Start'
-	 */
-	public boolean getMission_Start()
-	{
-		return getBooleanIOValue("Mission_Start", false);
-	}
-
-	/**
 	 * Gets the value of the <b>digital input '<i>Mission_PosAllow</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
@@ -209,7 +209,7 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>Mission_ExitAllow</i>'</b>.<br>
+	 * Gets the value of the <b>digital input '<i>Mission_Start</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -221,15 +221,15 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital input 'Mission_ExitAllow'
+	 * @return current value of the digital input 'Mission_Start'
 	 */
-	public boolean getMission_ExitAllow()
+	public boolean getMission_Start()
 	{
-		return getBooleanIOValue("Mission_ExitAllow", false);
+		return getBooleanIOValue("Mission_Start", false);
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>Pinza_Idle</i>'</b>.<br>
+	 * Gets the value of the <b>digital input '<i>Pinza_Error</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -241,11 +241,11 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital input 'Pinza_Idle'
+	 * @return current value of the digital input 'Pinza_Error'
 	 */
-	public boolean getPinza_Idle()
+	public boolean getPinza_Error()
 	{
-		return getBooleanIOValue("Pinza_Idle", false);
+		return getBooleanIOValue("Pinza_Error", false);
 	}
 
 	/**
@@ -266,6 +266,46 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	public boolean getPinza_Gripping()
 	{
 		return getBooleanIOValue("Pinza_Gripping", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>Pinza_Holding</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'Pinza_Holding'
+	 */
+	public boolean getPinza_Holding()
+	{
+		return getBooleanIOValue("Pinza_Holding", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>Pinza_Idle</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'Pinza_Idle'
+	 */
+	public boolean getPinza_Idle()
+	{
+		return getBooleanIOValue("Pinza_Idle", false);
 	}
 
 	/**
@@ -309,46 +349,6 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>Pinza_Holding</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'Pinza_Holding'
-	 */
-	public boolean getPinza_Holding()
-	{
-		return getBooleanIOValue("Pinza_Holding", false);
-	}
-
-	/**
-	 * Gets the value of the <b>digital input '<i>Pinza_Releasing</i>'</b>.<br>
-	 * <i>This method is automatically generated. Please, do not modify!</i>
-	 * <p>
-	 * <b>I/O direction and type:</b><br>
-	 * digital input
-	 * <p>
-	 * <b>User description of the I/O:</b><br>
-	 * ./.
-	 * <p>
-	 * <b>Range of the I/O value:</b><br>
-	 * [false; true]
-	 *
-	 * @return current value of the digital input 'Pinza_Releasing'
-	 */
-	public boolean getPinza_Releasing()
-	{
-		return getBooleanIOValue("Pinza_Releasing", false);
-	}
-
-	/**
 	 * Gets the value of the <b>digital input '<i>Pinza_Positionig</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
@@ -369,7 +369,7 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>Pinza_Error</i>'</b>.<br>
+	 * Gets the value of the <b>digital input '<i>Pinza_Releasing</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -381,11 +381,11 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital input 'Pinza_Error'
+	 * @return current value of the digital input 'Pinza_Releasing'
 	 */
-	public boolean getPinza_Error()
+	public boolean getPinza_Releasing()
 	{
-		return getBooleanIOValue("Pinza_Error", false);
+		return getBooleanIOValue("Pinza_Releasing", false);
 	}
 
 }
