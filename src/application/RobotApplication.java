@@ -58,7 +58,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 		// initialize your application here
 		home = new JointPosition( Math.toRadians(138.50), Math.toRadians(40.95),  Math.toRadians(-9.57), Math.toRadians(-100.48),  Math.toRadians(54.92),  Math.toRadians(-55.72),  Math.toRadians(-30.90));
 		lbr.setHomePosition(home);
-		System.out.println("inizializzazione");
+		System.out.println("initialization");
 		forceCondition = ForceCondition.createSpatialForceCondition(lbr.getFlange(),50);
 	}
 
@@ -67,12 +67,12 @@ public class RobotApplication extends RoboticsAPIApplication {
 		// your application execution starts here
 		while(true){
 			resetPlcOutput();
-			System.out.println("In attesa di missione");
+			System.out.println("Waiting for a mission");
 			mWait();
 			Mission=plcin.getMission_Index();
 			switch (Mission){
 			case 1://riposizionamento
-				System.out.println("azzeramento");
+				System.out.println("reset");
 				actPos = lbr.getCurrentCartesianPosition(lbr.getFlange());
 				if(plcin.getPinza_NoPart() || plcin.getPinza_Error()||plcin.getPinza_Idle()){
 					if(actPos.getX()<-200){//prelievo
@@ -142,22 +142,22 @@ public class RobotApplication extends RoboticsAPIApplication {
 				}
 				
 				lbr.move(ptpHome().setJointVelocityRel(0.1));
-				System.out.println("fine azzeramento");
+				System.out.println("end of reset");
 			break;
 			case 11: //prelievo pezzo
 				lastMission=11;
-				System.out.println("Prelievo");
+				System.out.println("withdrawal");
 				
 				plcout.setPinza_Apri(true);
 				lbr.move(ptp(getApplicationData().getFrame("/home")).setJointVelocityRel(0.2));
 				plcout.setPinza_Apri(false);
-				System.out.println("attesa di posAllow");
+				System.out.println("waiting for posAllow");
 				mWaitPosAllow();
 				//movimenti
 				pause = lbr.move(ptp(getApplicationData().getFrame("/AggancioHousing/Approccio")).setJointVelocityRel(0.2).breakWhen(forceCondition));
 				IFiredConditionInfo info = pause.getFiredBreakConditionInfo();
 				while (info!=null){
-					System.out.println("entro nel ciclo di controllo");
+					System.out.println("within the control cycle");
 					mfio.setLEDRed(true);
 					while(!mfio.getUserButton()){
 						ThreadUtil.milliSleep(20);
@@ -183,20 +183,20 @@ public class RobotApplication extends RoboticsAPIApplication {
 					ThreadUtil.milliSleep(10);
 				}
 				if ((plcin.getPinza_Error()==true)||(plcin.getPinza_NoPart()==true)){
-					System.out.println("errore pinzaggio");
+					System.out.println("clamping error");
 					plcout.setMission_Result(3);
 				}
 				plcout.setPinza_Chiudi(false);
 				mWaitExitAllow();
 				//movimenti
 				if(plcin.getPinza_Holding()){
-					System.out.println("pezzo in pinza");
+					System.out.println("piece in caliper");
 					f2.setParent(getApplicationData().getFrame("/AggancioHousing").copy());
 					lbr.move(linRel(-10,0,0).setCartVelocity(100));
 					pause = lbr.move(lin(f2).setCartVelocity(250).breakWhen(forceCondition));
 					info = pause.getFiredBreakConditionInfo();
 					while (info!=null){
-						System.out.println("entro nel ciclo di controllo");
+						System.out.println("within the control cycle");
 						mfio.setLEDRed(true);
 						while(!mfio.getUserButton()){
 							ThreadUtil.milliSleep(20);
@@ -220,7 +220,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 			case 21://incastro sul pezzo
 				lastMission=21;
 				f1.setParent(getApplicationData().getFrame("/AggancioCarrozzeria").copy());
-				System.out.println("Incastro");
+				System.out.println("interlocking");
 				mWaitPosAllow();
 				//movimenti
 				lbr.moveAsync(ptp(getApplicationData().getFrame("/AggancioCarrozzeria/Approcciopart1")).setBlendingCart(50).setJointVelocityRel(0.2));
@@ -228,7 +228,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 				pause = lbr.move(ptp(getApplicationData().getFrame("/AggancioCarrozzeria/ApproccioPart2")).setJointVelocityRel(0.25).breakWhen(forceCondition));
 				info = pause.getFiredBreakConditionInfo();
 				while (info!=null){
-					System.out.println("entro nel ciclo di controllo");
+					System.out.println("within the control cycle");
 					mfio.setLEDRed(true);
 					while(!mfio.getUserButton()){
 						ThreadUtil.milliSleep(20);
@@ -260,13 +260,13 @@ public class RobotApplication extends RoboticsAPIApplication {
 			case 31://deposito finale
 				lastMission=31;
 
-				System.out.println("deposito");
+				System.out.println("deposit");
 				mWaitPosAllow();
 				//movimenti
 				pause = lbr.move(lin(getApplicationData().getFrame("/DepositoFinale/Lineare")).setCartVelocity(250).breakWhen(forceCondition));
 				info = pause.getFiredBreakConditionInfo();
 				while (info!=null){
-					System.out.println("entro nel ciclo di controllo");
+					System.out.println("within the control cycle");
 					mfio.setLEDRed(true);
 					while(!mfio.getUserButton()){
 						ThreadUtil.milliSleep(20);
@@ -278,7 +278,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 				pause = lbr.move(ptp(getApplicationData().getFrame("/DepositoFinale/Approccio")).setJointVelocityRel(0.25).breakWhen(forceCondition));
 				info = pause.getFiredBreakConditionInfo();
 				while (info!=null){
-					System.out.println("entro nel ciclo di controllo");
+					System.out.println("within the control cycle");
 					mfio.setLEDRed(true);
 					while(!mfio.getUserButton()){
 						ThreadUtil.milliSleep(20);
@@ -287,7 +287,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 					info = pause.getFiredBreakConditionInfo();
 				}
 				mfio.setLEDRed(false);
-				System.out.println("vado a depositare");
+				System.out.println("going to deposit");
 				lbr.move(lin(getApplicationData().getFrame("/DepositoFinale")).setJointVelocityRel(0.25));
 				mAtPos();
 				plcout.setPinza_Apri(true);
@@ -300,7 +300,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 				pause = lbr.move(ptp(getApplicationData().getFrame("/DepositoFinale/Approccio")).setJointVelocityRel(0.25).breakWhen(forceCondition));
 				info = pause.getFiredBreakConditionInfo();
 				while (info!=null){
-					System.out.println("entro nel ciclo di controllo");
+					System.out.println("within the control cycle");
 					mfio.setLEDRed(true);
 					while(!mfio.getUserButton()){
 						ThreadUtil.milliSleep(20);
@@ -311,7 +311,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 				mfio.setLEDRed(false);
 				pause = lbr.move(ptp(getApplicationData().getFrame("/DepositoFinale/Lineare")).setJointVelocityRel(0.25).breakWhen(forceCondition));
 				while (info!=null){
-					System.out.println("entro nel ciclo di controllo");
+					System.out.println("within the control cycle");
 					mfio.setLEDRed(true);
 					while(!mfio.getUserButton()){
 						ThreadUtil.milliSleep(20);
@@ -323,7 +323,7 @@ public class RobotApplication extends RoboticsAPIApplication {
 				pause = lbr.move(lin(getApplicationData().getFrame("/AggancioCarrozzeria/ApproccioPart2")).setCartVelocity(250).breakWhen(forceCondition));
 				info = pause.getFiredBreakConditionInfo();
 				while (info!=null){
-					System.out.println("entro nel ciclo di controllo");
+					System.out.println("within the control cycle");
 					mfio.setLEDRed(true);
 					while(!mfio.getUserButton()){
 						ThreadUtil.milliSleep(20);
