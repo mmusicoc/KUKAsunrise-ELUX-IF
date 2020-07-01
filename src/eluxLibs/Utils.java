@@ -1,13 +1,4 @@
 package eluxLibs;
-
-/*******************************************************************
-* <b> STANDARD UTIL CLASS BY mario.musico@electrolux.com </b> <p>
-* static void waitMillis(int millis)/(int millis, boolean log)<p>
-* static void sleep() <p>
-* static void padLog(String/int/boolean/double msg) <p>
-* static void padErr(String msg) <p>
-*/
-
 import com.kuka.common.ThreadUtil;
 
 public class Utils {
