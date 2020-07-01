@@ -72,27 +72,35 @@ public class HandlerMFio {
 	}
 	
 	public void blinkRGB(String color, int millis) {
-		this.saveRGB();
+		boolean[] tempRGB = getRGB();
 		this.setRGB(color);
 		waitMillis(millis);
-		this.resetRGB();
+		this.setRGB(tempRGB);
 	}
 	
 	// Button handlers ****************************************************************************
 	
 	public boolean getUserButton() { return MFio.getUserButton(); }
 	
-	public void waitUserButton() {
+	public void waitUserButton(){ this.waitUserButton(-1);	}
+	
+	public boolean waitUserButton(int timeout) {
+		int timer = 0;
 		this.saveRGB();
 		if((prevRGB[0] == true) && (prevRGB[1] == false) && (prevRGB[2] == false)) ;
 		else this.setRGB("GB");
 		padLog("Press USER GREEN BUTTON to continue");
-		while (true) {
+		while ((timer < timeout) | (timeout == -1)) {
 			if (this.getUserButton()) break;
 			waitMillis(50);
+			if (timeout > 0) timer += 50;
 		}
 		this.resetRGB();
-		this.blinkRGB("RGB", 250);		// Wait for torque to stabilize and notify input
+		if(timer < timeout) {
+			this.blinkRGB("RGB", 250);		// Notify input registered and delay for torque stabilize
+			return true;
+		}
+		else return false;
 	}
 	
 	public int checkButtonInput(){						// determine user button input

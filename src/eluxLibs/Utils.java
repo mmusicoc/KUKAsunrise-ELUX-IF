@@ -1,4 +1,5 @@
 package eluxLibs;
+
 import com.kuka.common.ThreadUtil;
 
 public class Utils {
@@ -16,6 +17,7 @@ public class Utils {
 	public static void padLog(boolean msg) { System.out.println(msg); }
 	public static void padLog(double msg) { System.out.println(msg); }
 	public static void padErr(String msg) { System.err.println(msg); }
+	public static void debug() { padLog("Arrived here"); }
 	
 	public static double pi() { return 3.14159265359; }
 	public static double rad2deg(double rad) { return (rad * 180 / pi()); }

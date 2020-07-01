@@ -29,9 +29,9 @@ public class HandlerPLCio {
 	* STANDARD METHODS BY mario.musico@electrolux.com <p>
 	***************************************************************************/
 	
-	public int getGripperState() {
-		if (_PLCin.getPinza_Holding()) return (int)1;
-		else return 0;
+	public boolean gripperIsHolding() {
+		if (_PLCin.getPinza_Holding()) return true;
+		else return false;
 	}
 	
 	public void openGripper(int millis) {
@@ -64,8 +64,11 @@ public class HandlerPLCio {
 	
 	public void askOpen() {
 		if (!_PLCin.getPinza_Holding()) this.openGripperAsync();
-		else if (pad.question("The gripper is gripping sth, do you want to open it before proceeding?", "YES", "NO") == 0) {
-			waitMillis(2000);
+		else if (_mf.waitUserButton(5000)) {
+			waitMillis(1000);
+			openGripper();
+		} else if (pad.question("The gripper is gripping sth, do you want to open it before proceeding?", "YES", "NO") == 0) {
+			waitMillis(1000);
 			openGripper();
 		}
 	}
@@ -73,6 +76,10 @@ public class HandlerPLCio {
 	public void askClose(boolean loop) {
 		do {
 			if (_PLCin.getPinza_Holding()) break;
+			else if (_mf.waitUserButton(5000)) {
+				this.openGripper();
+				this.closeGripper();
+			}
 			else if (pad.question("The gripper didn't detect anything, do you want to close it now?", "YES", "NO") == 0) {
 				this.openGripper();
 				this.closeGripper();
