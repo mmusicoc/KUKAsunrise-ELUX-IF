@@ -1,4 +1,4 @@
-package eluxLibs;
+package EluxAPI;
 
 /*******************************************************************
 * <b> STANDARD HANDLER CLASS BY mario.musico@electrolux.com </b> <p>
@@ -10,8 +10,8 @@ package eluxLibs;
 * int ckeckButtonInput() <p>
 */
 
-import static eluxLibs.Utils.padLog;
-import static eluxLibs.Utils.waitMillis;
+import static EluxAPI.Utils.padLog;
+import static EluxAPI.Utils.waitMillis;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 
 @Singleton
-public class HandlerMFio {
+public class API_MF {
 	// Standard KUKA API objects
 	private MediaFlangeIOGroup MFio;
 	
@@ -27,7 +27,7 @@ public class HandlerMFio {
 	private boolean[] prevRGB;
 	
 	// CONSTRUCTOR
-	@Inject	public HandlerMFio(MediaFlangeIOGroup _MFio) { 
+	@Inject	public API_MF(MediaFlangeIOGroup _MFio) { 
 		this.MFio = _MFio;
 	}
 	

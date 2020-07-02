@@ -1,7 +1,7 @@
 package application.Training;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,11 +28,11 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	@Inject	@Named("Gripper") 		private Tool 		gripper;
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
-	@Inject private HandlerPad pad = new HandlerPad(mf);
-	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
-	@Inject private HandlerMov move = new HandlerMov(mf);
-	@Inject private HandlerCobotTasks cobot = new HandlerCobotTasks(mf, move);
+	@Inject private API_MF	mf = new API_MF(mfio);
+	@Inject private API_Pad pad = new API_Pad(mf);
+	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
+	@Inject private API_Movements move = new API_Movements(mf);
+	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();

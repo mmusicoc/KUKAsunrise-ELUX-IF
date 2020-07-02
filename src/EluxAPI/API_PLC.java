@@ -1,6 +1,6 @@
-package eluxLibs;
+package EluxAPI;
 
-import static eluxLibs.Utils.waitMillis;
+import static EluxAPI.Utils.waitMillis;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -9,21 +9,21 @@ import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 
 @Singleton
-public class HandlerPLCio {
+public class API_PLC {
 	// Private properties
-	private HandlerMFio _mf;
+	private API_MF _mf;
 	private Plc_inputIOGroup _PLCin;
 	private Plc_outputIOGroup _PLCout;
 	
 	// CONSTRUCTOR
-	@Inject	public HandlerPLCio(HandlerMFio mf, Plc_inputIOGroup PLCin, Plc_outputIOGroup PLCout) {
+	@Inject	public API_PLC(API_MF mf, Plc_inputIOGroup PLCin, Plc_outputIOGroup PLCout) {
 		this._mf = mf;
 		this._PLCin = PLCin;
 		this._PLCout = PLCout;
 	}
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerPad pad = new HandlerPad(_mf);
+	@Inject private API_Pad pad = new API_Pad(_mf);
 	
 	/***************************************************************************
 	* STANDARD METHODS BY mario.musico@electrolux.com <p>

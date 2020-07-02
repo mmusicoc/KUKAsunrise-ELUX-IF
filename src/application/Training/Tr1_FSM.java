@@ -1,7 +1,7 @@
 package application.Training;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 
 import javax.inject.Inject;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
@@ -16,9 +16,9 @@ public class Tr1_FSM extends RoboticsAPIApplication {
 	@Inject private MediaFlangeIOGroup	mfio; 
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
-	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
-	@Inject private HandlerMov move = new HandlerMov(mf);
+	@Inject private API_MF	mf = new API_MF(mfio);
+	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
+	@Inject private API_Movements move = new API_Movements(mf);
 	
 	// Private properties - application variables
 	private enum States {state_A, state_B, state_C, state_D};

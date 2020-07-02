@@ -1,10 +1,10 @@
-package eluxLibs;
+package EluxAPI;
 
 /*******************************************************************
 * <b> STANDARD API CLASS BY mario.musico@electrolux.com </b> <p>
 */
 
-import static eluxLibs.Utils.*;
+import static EluxAPI.Utils.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -13,17 +13,17 @@ import com.kuka.roboticsAPI.geometricModel.*;
 
 
 @Singleton
-public class HandlerCobotTasks extends RoboticsAPIApplication {
+public class API_CobotMacros extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Override public void run() { while (true) { break; } }		// Compulsory method for RoboticsAPIApplication derived classes
-	@Inject private HandlerMFio mf;
-	@Inject private HandlerMov move;
+	@Inject private API_MF mf;
+	@Inject private API_Movements move;
 	
 	// Private properties
 	private double _releaseDist;
 	
 	// CONSTRUCTOR
-	@Inject	public HandlerCobotTasks(HandlerMFio _mf, HandlerMov _move) {
+	@Inject	public API_CobotMacros(API_MF _mf, API_Movements _move) {
 		this.mf = _mf;
 		this.move = _move;
 		_releaseDist = 10;

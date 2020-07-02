@@ -1,4 +1,4 @@
-package eluxLibs;
+package EluxAPI;
 
 import com.kuka.common.ThreadUtil;
 

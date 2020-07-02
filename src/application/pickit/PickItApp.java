@@ -1,7 +1,7 @@
 package application.PickIt;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -24,11 +24,11 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Inject	@Named("GripperPickit") 	private Tool GripperPickit;
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
-	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
-	@Inject private HandlerMov move = new HandlerMov(mf);
-	@Inject private HandlerPad pad = new HandlerPad(mf);
-	@Inject private HandlerPickIt pickit = new HandlerPickIt(kiwa);
+	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
+	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
+	@Inject private API_Movements move = new API_Movements(mf);
+	@Inject private API_Pad pad = new API_Pad(mf);
+	@Inject private API_PickIt pickit = new API_PickIt(kiwa);
 	
 	int failCounter = -1;
 	boolean rot180 = false;

@@ -1,7 +1,7 @@
 package application.Training;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -15,8 +15,8 @@ public class Tr3_BasicMotions extends RoboticsAPIApplication {
 	@Inject @Named("Gripper") private Tool flange;
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
-	@Inject private HandlerMov move = new HandlerMov(mf);
+	@Inject private API_MF	mf = new API_MF(mfio);
+	@Inject private API_Movements move = new API_Movements(mf);
 	
 	
 	@Override public void initialize() {

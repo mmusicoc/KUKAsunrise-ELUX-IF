@@ -1,7 +1,7 @@
 package utils;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 //import application.*;
 //import application.Training.*;
 
@@ -18,9 +18,9 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 	@Inject private Plc_inputIOGroup 		plcin;
 	@Inject private Plc_outputIOGroup 		plcout;
 	@Inject private MediaFlangeIOGroup 		mfio;
-	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
-	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
-	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private API_MF	mf = new API_MF(mfio);
+	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
+	@Inject private API_Pad pad = new API_Pad(mf);
 	
 	@Override public void initialize() {
 		initializeCyclic(0, 500, TimeUnit.MILLISECONDS,	CycleBehavior.BestEffort);

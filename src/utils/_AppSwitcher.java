@@ -1,7 +1,7 @@
 package utils;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 
 import javax.inject.Inject;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
@@ -9,7 +9,7 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 
 public class _AppSwitcher extends RoboticsAPIApplication {
 	@Inject private MediaFlangeIOGroup	mfio;
-	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
+	@Inject private API_MF	mf = new API_MF(mfio);
 	private int	promptAns;
 	
 	private enum States {cancel, sleep, home, app1, app2, app3, app4, app5, app6};
