@@ -34,6 +34,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 	@Inject private HandlerPad pad = new HandlerPad(mf);
 	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
 	@Inject private HandlerMov move = new HandlerMov(mf);
+	@Inject private HandlerCobotTasks cobot = new HandlerCobotTasks(mf, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -69,7 +70,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		state = States.home;
 		move.setHome("/_PinAssembly/PrePick");
 		move.setGlobalSpeed(0.25);
-		move.setJTConds(10.0);
+		move.setJTconds(10.0);
 	}
 
 	@Override public void run() {
@@ -77,7 +78,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 			switch (state) {
 				case home:
 					move.swapLockDir();
-					move.PTPHOMEsafe();
+					move.PTPhomeCobot();
 					checkGripper();
 					state = States.teach;
 					break;
@@ -128,7 +129,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 						mf.blinkRGB("RGB", 500);
 						move.swapLockDir();
 						posHoldMotion.cancel();
-						move.LINREL(0, 0, 0.01, 0.5);
+						move.LINREL(0, 0, 0.01, true, 0.5);
 						posHoldMotion = kiwa.moveAsync(move.getPosHold());
 					default:
 						padLog("Command not valid, try again");
@@ -139,9 +140,9 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		}
 		padLog("Exiting handguiding teaching mode...");
 		posHoldMotion.cancel();
-		move.LINREL(0, 0, 0.01, 0.5);
+		move.LINREL(0, 0, 0.01, true, 0.5);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
-		move.PTPHOMEsafe();
+		move.PTPhomeCobot();
 	}
 	
 	private void loopRoutine(){
@@ -160,7 +161,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 	
 	private void checkGripper() {
 		do {
-			if (plc.getGripperState() == 1) break;
+			if (plc.gripperIsHolding()) break;
 			else {
 				plc.openGripper();
 				move.waitPushGesture();
@@ -175,7 +176,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		move.PTPsafe(preFrame, 1);
 		padLog("Picking process");
 		move.LINsafe(targetFrame, approachSpeed);
-		move.checkPinPick(5, probeSpeed);
+		cobot.checkPinPick(5, probeSpeed);
 		move.LINsafe(preFrame, approachSpeed);
 	}
 	
@@ -187,9 +188,9 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 			move.PTPsafe(preFrame, 1);
 			padLog("Picking process");
 			move.LINsafe(targetFrame, approachSpeed);
-			move.checkPinPlace(5, probeSpeed);
-			inserted = move.twistJ7withJTCond(45, 30, 0.15, 0.7);
-			move.LINREL(0, 0, -30, approachSpeed);
+			cobot.checkPinPlace(5, probeSpeed);
+			inserted = move.twistJ7safe(45, 30, 0.15, 0.7);
+			move.LINREL(0, 0, -30, true, approachSpeed);
 		}
 		while (!inserted);		
 	}
@@ -217,7 +218,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTConds(maxTorque);
+							move.setJTconds(maxTorque);
 							break;
 					}
 				}

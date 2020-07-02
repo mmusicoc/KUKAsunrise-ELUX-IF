@@ -28,9 +28,10 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
+	@Inject private HandlerPad pad = new HandlerPad(mf);
 	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
 	@Inject private HandlerMov move = new HandlerMov(mf);
-	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private HandlerCobotTasks cobot = new HandlerCobotTasks(mf, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -59,7 +60,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 		state = States.home;
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
 		move.setGlobalSpeed(0.25);
-		move.setJTConds(10.0);					
+		move.setJTconds(10.0);					
 	}
 
 	@Override public void run() {
@@ -67,7 +68,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 			switch (state) {
 				case home:
 					plc.askOpen();
-					move.PTPHOMEsafe();
+					move.PTPhomeCobot();
 					plc.askOpen();
 					state = States.loop;
 					break;
@@ -132,7 +133,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 		move.PTPsafe(preFrame, 1);
 		if(log1) padLog("Picking process");
 		move.LINsafe(targetFrame, approachSpeed);
-		move.checkPartZ(15, 0.1, 2);
+		cobot.probe(0, 0, 15, true, 0.1, 2);
 		closeGripperCheck(false);
 		move.LINsafe(preFrame, approachSpeed);
 	}
@@ -210,7 +211,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTConds(maxTorque);
+							move.setJTconds(maxTorque);
 							break;
 					}
 				}

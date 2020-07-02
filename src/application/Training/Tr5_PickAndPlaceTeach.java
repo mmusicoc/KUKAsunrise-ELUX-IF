@@ -29,9 +29,10 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
+	@Inject private HandlerPad pad = new HandlerPad(mf);
 	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
 	@Inject private HandlerMov move = new HandlerMov(mf);
-	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private HandlerCobotTasks cobot = new HandlerCobotTasks(mf, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -66,7 +67,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		state = States.home;
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
 		move.setGlobalSpeed(0.25);
-		move.setJTConds(10.0);					
+		move.setJTconds(10.0);					
 	}
 
 	@Override public void run() {
@@ -75,7 +76,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 				case home:
 					plc.askOpen();
 					move.swapLockDir();
-					move.PTPHOMEsafe();
+					move.PTPhomeCobot();
 					plc.askOpen();
 					state = States.teach;
 					break;
@@ -129,7 +130,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 						mf.blinkRGB("RGB", 500);
 						move.swapLockDir();
 						posHoldMotion.cancel();
-						move.LINREL(0, 0, 0.01, 0.5);
+						move.LINREL(0, 0, 0.01, true, 0.5);
 						posHoldMotion = kiwa.moveAsync(move.getPosHold());
 					default:
 						padLog("Command not valid, try again");
@@ -140,7 +141,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		} 
 		padLog("Exiting handguiding teaching mode...");
 		posHoldMotion.cancel();
-		move.LINREL(0, 0, 0.01, 0.5);
+		move.LINREL(0, 0, 0.01, true, 0.5);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
 		//move.PTPHOMEsafe();
 	}
@@ -175,7 +176,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		move.PTPsafe(preFrame, 1);
 		if(log1) padLog("Picking process");
 		move.LINsafe(targetFrame, approachSpeed);
-		move.checkPartZ(25, 0.1, 3);
+		cobot.probe(0, 0, 25, true, 0.1, 3);
 		closeGripperCheck(false);
 		move.LINsafe(preFrame, approachSpeed);
 	}
@@ -242,7 +243,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTConds(maxTorque);
+							move.setJTconds(maxTorque);
 							break;
 					}
 				}
