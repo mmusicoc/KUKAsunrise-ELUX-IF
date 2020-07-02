@@ -25,7 +25,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 	//@Inject private HandlerPad pad = new HandlerPad(mf);
 	
 	@Override public void initialize() {
-		move.setJTConds(15.0);
+		move.setJTconds(15.0);
 		move.setGlobalSpeed(1);
 		move.setBlending(20, 5);
 		move.setTool(GripperSpring);

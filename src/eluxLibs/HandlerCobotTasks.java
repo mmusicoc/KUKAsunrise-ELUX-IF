@@ -1,10 +1,10 @@
 package eluxLibs;
 
 /*******************************************************************
-* <b> STANDARD HANDLER CLASS BY mario.musico@electrolux.com </b> <p>
+* <b> STANDARD API CLASS BY mario.musico@electrolux.com </b> <p>
 */
 
-//import static eluxLibs.Utils.*;
+import static eluxLibs.Utils.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,11 +29,15 @@ public class HandlerCobotTasks extends RoboticsAPIApplication {
 		_releaseDist = 10;
 	}
 	
-	// Cobot macros **************************************************************
+	// SETTERS ******************************************************************
+	
+	public void setSafeRelease(double releaseDist) { this._releaseDist = releaseDist; }
+	
+	// COBOT MACROS **************************************************************
 	
 	public boolean PTPcobot(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
 		if (!move.PTPsafe(targetFrame, relSpeed)) {
-			move.LINREL(0, 0, -_releaseDist, 1, true);
+			move.LINREL(0, 0, -_releaseDist, true, 1);
 			mf.waitUserButton();
 			relSpeed *= 0.8;
 			if (forceEnd) this.PTPcobot(targetFrame, relSpeed, forceEnd);
@@ -48,7 +52,7 @@ public class HandlerCobotTasks extends RoboticsAPIApplication {
 	
 	public boolean LINcobot(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
 		if (!move.LINsafe(targetFrame, relSpeed)) {
-			move.LINREL(0, 0, -_releaseDist, 1, true);
+			move.LINREL(0, 0, -_releaseDist, true, 1);
 			mf.waitUserButton();
 			relSpeed *= 0.8;
 			if (forceEnd) this.LINcobot(targetFrame, relSpeed, forceEnd);
@@ -64,7 +68,7 @@ public class HandlerCobotTasks extends RoboticsAPIApplication {
 	
 	public boolean CIRCcobot(Frame targetFrame1, Frame targetFrame2, double relSpeed, boolean forceEnd){		// overloading for taught points
 		if (!move.CIRCsafe(targetFrame1, targetFrame2, relSpeed)) {
-			move.LINREL(0, 0, -_releaseDist, 1, true);
+			move.LINREL(0, 0, -_releaseDist, true, 1);
 			mf.waitUserButton();
 			relSpeed *= 0.8;
 			if (forceEnd) LINcobot(targetFrame2, relSpeed, forceEnd);			// SECURITY MEASURE, NEW CIRC CAN OVERSHOOT!!
@@ -101,26 +105,24 @@ public class HandlerCobotTasks extends RoboticsAPIApplication {
 		move.waitPushGesture();
 		this.LINcobot(targetFrame, 0.1, true);
 	}
-	/*
-	public void checkPartZ(int probeDist, double relSpeed, double maxTorque) {
-		Frame targetFrame = kiwa.getCommandedCartesianPosition(kiwa.getFlange());
-		double prevMaxTorque = move._maxTorque;
+	
+	// UNTESTED
+	
+	public void probe(double x, double y, double z, boolean absolute, double relSpeed, double maxTorque) {
+		Frame targetFrame = move.getFlangePos();
 		boolean pieceFound = false;
-		if(log1) padLog("Checking component presence...");
+		padLog("Checking component presence...");
 		do {
 			mf.setRGB("G");
-			this.setJTConds(maxTorque);
-			this._JTBMotion = kiwa.move(linRel(0, 0, probeDist).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(_JTConds)); 
-			this.setJTConds(prevMaxTorque);
-			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
-			if (_JTBreak != null) {
-				if(log1) padLog("Component detected. " ); 
-				kiwa.move(lin(targetFrame).setJointVelocityRel(scaleSpeed(relSpeed)));
+			move.setJTconds(maxTorque);
+			pieceFound = move.LINRELsafe(x, y, z, absolute, relSpeed);
+			move.resetJTconds();
+			if (pieceFound) {
+				move.LIN(targetFrame, relSpeed, false);
 				mf.blinkRGB("GB", 400);
-				pieceFound = true;
 			} else {
 				mf.setRGB("RB");
-				padLog("No components detected, reposition the workpiece correctly and push the cobot (gesture control)." );
+				padLog("Reposition the workpiece correctly and push the cobot (gesture control)." );
 				this.waitPushGestureZ(targetFrame);
 			}
 		} while (!pieceFound);
@@ -128,12 +130,12 @@ public class HandlerCobotTasks extends RoboticsAPIApplication {
 	}
 	
 	public void checkPinPick(double tolerance, double relSpeed) {
-		Frame targetFrame = kiwa.getCommandedCartesianPosition(kiwa.getFlange());
+		Frame targetFrame = move.getFlangePos();
 		boolean pinFound;
 		do {
 			pinFound = probeXY(tolerance, relSpeed, 3);
 			if (pinFound) {
-				if(log1) padLog("Pin found. " ); 
+				padLog("Pin found. " ); 
 				mf.blinkRGB("GB", 800);
 				pinFound = true;
 			} else {
@@ -146,12 +148,12 @@ public class HandlerCobotTasks extends RoboticsAPIApplication {
 	}
 	
 	public void checkPinPlace(double tolerance, double relSpeed) {
-		Frame targetFrame = kiwa.getCommandedCartesianPosition(kiwa.getFlange());
+		Frame targetFrame = move.getFlangePos();
 		boolean holeFound;
 		do {
 			holeFound = probeXY(tolerance, relSpeed, 3);
 			if (holeFound) {
-				if(log1) padLog("Hole found. " ); 
+				padLog("Hole found. " ); 
 				mf.blinkRGB("GB", 800);
 				holeFound = true;
 			} else {
@@ -164,50 +166,20 @@ public class HandlerCobotTasks extends RoboticsAPIApplication {
 	}
 	
 	private boolean probeXY(double tolerance, double relSpeed, double maxTorque) {
+		Frame targetFrame = move.getFlangePos();
 		boolean found = false;
-		if(log1) padLog("Testing hole insertion...");
 		mf.blinkRGB("GB", 250);
-		double prevMaxTorque = this._maxTorque;
-		this.setJTConds(maxTorque);
+		move.setJTconds(maxTorque);
 		mf.setRGB("G");
-		Frame holeFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
-		this._JTBMotion = kiwa.move(linRel(-tolerance, -tolerance, 0).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(_JTConds));
-		this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
-		if (this._JTBreak != null) { mf.blinkRGB("GB", 200); found = true; }
-		else mf.blinkRGB("RB", 200);
-		this.PTP(holeFrame, relSpeed*_speed[0], false);
+		if (move.LINRELsafe(-tolerance, -tolerance, 0, true, relSpeed)) mf.blinkRGB("RB", 200);
+		else { 	mf.blinkRGB("GB", 200); found = true; }
+		move.PTP(targetFrame, relSpeed, false);
 		if (found) {
-			this._JTBMotion = kiwa.move(linRel(tolerance, tolerance, 0).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(_JTConds));
-			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
-			if (this._JTBreak != null) mf.blinkRGB("GB", 200);
+			if (!move.LINRELsafe(tolerance, tolerance, 0, true, relSpeed)) mf.blinkRGB("GB", 200);
 			else { mf.blinkRGB("RB", 200); found = false; }
-			this.PTP(holeFrame, relSpeed*_speed[0], false);
+			move.PTP(targetFrame, relSpeed, false);
 		}
-		this.setJTConds(prevMaxTorque);
+		move.resetJTconds();
 		return found;
 	}
-	
-	public boolean twistJ7withJTCond(double angle, double extra, double relSpeed, double maxTorque) {
-		if(log1) padLog("Twisting the pin...");
-		mf.blinkRGB("GB", 250);
-		JointTorqueCondition JTCond = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
-		try {
-			kiwa.move(linRel(Transformation.ofDeg(0,0,0,angle,0,0)).setJointVelocityRel(_speed));
-			this._JTBMotion = kiwa.move(linRel(Transformation.ofDeg(0, 0, 0, extra, 0, 0)).setJointVelocityRel(scaleSpeed(relSpeed)).breakWhen(JTCond)); // Tx, Ty, Tz, Rz, Ry, Rx
-			this._JTBreak = this._JTBMotion.getFiredBreakConditionInfo();
-			if (_JTBreak != null) {
-				if(log1) padLog("Rotation reached limit due to torque sensing");
-				mf.blinkRGB("GB", 500);
-				return true;
-			} else {
-				padLog("Full rotation performed, no obstacle detected");
-				mf.blinkRGB("RB", 500);
-				return false;
-			}
-		} catch (Exception e) {
-			padLog("The wrist twist exceeded the limits, try to teach again a reachable position.");
-			return true;
-		}
-	}
-	*/
 }

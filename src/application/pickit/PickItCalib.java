@@ -1,4 +1,4 @@
-package application.Pickit;
+package application.PickIt;
 
 import static eluxLibs.Utils.*;
 import eluxLibs.*;

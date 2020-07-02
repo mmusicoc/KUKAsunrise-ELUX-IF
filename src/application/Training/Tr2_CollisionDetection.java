@@ -18,8 +18,8 @@ public class Tr2_CollisionDetection extends RoboticsAPIApplication {
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
-	@Inject private HandlerMov move = new HandlerMov(mf);
 	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private HandlerMov move = new HandlerMov(mf);
 	
 	// Private properties - application variables
 	private double relSpeed = 0.15;
@@ -27,7 +27,7 @@ public class Tr2_CollisionDetection extends RoboticsAPIApplication {
 	@Override public void initialize() {
 		gripper.attachTo(kiwa.getFlange());
 		double maxTorque = pad.askTorque();
-		move.setJTConds(maxTorque);
+		move.setJTconds(maxTorque);
 		move.setGlobalSpeed(1);
 	}
 

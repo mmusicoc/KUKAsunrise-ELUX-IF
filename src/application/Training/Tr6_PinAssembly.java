@@ -33,6 +33,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	@Inject private HandlerPad pad = new HandlerPad(mf);
 	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
 	@Inject private HandlerMov move = new HandlerMov(mf);
+	@Inject private HandlerCobotTasks cobot = new HandlerCobotTasks(mf, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -59,14 +60,14 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		state = States.home;
 		move.setHome("/_PinAssembly/PrePick");
 		move.setGlobalSpeed(0.25);
-		move.setJTConds(10.0);
+		move.setJTconds(10.0);
 	}
 
 	@Override public void run() {
 		while (true) {
 			switch (state) {
 				case home:
-					move.PTPHOMEsafe();
+					move.PTPhomeCobot();
 					checkGripper();
 					state = States.loop;
 					break;
@@ -104,7 +105,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	
 	private void checkGripper() {
 		do {
-			if (plc.getGripperState() == 1) break;
+			if (plc.gripperIsHolding()) break;
 			else {
 				plc.openGripper();
 				move.waitPushGesture();
@@ -119,7 +120,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		move.PTPsafe(preFrame, relSpeed);
 		if(log1) padLog("Picking process");
 		move.LINsafe(targetFrame, approachSpeed);
-		move.checkPinPick(5, probeSpeed);
+		cobot.checkPinPick(5, probeSpeed);
 		move.LINsafe(preFrame, approachSpeed);
 	}
 	
@@ -137,9 +138,9 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 			move.PTPsafe(preFrame, relSpeed);
 			if (log1) padLog("Placing process");
 			move.LINsafe(targetFrame, approachSpeed);
-			move.checkPinPlace(5, probeSpeed);
-			inserted = move.twistJ7withJTCond(45, 30, 0.15, 0.7);
-			move.LINREL(0, 0, -30, approachSpeed);
+			cobot.checkPinPlace(5, probeSpeed);
+			inserted = move.twistJ7safe(45, 30, 0.15, 0.7);
+			move.LINREL(0, 0, -30, true, approachSpeed);
 		}
 		while (!inserted);		
 	}
@@ -172,7 +173,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTConds(maxTorque);
+							move.setJTconds(maxTorque);
 							break;
 					}
 				}

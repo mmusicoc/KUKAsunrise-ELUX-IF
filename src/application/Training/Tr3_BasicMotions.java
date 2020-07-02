@@ -12,7 +12,7 @@ import com.kuka.roboticsAPI.geometricModel.Tool;
 public class Tr3_BasicMotions extends RoboticsAPIApplication {
 	@Inject private MediaFlangeIOGroup 	mfio;
 	
-	@Inject @Named("PickItFlange") private Tool flange;
+	@Inject @Named("Gripper") private Tool flange;
 	
 	// Custom modularizing handler objects
 	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
@@ -21,14 +21,14 @@ public class Tr3_BasicMotions extends RoboticsAPIApplication {
 	
 	@Override public void initialize() {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
-		move.setJTConds(10.0);
+		move.setJTconds(10.0);
 		move.setGlobalSpeed(1);
-		move.setTCP(flange);
+		move.setTool(flange);
 	}
 
 	@Override public void run() {
 		double relSpeed;
-		move.PTPHOMEsafe();
+		move.PTPhomeCobot();
 		for (relSpeed = 0.2; relSpeed < 1 ; relSpeed += 0.195){
 			padLog("Speed is " + relSpeed + "/1");
 			move.PTPsafe("/_HOME/_0_Shutoff_REST", relSpeed);
@@ -37,7 +37,7 @@ public class Tr3_BasicMotions extends RoboticsAPIApplication {
 			waitMillis(1000, true);
 			move.CIRCsafe("/_HOME/_2_Teach_CENTRAL", "/_HOME/_3_Teach_RIGHT", relSpeed);
 		}
-		move.PTPHOMEsafe();
+		move.PTPhomeCobot();
 		padLog("Finished program");
 		return;
 	}

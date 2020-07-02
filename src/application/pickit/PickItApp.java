@@ -1,4 +1,4 @@
-package application.Pickit;
+package application.PickIt;
 
 import static eluxLibs.Utils.*;
 import eluxLibs.*;
@@ -36,7 +36,7 @@ public class PickItApp extends RoboticsAPIApplication {
 	@Override public void initialize() {
 		kiwaController = (Controller) getContext().getControllers().toArray()[0];
 		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
-		move.setJTConds(15.0);
+		move.setJTconds(15.0);
 		move.setGlobalSpeed(1);
 		move.setBlending(20, 5);
 		move.setTool(GripperPickit);
