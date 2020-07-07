@@ -1,7 +1,7 @@
 package utils;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 import javax.inject.Inject;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
@@ -12,7 +12,7 @@ import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 public class _Home extends RoboticsAPIApplication {
 	@Inject	private LBR 				kiwa;
 	@Inject private MediaFlangeIOGroup	mfio;
-	@Inject private HandlerMFio	mf = new HandlerMFio(mfio);
+	@Inject private API_MF	mf = new API_MF(mfio);
 			private double 				relSpeed;
 			private int					promptAns;
 			

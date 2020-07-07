@@ -1,7 +1,7 @@
 package application.SpringAssembly;
 
-import static eluxLibs.Utils.*;
-import eluxLibs.*;
+import static EluxAPI.Utils.*;
+import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -19,9 +19,9 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 	@Inject	@Named("GripperSpring") 	private Tool GripperSpring;
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
-	@Inject private HandlerPLCio plc = new HandlerPLCio(mf, plcin, plcout);
-	@Inject private HandlerMov move = new HandlerMov(mf);
+	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
+	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
+	@Inject private API_Movements move = new API_Movements(mf);
 	//@Inject private HandlerPad pad = new HandlerPad(mf);
 	
 	@Override public void initialize() {

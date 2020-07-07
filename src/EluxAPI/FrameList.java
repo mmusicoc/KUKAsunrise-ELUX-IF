@@ -1,6 +1,6 @@
-package eluxLibs;
+package EluxAPI;
 
-import static eluxLibs.Utils.padLog;
+import static EluxAPI.Utils.padLog;
 
 import java.util.ArrayList;
 

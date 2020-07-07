@@ -1,10 +1,10 @@
-package eluxLibs;
+package EluxAPI;
 
 /*******************************************************************
 * <b> STANDARD API CLASS BY mario.musico@electrolux.com </b> <p>
 */
 
-import static eluxLibs.Utils.*;
+import static EluxAPI.Utils.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,12 +24,12 @@ import com.kuka.roboticsAPI.geometricModel.*;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 @Singleton
-public class HandlerMov extends RoboticsAPIApplication {
+public class API_Movements extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Override public void run() { while (true) { break; } }		// Compulsory method for RoboticsAPIApplication derived classes
 	@Inject private LBR kiwa;
-	@Inject private HandlerMFio mf;
-	@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private API_MF mf;
+	@Inject private API_Pad pad = new API_Pad(mf);
 	private Tool _tool;
 	private ObjectFrame tcp;
 	
@@ -51,7 +51,7 @@ public class HandlerMov extends RoboticsAPIApplication {
 	private double _blendingAnglePrev;
 	
 	// CONSTRUCTOR
-	@Inject	public HandlerMov(HandlerMFio _mf) {
+	@Inject	public API_Movements(API_MF _mf) {
 		this.mf = _mf;
 		_softMode = new CartesianImpedanceControlMode();
 		_stiffMode = new CartesianImpedanceControlMode();

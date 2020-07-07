@@ -1,4 +1,4 @@
-package eluxLibs;
+package EluxAPI;
 
 import javax.inject.Inject;
 
@@ -9,13 +9,13 @@ import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyBar;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyAlignment;
 
-public class HandlerPad extends RoboticsAPIApplication {
+public class API_Pad extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Override public void run() { while (true) { break; } }
-	@Inject private HandlerMFio mf;
+	@Inject private API_MF mf;
 	
 	// CONSTRUCTOR
-	@Inject	public HandlerPad(HandlerMFio _mf) { 
+	@Inject	public API_Pad(API_MF _mf) { 
 		this.mf = _mf;
 	}
 	

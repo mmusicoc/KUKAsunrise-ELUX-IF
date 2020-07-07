@@ -1,6 +1,6 @@
 package application.PickIt;
 
-import eluxLibs.*;
+import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -14,8 +14,8 @@ public class TCPtest extends RoboticsAPIApplication {
 	@Inject @Named("GripperPickit") private Tool GripperPickit;
 	
 	// Custom modularizing handler objects
-	@Inject private HandlerMFio	mf = new HandlerMFio(mediaFlangeIOGroup);
-	@Inject private HandlerMov move = new HandlerMov(mf);
+	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
+	@Inject private API_Movements move = new API_Movements(mf);
 	
 	@Override public void initialize() {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
