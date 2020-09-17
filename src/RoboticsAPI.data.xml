@@ -2055,9 +2055,9 @@
                 </frame>
             </frame>
             <frame id="_1ede227c-9d5f-474f-ae5a-a49605a00e6c" name="WashingTub">
-                <transformation a="0.0" b="0.0" c="0.0" x="255.7711973567562" y="197.03562684261237" z="511.76773554528745"/>
+                <transformation a="0.0" b="0.0" c="0.0" x="251.0" y="195.7" z="511.76773554528745"/>
                 <additionalInformation>
-                    <info key="LastModificationTime" type="java.lang.Long" value="1593183641190"/>
+                    <info key="LastModificationTime" type="java.lang.Long" value="1594129845919"/>
                     <info base="LBR_iiwa_14_R820_1" controller="KUKA_Sunrise_Cabinet_1" device="LBR_iiwa_14_R820_1" tcpName="GripperSpring/SpringGrab" tool="GripperSpring" type="com.kuka.roboticsAPI.deviceModel.TeachInformation">
                         <tcpTransformation a="-1.5707963267948968" b="1.2246467991473532E-16" c="3.141592653589793" x="0.0" y="0.0" z="153.0"/>
                     </info>

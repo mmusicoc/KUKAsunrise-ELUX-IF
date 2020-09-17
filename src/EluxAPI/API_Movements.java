@@ -151,6 +151,7 @@ public class API_Movements extends RoboticsAPIApplication {
 			return false; 
 		}
 	}
+	
 	public boolean PTP(String targetFramePath, double relSpeed, boolean approx) {
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		return this.PTP(targetFrame.copyWithRedundancy(), relSpeed, approx);
@@ -311,14 +312,6 @@ public class API_Movements extends RoboticsAPIApplication {
 		return this.CIRCsafe(targetFrame1.copyWithRedundancy(), targetFrame2.copyWithRedundancy(), relSpeed);
 	}
 	
-	public void waitPushGesture() {
-		mf.saveRGB();
-		mf.setRGB("B");
-		kiwa.move(positionHold(_stiffMode, -1, null).breakWhen(_JTConds));
-		waitMillis(500);
-		mf.resetRGB();
-	}
-	
 	public boolean twistJ7safe(double minAngle, double maxAngle, double relSpeed, double maxTorque) {
 		boolean fullTwist;
 		this.LINREL(0, 0, 0, minAngle, 0, 0, false, relSpeed);
@@ -327,5 +320,13 @@ public class API_Movements extends RoboticsAPIApplication {
 		this.resetJTconds();
 		if (fullTwist) mf.blinkRGB("GB", 500);
 		return fullTwist;
+	}
+	
+	public void waitPushGesture() {
+		mf.saveRGB();
+		mf.setRGB("B");
+		tcp.move(positionHold(_stiffMode, -1, null).breakWhen(_JTConds));
+		waitMillis(500);
+		mf.resetRGB();
 	}
 }
