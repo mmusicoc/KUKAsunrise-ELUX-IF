@@ -5,7 +5,7 @@ package EluxAPI;
 */
 
 import static EluxAPI.Utils.*;
-import static com.kuka.roboticsAPI.motionModel.BasicMotions.positionHold;
+//import static com.kuka.roboticsAPI.motionModel.BasicMotions.positionHold;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
