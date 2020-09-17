@@ -34,7 +34,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 	@Inject private API_Pad pad = new API_Pad(mf);
 	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
 	@Inject private API_Movements move = new API_Movements(mf);
-	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, move);
+	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, plc, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -79,7 +79,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 				case home:
 					move.swapLockDir();
 					move.PTPhomeCobot();
-					checkGripper();
+					cobot.checkGripper();
 					state = States.teach;
 					break;
 				case teach:
@@ -157,17 +157,6 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 			else if (targetFrame.hasAdditionalParameter("PLACE")) placePinY(targetFrame);
 			else move.PTPsafe(targetFrame, 1);
 		} 
-	}
-	
-	private void checkGripper() {
-		do {
-			if (plc.gripperIsHolding()) break;
-			else {
-				plc.openGripper();
-				move.waitPushGesture();
-				plc.closeGripper();
-			}
-		} while (true);
 	}
 	
 	private void pickPinZ(Frame targetFrame) {

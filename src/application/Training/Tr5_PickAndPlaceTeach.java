@@ -32,7 +32,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	@Inject private API_Pad pad = new API_Pad(mf);
 	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
 	@Inject private API_Movements move = new API_Movements(mf);
-	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, move);
+	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, plc, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();

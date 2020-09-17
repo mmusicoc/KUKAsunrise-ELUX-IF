@@ -33,7 +33,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	@Inject private API_Pad pad = new API_Pad(mf);
 	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
 	@Inject private API_Movements move = new API_Movements(mf);
-	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, move);
+	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, plc, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -68,7 +68,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 			switch (state) {
 				case home:
 					move.PTPhomeCobot();
-					checkGripper();
+					cobot.checkGripper();
 					state = States.loop;
 					break;
 				case teach:
@@ -101,17 +101,6 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
 		placePinY("/_PinAssembly/PrePlace/Place4");
 		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
-	}
-	
-	private void checkGripper() {
-		do {
-			if (plc.gripperIsHolding()) break;
-			else {
-				plc.openGripper();
-				move.waitPushGesture();
-				plc.closeGripper();
-			}
-		} while (true);
 	}
 	
 	private void pickPinZ(Frame targetFrame) {

@@ -5,6 +5,7 @@ package EluxAPI;
 */
 
 import static EluxAPI.Utils.*;
+import static com.kuka.roboticsAPI.motionModel.BasicMotions.positionHold;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,13 +18,14 @@ public class API_CobotMacros extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Override public void run() { while (true) { break; } }		// Compulsory method for RoboticsAPIApplication derived classes
 	@Inject private API_MF mf;
+	@Inject private API_PLC plc;
 	@Inject private API_Movements move;
 	
 	// Private properties
 	private double _releaseDist;
 	
 	// CONSTRUCTOR
-	@Inject	public API_CobotMacros(API_MF _mf, API_Movements _move) {
+	@Inject	public API_CobotMacros(API_MF _mf, API_PLC _plc, API_Movements _move) {
 		this.mf = _mf;
 		this.move = _move;
 		_releaseDist = 10;
@@ -76,10 +78,22 @@ public class API_CobotMacros extends RoboticsAPIApplication {
 		}
 		return true;
 	}
-	boolean CIRCcobot(String targetFramePath1, String targetFramePath2, double relSpeed, boolean forceEnd){
+	
+	public boolean CIRCcobot(String targetFramePath1, String targetFramePath2, double relSpeed, boolean forceEnd){
 		ObjectFrame targetFrame1 = getApplicationData().getFrame(targetFramePath1);
 		ObjectFrame targetFrame2 = getApplicationData().getFrame(targetFramePath2);
 		return this.CIRCcobot(targetFrame1.copyWithRedundancy(), targetFrame2.copyWithRedundancy(), relSpeed, forceEnd);
+	}
+	
+	public void checkGripper() {
+		do {
+			if (plc.gripperIsHolding()) break;
+			else {
+				plc.openGripper();
+				move.waitPushGesture();
+				plc.closeGripper();
+			}
+		} while (true);
 	}
 	
 	public void waitPushGestureX(Frame targetFrame) {
