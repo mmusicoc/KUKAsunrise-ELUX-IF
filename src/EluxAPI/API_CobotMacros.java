@@ -39,7 +39,7 @@ public class API_CobotMacros extends RoboticsAPIApplication {
 	
 	public boolean PTPcobot(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
 		if (!move.PTPsafe(targetFrame, relSpeed)) {
-			move.LINREL(0, 0, -_releaseDist, true, 1);
+			move.LINREL(0, 0, -_releaseDist, true, 1, false);
 			mf.waitUserButton();
 			relSpeed *= 0.8;
 			if (forceEnd) this.PTPcobot(targetFrame, relSpeed, forceEnd);
@@ -54,7 +54,7 @@ public class API_CobotMacros extends RoboticsAPIApplication {
 	
 	public boolean LINcobot(Frame targetFrame, double relSpeed, boolean forceEnd){		// overloading for taught points
 		if (!move.LINsafe(targetFrame, relSpeed)) {
-			move.LINREL(0, 0, -_releaseDist, true, 1);
+			move.LINREL(0, 0, -_releaseDist, true, 1, false);
 			mf.waitUserButton();
 			relSpeed *= 0.8;
 			if (forceEnd) this.LINcobot(targetFrame, relSpeed, forceEnd);
@@ -70,7 +70,7 @@ public class API_CobotMacros extends RoboticsAPIApplication {
 	
 	public boolean CIRCcobot(Frame targetFrame1, Frame targetFrame2, double relSpeed, boolean forceEnd){		// overloading for taught points
 		if (!move.CIRCsafe(targetFrame1, targetFrame2, relSpeed)) {
-			move.LINREL(0, 0, -_releaseDist, true, 1);
+			move.LINREL(0, 0, -_releaseDist, true, 1, false);
 			mf.waitUserButton();
 			relSpeed *= 0.8;
 			if (forceEnd) LINcobot(targetFrame2, relSpeed, forceEnd);			// SECURITY MEASURE, NEW CIRC CAN OVERSHOOT!!

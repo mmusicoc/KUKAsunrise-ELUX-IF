@@ -78,9 +78,10 @@ public class API_Movements extends RoboticsAPIApplication {
 	}
 		
 	// SETTERS
-	
-	public void setGlobalSpeed(double speed) { 
+	public void setGlobalSpeed(double speed) { this.setGlobalSpeed(speed, false); }
+	public void setGlobalSpeed(double speed, boolean log) { 
 		for (int i = 0; i < 7; i++) this._speed[i] = speed;
+		if(log) padLog("Now speed is " + String.format("%,.0f", speed * 100) + "%");
 	}
 	public void setA7Speed(double speed) { this._speed[6] = speed; }
 	public void setHome(String targetFramePath) {
@@ -181,11 +182,16 @@ public class API_Movements extends RoboticsAPIApplication {
 		return this.LIN(_homeFramePath, relSpeed, false);
 	}
 	
-	public boolean LINREL(double x, double y, double z, double Rz, double Ry, double Rx, boolean absolute, double relSpeed) {
+	public boolean LINREL(double x, double y, double z, double Rz, double Ry, double Rx, boolean absolute, double relSpeed, boolean approx) {
 		try {
 			mf.setRGB("G");
-			if (absolute) kiwa.move(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx)).setJointVelocityRel(scaleSpeed(relSpeed))); 
-			else tcp.move(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx)).setJointVelocityRel(scaleSpeed(relSpeed)));
+			if (absolute) {
+				if (approx) kiwa.move(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx)).setJointVelocityRel(scaleSpeed(relSpeed)).setBlendingCart(_blendingRadius).setBlendingOri(_blendingAngle));
+				else kiwa.move(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx)).setJointVelocityRel(scaleSpeed(relSpeed)).setBlendingCart(0).setBlendingOri(0));
+			}
+			else 
+				if (approx) tcp.move(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx)).setJointVelocityRel(scaleSpeed(relSpeed)).setBlendingCart(_blendingRadius).setBlendingOri(_blendingAngle));
+				else tcp.move(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx)).setJointVelocityRel(scaleSpeed(relSpeed)).setBlendingCart(0).setBlendingOri(0));
 			return true; 
 		} catch(CommandInvalidException e) { 
 			padErr("Unable to perform movement");
@@ -194,8 +200,8 @@ public class API_Movements extends RoboticsAPIApplication {
 		}
 	}
 	
-	public boolean LINREL(double x, double y, double z, boolean absolute, double relSpeed) {
-		return LINREL(x, y, z, 0, 0, 0, absolute, relSpeed);
+	public boolean LINREL(double x, double y, double z, boolean absolute, double relSpeed, boolean approx) {
+		return LINREL(x, y, z, 0, 0, 0, absolute, relSpeed, approx);
 	}
 	
 	public boolean CIRC(Frame targetFrame1, Frame targetFrame2, double relSpeed) {
@@ -217,10 +223,20 @@ public class API_Movements extends RoboticsAPIApplication {
 	
 	// Torque sensing enabled movements **************************************************************
 	
+	public Frame randomizeFrame(String path, int range) {
+		Frame target = getApplicationData().getFrame(path).copyWithRedundancy();
+		target.transform(Transformation.ofDeg(
+				range * (Math.random() - 0.5),
+				range * (Math.random() - 0.5),
+				range * (Math.random() - 0.5),
+				0, 0, 0));
+		return target;
+	}
+	
 	public void PTPhomeCobot() {
-		this.LINREL(0, 0, -0.01, true, 0.5);
+		this.LINREL(0, 0, -0.01, true, 0.5, false);
 		pad.info("Move away from the robot. It will move automatically to home.");
-		this.LINREL(0, 0, -50, true, 0.5);
+		this.LINREL(0, 0, -50, true, 0.5, false);
 		do {} while (!this.PTPsafe(_homeFramePath, _speed[0]));
 	}
 	
@@ -314,7 +330,7 @@ public class API_Movements extends RoboticsAPIApplication {
 	
 	public boolean twistJ7safe(double minAngle, double maxAngle, double relSpeed, double maxTorque) {
 		boolean fullTwist;
-		this.LINREL(0, 0, 0, minAngle, 0, 0, false, relSpeed);
+		this.LINREL(0, 0, 0, minAngle, 0, 0, false, relSpeed, false);
 		this.setJTconds(maxTorque);
 		fullTwist = this.LINRELsafe(0, 0, 0, maxAngle-minAngle, 0, 0, false, relSpeed);
 		this.resetJTconds();

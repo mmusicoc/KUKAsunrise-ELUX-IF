@@ -64,7 +64,7 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 				case 0:
 					break;
 				case 1:
-					sleep();
+					halt();
 					break;
 				case 2:
 					_Home appHome = new _Home();
