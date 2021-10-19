@@ -6,22 +6,15 @@ import EluxAPI.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class PickItCalib extends RoboticsAPIApplication {
-	private LBR kiwa;
-	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
-	
 	@Inject	@Named("GripperPickit") 		private Tool GripperPickit;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
-	@Inject private API_Movements move = new API_Movements(mf);
-	@Inject private API_Pad pad = new API_Pad(mf);
-	@Inject private API_PickIt pickit = new API_PickIt(kiwa);
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_Move move = elux.getMove();
+	@Inject private xAPI_Pad pad = elux.getPad();
+	@Inject private xAPI_PickIt pickit = new xAPI_PickIt(elux.getRobot());
 	
 	@Override public void initialize() {
 		move.setTool(GripperPickit);

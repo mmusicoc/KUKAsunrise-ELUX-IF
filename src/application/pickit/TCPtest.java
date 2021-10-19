@@ -5,17 +5,13 @@ import EluxAPI.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class TCPtest extends RoboticsAPIApplication {
-	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
 	@Inject @Named("GripperPickit") private Tool GripperPickit;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
-	@Inject private API_Movements move = new API_Movements(mf);
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_Move move = elux.getMove();
 	
 	@Override public void initialize() {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");

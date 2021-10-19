@@ -18,9 +18,9 @@ public class bkgGLOBAL extends RoboticsAPICyclicBackgroundTask {
 	@Inject private Plc_inputIOGroup 		plcin;
 	@Inject private Plc_outputIOGroup 		plcout;
 	@Inject private MediaFlangeIOGroup 		mfio;
-	@Inject private API_MF	mf = new API_MF(mfio);
-	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
-	@Inject private API_Pad pad = new API_Pad(mf);
+	@Inject private xAPI_MF	mf = new xAPI_MF(mfio);
+	@Inject private xAPI_PLC plc = new xAPI_PLC(mf, plcin, plcout);
+	@Inject private xAPI_Pad pad = new xAPI_Pad(mf);
 	
 	@Override public void initialize() {
 		initializeCyclic(0, 500, TimeUnit.MILLISECONDS,	CycleBehavior.BestEffort);

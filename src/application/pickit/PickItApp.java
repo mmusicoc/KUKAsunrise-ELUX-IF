@@ -5,37 +5,23 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
-import com.kuka.generated.ioAccess.Plc_inputIOGroup;
-import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import com.kuka.roboticsAPI.controllerModel.Controller;
-import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class PickItApp extends RoboticsAPIApplication {
-	private Controller kiwaController;
-	private LBR kiwa;
-	
-	@Inject private Plc_inputIOGroup 	plcin;
-	@Inject private Plc_outputIOGroup 	plcout;
-	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
 	@Inject	@Named("GripperPickit") 	private Tool GripperPickit;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
-	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
-	@Inject private API_Movements move = new API_Movements(mf);
-	@Inject private API_Pad pad = new API_Pad(mf);
-	@Inject private API_PickIt pickit = new API_PickIt(kiwa);
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_MF	mf = elux.getMF();
+	@Inject private xAPI_PLC plc = elux.getPLC();
+	@Inject private xAPI_Move move = elux.getMove();
+	@Inject private xAPI_Pad pad = new xAPI_Pad(mf);
+	@Inject private xAPI_PickIt pickit = new xAPI_PickIt(elux.getRobot());
 	
 	int failCounter = -1;
 	boolean rot180 = false;
 	
 	@Override public void initialize() {
-		kiwaController = (Controller) getContext().getControllers().toArray()[0];
-		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
 		move.setJTconds(15.0);
 		move.setGlobalSpeed(1);
 		move.setBlending(20, 5);
@@ -60,7 +46,8 @@ public class PickItApp extends RoboticsAPIApplication {
 		while (pickit.isRunning()) {
 			box = pickit.getBox();
 			if (box > 0) {
-				padLog("Found " + box + " objects, picking model " + pickit.getObjType() + ", pickPoint "+ pickit.getPickID());
+				padLog("Found " + box + " objects, picking model " + pickit.getObjType() 
+						+ ", pickPoint "+ pickit.getPickID());
 				pick = pick(pickit.getPickFrame());
 				if (pick == 0) {
 					padLog("Object found unreachable by robot, polling next one");
@@ -78,7 +65,7 @@ public class PickItApp extends RoboticsAPIApplication {
 					move.PTPhome(1, false);
 					scan(true);
 					place();
-					move.LINhome(1);
+					move.LINhome(1, false);
 				}
 				// while (!pickit.isReady()) { waitMillis(100); padLog("Waiting.");}
 			} else if (box == -2){
@@ -113,13 +100,14 @@ public class PickItApp extends RoboticsAPIApplication {
 		postFrame.setZ(300 - (postFrame.getY() - 400) * 0.6);
 		plc.openGripperAsync();
 		move.setTCP("/Cylinder/Approach");
-		if (!move.PTP(targetFrame, 0.75, false)) return 0;
-		if (pickit.getObjType() == 1 && (pickit.getPickID() == 1 || pickit.getPickID() == 2)) {
+		if (move.PTP(targetFrame, 0.75, false) == -1) return 0;
+		if (pickit.getObjType() == 1 && 
+			(pickit.getPickID() == 1 || pickit.getPickID() == 2)) {
 			move.setTCP("/Cylinder");
 		} else move.setTCP("/Cylinder/End");
-		if (!move.LINsafe(targetFrame, 0.25)) return -1;
+		if (move.LIN(targetFrame, 0.25, false) != 1) return -1;
 		plc.closeGripper();
-		if (!move.LIN(postFrame, 0.6, false)) {
+		if (move.LIN(postFrame, 0.6, false) != 1) {
 			plc.openGripper();
 			move.setTCP("/Cylinder/Approach");
 			move.LIN(targetFrame, 0.6, false);
@@ -159,8 +147,9 @@ public class PickItApp extends RoboticsAPIApplication {
 	}
 	
 	private void reorientate() {
-		pad.info("Reorientate the piece in the pole for " + pickit.getZrot() + " deg." +
-					"\n\nIn a final implementation, a servomotor could be used to rotate the required angle");
+		pad.info("Reorientate the piece in the pole for " + pickit.getZrot() 
+				+ " deg." + "\n\nIn a final implementation, a servomotor " +
+						"could be used to rotate the required angle");
 	}
 	
 	private void vibrate() {

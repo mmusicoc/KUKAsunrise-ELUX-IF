@@ -9,21 +9,20 @@ import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 
 @Singleton
-public class API_PLC {
-	// Private properties
-	private API_MF _mf;
+public class xAPI_PLC {
+	private xAPI_MF _mf;
 	private Plc_inputIOGroup _PLCin;
 	private Plc_outputIOGroup _PLCout;
 	
 	// CONSTRUCTOR
-	@Inject	public API_PLC(API_MF mf, Plc_inputIOGroup PLCin, Plc_outputIOGroup PLCout) {
+	@Inject	public xAPI_PLC(xAPI_MF mf, Plc_inputIOGroup PLCin, Plc_outputIOGroup PLCout) {
 		this._mf = mf;
 		this._PLCin = PLCin;
 		this._PLCout = PLCout;
 	}
 	
 	// Custom modularizing handler objects
-	@Inject private API_Pad pad = new API_Pad(_mf);
+	@Inject private xAPI_Pad pad = new xAPI_Pad(_mf);
 	
 	/***************************************************************************
 	* STANDARD METHODS BY mario.musico@electrolux.com <p>
@@ -35,6 +34,11 @@ public class API_PLC {
 	}
 	
 	public boolean gripperIsIdle() {
+		if (_PLCin.getPinza_Idle()) return true;
+		else return false;
+	}
+	
+	public boolean gripperIsEmpty() {
 		if (_PLCin.getPinza_Idle()) return true;
 		else return false;
 	}

@@ -5,24 +5,15 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
-import com.kuka.generated.ioAccess.Plc_inputIOGroup;
-import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class SpringAssemblyApp extends RoboticsAPIApplication {
-	
-	@Inject private Plc_inputIOGroup 	plcin;
-	@Inject private Plc_outputIOGroup 	plcout;
-	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
 	@Inject	@Named("GripperSpring") 	private Tool GripperSpring;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
-	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
-	@Inject private API_Movements move = new API_Movements(mf);
-	//@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_MF	mf = elux.getMF();
+	@Inject private xAPI_PLC plc = elux.getPLC();
+	@Inject private xAPI_Move move = elux.getMove();
 	
 	@Override public void initialize() {
 		move.setJTconds(15.0);
@@ -57,7 +48,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 		move.setTCP("/SpringGrab");
 		plc.openGripperAsync();
 		move.PTP("/_Spring/PickJig/Approach", 0.75, true);
-		move.LINsafe("/_Spring/PickJig", 0.25);
+		move.LIN("/_Spring/PickJig", 0.25, false);
 		plc.closeGripper();
 		move.LIN("/_Spring/PickJig/Approach", 0.6, true);
 		success = plc.gripperIsHolding();

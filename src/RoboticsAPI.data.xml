@@ -3050,10 +3050,10 @@
                     </redundancyData>
                 </frame>
             </frame>
-            <frame id="_6210aa6f-2316-4061-a081-6d9e7d827ff8" name="WP">
+            <frame id="_6210aa6f-2316-4061-a081-6d9e7d827ff8" name="ScanPoints">
                 <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="-0.0" z="0.0"/>
                 <additionalInformation>
-                    <info key="LastModificationTime" type="java.lang.Long" value="1633004129707"/>
+                    <info key="LastModificationTime" type="java.lang.Long" value="1634587531543"/>
                 </additionalInformation>
                 <frame id="_b34f762f-e308-4943-ab5c-c39a770b9f2e" name="P1">
                     <transformation a="-3.0050397818023664" b="1.5345396594999436" c="1.6469782754061117" x="-123.66653607503176" y="901.1337981658553" z="268.2273702546432"/>
