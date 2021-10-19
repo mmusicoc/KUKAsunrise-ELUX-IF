@@ -12,7 +12,7 @@ import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 public class _Home extends RoboticsAPIApplication {
 	@Inject	private LBR 				kiwa;
 	@Inject private MediaFlangeIOGroup	mfio;
-	@Inject private API_MF	mf = new API_MF(mfio);
+	@Inject private xAPI_MF	mf = new xAPI_MF(mfio);
 			private double 				relSpeed;
 			private int					promptAns;
 			

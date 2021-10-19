@@ -16,7 +16,7 @@ import java.io.ObjectOutputStream;
 // GOOD = RFT + RNFT
 // BAD = NRFT - RNFT
 
-public class API_OEE implements Serializable {
+public class xAPI_OEE implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String processName;
 	private int itemAmount;
@@ -27,17 +27,12 @@ public class API_OEE implements Serializable {
 	boolean cycleWithFails;
 	boolean cycleWithBads;
 	
-	// Constructor
-	@Inject public API_OEE() { }
+	// CONSTRUCTOR --------------------------------------------------------
+	@Inject public xAPI_OEE() { }
 	
 	// GETTER METHODS -----------------------------------------------------
 	
-	public void printStats(int item) {
-		if(item == -1) statsCycle(); 
-		else statsItem(item);
-	}
-	
-	private void statsCycle() {
+	public void printStatsCycle() {
 		double rate;
 		String stats = new String("STATISTICS FOR " + processName + " CYCLES -----------");
 		stats = (stats + "\nTOTAL cycles: " + cycle.getTotal());
@@ -45,8 +40,8 @@ public class API_OEE implements Serializable {
 		stats = (stats + "\nCycles with BAD: " + cycle.getBad());
 		stats = (stats + "\nCycles with FAILS: " + cycle.getFail());
 		
-		rate = cycle.getFail() / (cycle.getTotal() + 0.0);
-		stats = (stats + "\n\nFAILS/TOTAL: " + String.format("%,.2f", rate));
+		//rate = cycle.getFail() / (cycle.getTotal() + 0.0);
+		//stats = (stats + "\n\nFAILS/TOTAL: " + String.format("%,.2f", rate));
 		rate = cycle.getBad() / (cycle.getTotal() + 0.0);
 		stats = (stats + "\nBAD rate: " + String.format("%,.2f",100 * rate) + "%");
 		
@@ -56,10 +51,10 @@ public class API_OEE implements Serializable {
 				cycle.getAvgCycleTime() / 1000));
 		
 		stats = (stats + "\n---------------------------------------------------");
-		padLog(stats);
+		System.out.println(stats);
 	}
 	
-	private void statsItem(int item) {
+	public void printStatsItem(int item) {
 		double rate;
 		String itemName = (processName + " " + (item > 0 ? item : "TOTAL") );
 		String stats = new String("STATISTICS FOR " + itemName + " ---------------");
@@ -87,7 +82,7 @@ public class API_OEE implements Serializable {
 				items[item].getAvgCycleTime() / 1000));
 		
 		stats = (stats + "\n---------------------------------------------------");
-		padLog(stats);
+		System.out.println(stats);
 	}
 	
 	// SETTER METHODS ----------------------------------------------------
@@ -107,12 +102,19 @@ public class API_OEE implements Serializable {
 	}
 	
 	public void resetItems() {
-		items = new ProcessItem[itemAmount + 2]; 		// Item 0 is aggregated data
-		for (int i = 0; i <= (itemAmount); i++) {
+		items = new ProcessItem[itemAmount + 1]; 		// Item 0 is aggregated data
+		for (int i = 0; i <= itemAmount; i++) {
 			items[i] = new ProcessItem();
 			items[i].reset();
 		}
 		prevItem = getTimeStamp();
+	}
+	
+	public void resetCycleTime() {
+		for (int i = 0; i<= itemAmount; i++) {
+			items[i].setFirstCycle();
+		}
+		cycle.setFirstCycle();
 	}
 	
 	public void startCycle() { cycleWithFails = cycleWithBads = false; }
@@ -129,15 +131,16 @@ public class API_OEE implements Serializable {
 		startCycle();
 	}
 	
-	public void addItem(int item) {
+	public void addItem(int item, boolean success) {
 		items[item].addItem();
 		items[0].addItem();
-		double currentTime = getTimeStamp();
-		double itemTime = currentTime - prevItem;
-		prevItem = currentTime;
-		items[0].setLastCycleTime(itemTime);
-		items[item].setLastCycleTime(itemTime);
-		
+		if(success) {
+			double currentTime = getTimeStamp();
+			double itemTime = currentTime - prevItem;
+			prevItem = currentTime;
+			items[0].setLastCycleTime(itemTime);
+			items[item].setLastCycleTime(itemTime);
+		}
 	}
 	
 	public void addGood(int item) { items[item].addGood(); items[0].addGood(); }
@@ -151,35 +154,37 @@ public class API_OEE implements Serializable {
 
 	// COLD STORAGE ----------------------------------------------------
 	
-	public void saveOEEtoFile(API_OEE oee, String filename) {
+	public void saveOEEtoFile(xAPI_OEE oee, String filename, boolean log) {
 		try {
-			FileOutputStream f = new FileOutputStream(new File("OEE.txt"));
+			FileOutputStream f = new FileOutputStream(new File(filename));
 			ObjectOutputStream o = new ObjectOutputStream(f);
 			o.writeObject(oee);
 			o.close();
 			f.close();
+			if(log) padLog("OEE data stored to " + 
+					System.getProperty("user.dir") + "\\" + filename);
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found");
 		} catch (IOException e) {
-			System.out.println("Error initializing stream");
+			System.out.println("Error initializing output stream");
 		}
 	}
 	
-	public API_OEE restoreOEEfromFile(String filename) {
-		API_OEE oee;
+	public xAPI_OEE restoreOEEfromFile(String filename, boolean log) {
+		xAPI_OEE oee = new xAPI_OEE();
 		try {
-			FileInputStream fi = new FileInputStream(new File("OEE.txt"));
+			FileInputStream fi = new FileInputStream(new File(filename));
 			ObjectInputStream oi = new ObjectInputStream(fi);
-			oee = (API_OEE) oi.readObject();
-			padLog(oee.toString());
+			oee = (xAPI_OEE) oi.readObject();
 			oi.close();
 			fi.close();
-
+			if(log) padLog("OEE data loaded from " + 
+					System.getProperty("user.dir") + "\\" + filename);
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found");
 			oee = null;
 		} catch (IOException e) {
-			System.out.println("Error initializing stream");
+			System.out.println("Error initializing input stream");
 			oee = null;
 		} catch (ClassNotFoundException e) {
 			oee = null;
@@ -187,10 +192,10 @@ public class API_OEE implements Serializable {
 		} 
 		return oee;
 	}
-
 }
-
-class ProcessItem {		//---------------------------------------------------------------
+	
+class ProcessItem implements Serializable {		//---------------------------------
+	private static final long serialVersionUID = 2L;
 	private int total;	// = GOOD + BAD
 	private int good;	// = RFT + RNFT
 	private int bad;	// = NRFT - RNFT
@@ -199,6 +204,7 @@ class ProcessItem {		//---------------------------------------------------------
 	private int RNFT;	// Right Not First Time
 	private int NRFT;	// Not Right First Time
 	
+	boolean firstCycle;
 	private double lastCycleTime;
 	private double avgCycleTime;
 
@@ -222,6 +228,7 @@ class ProcessItem {		//---------------------------------------------------------
 	public void reset() {
 		total = good = bad = fail = RFT = RNFT = NRFT = 0;
 		lastCycleTime = avgCycleTime = 0.0;
+		firstCycle = true;
 	}
 	
 	public void addItem() 	{ total++; }
@@ -232,15 +239,13 @@ class ProcessItem {		//---------------------------------------------------------
 	public void addRNFT() 	{ RNFT++; }
 	public void addNRFT() 	{ NRFT++; }
 	
+	public void setFirstCycle() { firstCycle = true; }
 	public void setLastCycleTime(double _lastCycleTime) { 
 		lastCycleTime = _lastCycleTime;
-		avgCycleTime = (avgCycleTime * (total - 1) + lastCycleTime) / (total + 0.0);
+		if (firstCycle) {
+			avgCycleTime = lastCycleTime;
+			firstCycle = false;
+		}
+		else avgCycleTime = (avgCycleTime * (total - 1) + lastCycleTime) / (total + 0.0);
 	}
-}
-
-class StoreOEE {
-	public StoreOEE() {
-	}
-	
-	
 }

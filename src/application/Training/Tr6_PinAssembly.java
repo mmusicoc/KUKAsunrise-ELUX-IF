@@ -5,11 +5,7 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
-import com.kuka.generated.ioAccess.Plc_inputIOGroup;
-import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
@@ -18,22 +14,12 @@ import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
 public class Tr6_PinAssembly extends RoboticsAPIApplication {
-	// #Define parameters
-	private static final boolean log1 = false;	// Log level 1: main events
-	
-	// Standard KUKA API objects
-	@Inject private LBR 				kiwa;
-	@Inject private Plc_inputIOGroup 	plcin;
-	@Inject private Plc_outputIOGroup 	plcout;
-	@Inject private MediaFlangeIOGroup 	mfio;
-	@Inject	@Named("Gripper") 		private Tool 		gripper;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mfio);
-	@Inject private API_Pad pad = new API_Pad(mf);
-	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
-	@Inject private API_Movements move = new API_Movements(mf);
-	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, plc, move);
+	@Inject	@Named("Gripper") private Tool gripper;
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_Pad pad = elux.getPad();
+	@Inject private xAPI_PLC plc = elux.getPLC();
+	@Inject private xAPI_Move move = elux.getMove();
+	@Inject private xAPI_Cobot cobot = elux.getCobot();
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -43,6 +29,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	private static final double approachOffset = 40;
 	private static final double approachSpeed = 0.1;
 	private static final double probeSpeed = 0.1;
+	private static final boolean log1 = false;	// Log level 1: main events
 	
 	private void progInfo() {
 		pad.info("Description of this program operation:\n" + 
@@ -55,7 +42,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	
 	@Override public void initialize() {
 		progInfo();
-		gripper.attachTo(kiwa.getFlange());
+		move.setTool(gripper);
 		configPadKeysGENERAL();
 		state = States.home;
 		move.setHome("/_PinAssembly/PrePick");
@@ -67,7 +54,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		while (true) {
 			switch (state) {
 				case home:
-					move.PTPhomeCobot();
+					move.PTPhome(1, false);
 					cobot.checkGripper();
 					state = States.loop;
 					break;
@@ -86,31 +73,31 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	private void loopRoutine(){
 		if (log1) padLog("Loop routine.");
 		pickPinZ("/_PinAssembly/PrePick/Pick1");
-		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace", relSpeed, false);
 		placePinY("/_PinAssembly/PrePlace/Place1");
-		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace", relSpeed, false);
 		pickPinZ("/_PinAssembly/PrePick/Pick2");
-		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace", relSpeed, false);
 		placePinY("/_PinAssembly/PrePlace/Place2");
-		move.PTPsafe("/_PinAssembly/PrePlace", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace", relSpeed, false);
 		pickPinZ("/_PinAssembly/PrePick/Pick3");
-		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace/PrePlace2", relSpeed, false);
 		placePinY("/_PinAssembly/PrePlace/Place3");
-		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace/PrePlace2", relSpeed, false);
 		pickPinZ("/_PinAssembly/PrePick/Pick4");
-		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace/PrePlace2", relSpeed, false);
 		placePinY("/_PinAssembly/PrePlace/Place4");
-		move.PTPsafe("/_PinAssembly/PrePlace/PrePlace2", relSpeed);
+		move.PTP("/_PinAssembly/PrePlace/PrePlace2", relSpeed, false);
 	}
 	
 	private void pickPinZ(Frame targetFrame) {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
-		move.PTPsafe(preFrame, relSpeed);
+		move.PTP(preFrame, relSpeed, false);
 		if(log1) padLog("Picking process");
-		move.LINsafe(targetFrame, approachSpeed);
+		move.LIN(targetFrame, approachSpeed, false);
 		cobot.checkPinPick(5, probeSpeed);
-		move.LINsafe(preFrame, approachSpeed);
+		move.LIN(preFrame, approachSpeed, false);
 	}
 	
 	private void pickPinZ(String targetFramePath) {
@@ -124,12 +111,12 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		do  {
-			move.PTPsafe(preFrame, relSpeed);
+			move.PTP(preFrame, relSpeed, false);
 			if (log1) padLog("Placing process");
-			move.LINsafe(targetFrame, approachSpeed);
+			move.LIN(targetFrame, approachSpeed, false);
 			cobot.checkPinPlace(5, probeSpeed);
-			inserted = move.twistJ7safe(45, 30, 0.15, 0.7);
-			move.LINREL(0, 0, -30, true, approachSpeed, false);
+			inserted = move.twistJ7withCheck(45, 30, 0.15, 0.7);
+			move.LINREL(0, 0, -30, approachSpeed, false);
 		}
 		while (!inserted);		
 	}

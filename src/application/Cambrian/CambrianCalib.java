@@ -5,27 +5,22 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class CambrianCalib extends RoboticsAPIApplication {
-	private LBR kiwa;
-	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
-	
-	@Inject	@Named("Cambrian") 		private Tool GripperCambrian;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
-	@Inject private API_Movements move = new API_Movements(mf);
-//	@Inject private API_Pad pad = new API_Pad(mf);
-	@Inject private API_Cambrian cambrian = new API_Cambrian(kiwa);
+	@Inject	@Named("Cambrian") private Tool GripperCambrian;
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_Move move = elux.getMove();
+	@Inject private xAPI_Pad pad = elux.getPad();
+	@Inject private xAPI_Cambrian cambrian = new xAPI_Cambrian(elux);
 	
 	@Override public void initialize() {
 		move.setTool(GripperCambrian);
 		move.setTCP("/TCP");
 		move.setGlobalSpeed(1);
+		move.setJTconds(15.0);
+		move.setBlending(20, 5);
 		move.setHome("/_Cambrian/_Home");
 		cambrian.init("192.168.2.50", 4000);
 	}
@@ -37,18 +32,18 @@ public class CambrianCalib extends RoboticsAPIApplication {
 			padErr("Unable to perform requested callibration.");
 			e.printStackTrace();
 		}
-		while(true);
+		pad.info("Calibration finished.");
 	}
 	
 	public void calibrate(String basePath) throws InterruptedException {
 		move.PTPhome(1, false);
 		waitMillis(1000);
 		padLog("Starting Multi Pose Calibration ... ");
-		cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
+		//cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
 		for(int i = 1; i <= 14; i++) {
 			move.PTP(basePath + "/P" + i, 1, false);
 			padLog("Calib in P" + i);
-			cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
+			//cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
 			padLog("Finished calib P" + i);
 		}
 		

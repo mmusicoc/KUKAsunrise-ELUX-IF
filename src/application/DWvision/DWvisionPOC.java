@@ -5,24 +5,14 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
-import com.kuka.generated.ioAccess.Plc_inputIOGroup;
-import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class DWvisionPOC extends RoboticsAPIApplication {
-	
-	@Inject private Plc_inputIOGroup 	plcin;
-	@Inject private Plc_outputIOGroup 	plcout;
-	@Inject private MediaFlangeIOGroup 			mediaFlangeIOGroup;
 	@Inject	@Named("GripperCognex") 	private Tool GripperCognex;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mediaFlangeIOGroup);
-	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
-	@Inject private API_Movements move = new API_Movements(mf);
-	//@Inject private HandlerPad pad = new HandlerPad(mf);
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_PLC plc = elux.getPLC();
+	@Inject private xAPI_Move move = elux.getMove();
 	
 	@Override public void initialize() {
 		move.setJTconds(15.0);

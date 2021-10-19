@@ -9,8 +9,7 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 
 public class _AppSwitcher extends RoboticsAPIApplication {
 	@Inject private MediaFlangeIOGroup	mfio;
-	@Inject private API_MF	mf = new API_MF(mfio);
-	private int	promptAns;
+	@Inject private xAPI_MF	mf = new xAPI_MF(mfio);
 	
 	private enum States {cancel, sleep, home, app1, app2, app3, app4, app5, app6};
 	private States state;

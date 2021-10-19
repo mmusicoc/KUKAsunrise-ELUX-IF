@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 
 @Singleton
-public class API_MF {
+public class xAPI_MF {
 	// Standard KUKA API objects
 	private MediaFlangeIOGroup MFio;
 	
@@ -27,7 +27,7 @@ public class API_MF {
 	private boolean[] prevRGB;
 	
 	// CONSTRUCTOR
-	@Inject	public API_MF(MediaFlangeIOGroup _MFio) { 
+	@Inject	public xAPI_MF(MediaFlangeIOGroup _MFio) { 
 		this.MFio = _MFio;
 	}
 	

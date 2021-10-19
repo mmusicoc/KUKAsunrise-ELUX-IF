@@ -4,21 +4,13 @@ import static EluxAPI.Utils.*;
 import EluxAPI.*;
 
 import javax.inject.Inject;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
-import com.kuka.generated.ioAccess.Plc_inputIOGroup;
-import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 
 public class Tr1_FSM extends RoboticsAPIApplication {
-	// Standard KUKA API objects
-	@Inject private Plc_inputIOGroup 	plcin;
-	@Inject private Plc_outputIOGroup 	plcout;
-	@Inject private MediaFlangeIOGroup	mfio; 
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mfio);
-	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
-	@Inject private API_Movements move = new API_Movements(mf);
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_MF	mf = elux.getMF();
+	@Inject private xAPI_PLC plc = elux.getPLC();
+	@Inject private xAPI_Move move = elux.getMove();
 	
 	// Private properties - application variables
 	private enum States {state_A, state_B, state_C, state_D};

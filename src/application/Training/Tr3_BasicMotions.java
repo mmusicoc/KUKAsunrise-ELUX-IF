@@ -5,19 +5,13 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class Tr3_BasicMotions extends RoboticsAPIApplication {
-	@Inject private MediaFlangeIOGroup 	mfio;
-	
 	@Inject @Named("Gripper") private Tool flange;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mfio);
-	@Inject private API_Movements move = new API_Movements(mf);
-	
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_Move move = elux.getMove();
 	
 	@Override public void initialize() {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
@@ -28,16 +22,16 @@ public class Tr3_BasicMotions extends RoboticsAPIApplication {
 
 	@Override public void run() {
 		double relSpeed;
-		move.PTPhomeCobot();
+		move.PTPhome(1, false);
 		for (relSpeed = 0.2; relSpeed < 1 ; relSpeed += 0.195){
 			padLog("Speed is " + relSpeed + "/1");
-			move.PTPsafe("/_HOME/_0_Shutoff_REST", relSpeed);
+			move.PTP("/_HOME/_0_Shutoff_REST", relSpeed, false);
 			waitMillis(1000, true);
-			move.LINsafe("/_HOME/_1_Teach_LEFT", relSpeed);
+			move.LIN("/_HOME/_1_Teach_LEFT", relSpeed, false);
 			waitMillis(1000, true);
-			move.CIRCsafe("/_HOME/_2_Teach_CENTRAL", "/_HOME/_3_Teach_RIGHT", relSpeed);
+			move.CIRC("/_HOME/_2_Teach_CENTRAL", "/_HOME/_3_Teach_RIGHT", relSpeed, false);
 		}
-		move.PTPhomeCobot();
+		move.PTPhome(1, false);
 		padLog("Finished program");
 		return;
 	}

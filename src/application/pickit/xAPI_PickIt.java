@@ -1,4 +1,4 @@
-package EluxAPI;
+package application.PickIt;
 
 import static EluxAPI.Utils.*;
 
@@ -14,7 +14,7 @@ import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class API_PickIt{
+public class xAPI_PickIt{
 	private LBR kiwa;
 	private receiveDataThread receive_data_thread = new receiveDataThread();
 	private sendDataThread send_data_thread = new sendDataThread();
@@ -42,7 +42,7 @@ public class API_PickIt{
 	private byte[] _data_to_pickit = new byte[12 * 4];
 	private byte[] _data_from_pickit = new byte[16 * 4];
 
-	@Inject public API_PickIt(LBR _kiwa) {		// Constructor
+	@Inject public xAPI_PickIt(LBR _kiwa) {		// Constructor
 		this.kiwa = _kiwa;
 	}
 	

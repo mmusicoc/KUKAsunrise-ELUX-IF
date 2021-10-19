@@ -8,17 +8,14 @@ import com.kuka.roboticsAPI.persistenceModel.IPersistenceEngine;
 import com.kuka.roboticsAPI.persistenceModel.XmlApplicationDataSource;
 
 public class RoboticsAPI_modify extends RoboticsAPIApplication {
-	@Inject
-	private LBR lBR_iiwa_14_R820_1;
+	@Inject private LBR lBR_iiwa_14_R820_1;
 
 
-	@Override
-	public void initialize() {
+	@Override public void initialize() {
 		// initialize your application here
 	}
 
-	@Override
-	public void run() {
+	@Override public void run() {
 		// your application execution starts here
 		lBR_iiwa_14_R820_1.move(ptpHome());
 		

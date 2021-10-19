@@ -5,34 +5,23 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
-import com.kuka.generated.ioAccess.Plc_inputIOGroup;
-import com.kuka.generated.ioAccess.Plc_outputIOGroup;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
-import com.kuka.roboticsAPI.motionModel.IMotionContainer;
 import com.kuka.roboticsAPI.uiModel.userKeys.*;
 
 public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
-	// #Define parameters
+	@Inject	@Named("SchunkGripper") private Tool gripper;
+	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
+	@Inject private xAPI_MF	mf = elux.getMF();
+	@Inject private xAPI_Pad pad = elux.getPad();
+	@Inject private xAPI_PLC plc = elux.getPLC();
+	@Inject private xAPI_Move move = elux.getMove();
+	@Inject private xAPI_Compliance comp = elux.getCompliance();
+	@Inject private xAPI_Cobot cobot = elux.getCobot();
+	
 	private static final boolean log1 = false;	// Log level 1: main events
 	private static final boolean log2 = false;	// Log level 2: standard events e.g. frames
-	
-	// Standard KUKA API objects
-	@Inject private LBR 				kiwa;
-	@Inject private Plc_inputIOGroup 	plcin;
-	@Inject private Plc_outputIOGroup 	plcout;
-	@Inject private MediaFlangeIOGroup 	mfio;
-	@Inject	@Named("Gripper") 		private Tool 		gripper;
-	
-	// Custom modularizing handler objects
-	@Inject private API_MF	mf = new API_MF(mfio);
-	@Inject private API_Pad pad = new API_Pad(mf);
-	@Inject private API_PLC plc = new API_PLC(mf, plcin, plcout);
-	@Inject private API_Movements move = new API_Movements(mf);
-	@Inject private API_CobotMacros cobot = new API_CobotMacros(mf, plc, move);
 	
 	// Private properties - application variables
 	private FrameList frameList = new FrameList();
@@ -42,9 +31,6 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	private boolean workpieceGripped = false;
 	private static final double approachOffset = 40;
 	private static final double approachSpeed = 0.1;
-	
-	// Motion related KUKA API objects  
-	private IMotionContainer posHoldMotion;			// Motion container for position hold
 
 	private void progInfo() {
 		pad.info("Description of this program operation:\n" + 
@@ -62,10 +48,12 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	
 	@Override public void initialize() {
 		progInfo();
-		gripper.attachTo(kiwa.getFlange());
+		move.setTool(gripper);
 		configPadKeysGENERAL();
 		state = States.home;
-		move.setHome("/_HOME/_2_Teach_CENTRAL");
+		move.setHome("/__HOME/_2_Teach_CENTRAL");
+		move.setTool(gripper);
+		move.setTCP("/GripperCenter");
 		move.setGlobalSpeed(0.25);
 		move.setJTconds(10.0);					
 	}
@@ -75,8 +63,8 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 			switch (state) {
 				case home:
 					plc.askOpen();
-					move.swapLockDir();
-					move.PTPhomeCobot();
+					comp.swapLockDir();
+					move.PTPhome(1, false);
 					plc.askOpen();
 					state = States.teach;
 					break;
@@ -97,12 +85,12 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		mf.waitUserButton();
 		padLog("Start handguiding teaching.");
 		mf.setRGB("B");
-		posHoldMotion = kiwa.moveAsync(move.getPosHold());
+		comp.posHoldStart();
 		
 		teachLoop:
 		while (true) {
 			if (mf.getUserButton()) {
-				Frame newFrame = kiwa.getCurrentCartesianPosition(kiwa.getFlange());
+				Frame newFrame = move.getFlangePos();
 				btnInput = mf.checkButtonInput();		// Run the button press check
 				switch (btnInput) {
 					case 10: 							// Exit hand guiding phase
@@ -128,10 +116,10 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 						break;
 					case 11:
 						mf.blinkRGB("RGB", 500);
-						move.swapLockDir();
-						posHoldMotion.cancel();
-						move.LINREL(0, 0, 0.01, true, 0.5, false);
-						posHoldMotion = kiwa.moveAsync(move.getPosHold());
+						comp.swapLockDir();
+						comp.posHoldCancel();
+						move.LINREL(0, 0, 0.01, 0.5, false);
+						comp.posHoldStart();
 					default:
 						padLog("Command not valid, try again");
 						continue teachLoop;
@@ -140,8 +128,8 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 			waitMillis(5);
 		} 
 		padLog("Exiting handguiding teaching mode...");
-		posHoldMotion.cancel();
-		move.LINREL(0, 0, 0.01, true, 0.5, false);
+		comp.posHoldCancel();
+		move.LINREL(0, 0, 0.01, 0.5, false);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
 		//move.PTPHOMEsafe();
 	}
@@ -156,7 +144,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 			if (log2) padLog("Going to Frame "+ i +".");
 			if (targetFrame.hasAdditionalParameter("PICK")) placeZ(targetFrame);		// Going backwards, inverse actions
 			else if (targetFrame.hasAdditionalParameter("PLACE")) pickZ(targetFrame);
-			else move.PTPsafe(targetFrame, 1);
+			else move.PTP(targetFrame, 1, false);
 		}
 		
 		if (log1) padLog("Loop forward");
@@ -166,42 +154,42 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 			if (log2) padLog("Going to Frame "+ i +".");
 			if (targetFrame.hasAdditionalParameter("PICK")) pickZ(targetFrame);			// Going forward
 			else if (targetFrame.hasAdditionalParameter("PLACE")) placeZ(targetFrame);
-			else move.PTPsafe(targetFrame, 1);
+			else move.PTP(targetFrame, 1, false);
 		} 
 	}
 	
 	private void pickZ(Frame targetFrame) {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
-		move.PTPsafe(preFrame, 1);
+		move.PTP(preFrame, 1, false);
 		if(log1) padLog("Picking process");
-		move.LINsafe(targetFrame, approachSpeed);
-		cobot.probe(0, 0, 25, true, 0.1, 3);
+		move.LIN(targetFrame, approachSpeed, false);
+		cobot.probe(0, 0, 25, 0.1, 3);
 		closeGripperCheck(false);
-		move.LINsafe(preFrame, approachSpeed);
+		move.LIN(preFrame, approachSpeed, false);
 	}
 	
 	private void placeZ(Frame targetFrame) {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
-		move.PTPsafe(preFrame, 1);
+		move.PTP(preFrame, 1, false);
 		if(log1) padLog("Placing process");
-		move.LINsafe(targetFrame, approachSpeed);
+		move.LIN(targetFrame, approachSpeed, false);
 		openGripperCheck(false);
-		move.LINsafe(preFrame, approachSpeed);
+		move.LIN(preFrame, approachSpeed, false);
 	}
 	
 	private void closeGripperCheck(boolean isPosHold) {
 		plc.closeGripperAsync();
-		while (!plcin.getPinza_NoPart() & !plcin.getPinza_Holding()) {
+		while (!plc.gripperIsEmpty() & !plc.gripperIsHolding()) {
 			waitMillis(50);
 		}
-		if (plcin.getPinza_Holding()){
+		if (plc.gripperIsHolding()){
 			if(log1) padLog("Workpiece gripped");
 			workpieceGripped = true;
-			if (isPosHold) posHoldMotion.cancel();
+			if (isPosHold) comp.posHoldCancel();
 		//	workpiece.attachTo(gripper.getDefaultMotionFrame()); 
-			if (isPosHold) posHoldMotion = kiwa.moveAsync(move.getPosHold());
+			if (isPosHold) comp.posHoldStart();
 		} else {
 			padLog("Workpiece NOT gripped");
 		}
@@ -212,10 +200,10 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		if (!isPosHold) waitMillis(1500);
 		if (workpieceGripped) {
 			workpieceGripped = false;
-			if (isPosHold) posHoldMotion.cancel();
+			if (isPosHold) comp.posHoldCancel();
 			if(log1) padLog("Workpiece released");
 		//	workpiece.detach(); 
-			if (isPosHold) posHoldMotion = kiwa.moveAsync(move.getPosHold());
+			if (isPosHold) comp.posHoldStart();
 		}
 	}
 	

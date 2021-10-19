@@ -10,13 +10,13 @@ import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyBar;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyAlignment;
 
-public class API_Pad extends RoboticsAPIApplication {
+public class xAPI_Pad extends RoboticsAPIApplication {
 	// Standard KUKA API objects
 	@Override public void run() { while (true) { break; } }
-	@Inject private API_MF mf;
+	@Inject private xAPI_MF mf;
 	
 	// CONSTRUCTOR
-	@Inject	public API_Pad(API_MF _mf) { 
+	@Inject	public xAPI_Pad(xAPI_MF _mf) { 
 		this.mf = _mf;
 	}
 	
