@@ -130,7 +130,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 						mf.blinkRGB("RGB", 500);
 						move.swapLockDir();
 						posHoldMotion.cancel();
-						move.LINREL(0, 0, 0.01, true, 0.5);
+						move.LINREL(0, 0, 0.01, true, 0.5, false);
 						posHoldMotion = kiwa.moveAsync(move.getPosHold());
 					default:
 						padLog("Command not valid, try again");
@@ -141,7 +141,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		} 
 		padLog("Exiting handguiding teaching mode...");
 		posHoldMotion.cancel();
-		move.LINREL(0, 0, 0.01, true, 0.5);
+		move.LINREL(0, 0, 0.01, true, 0.5, false);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
 		//move.PTPHOMEsafe();
 	}

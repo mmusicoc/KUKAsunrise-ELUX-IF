@@ -129,7 +129,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 			move.LINsafe(targetFrame, approachSpeed);
 			cobot.checkPinPlace(5, probeSpeed);
 			inserted = move.twistJ7safe(45, 30, 0.15, 0.7);
-			move.LINREL(0, 0, -30, true, approachSpeed);
+			move.LINREL(0, 0, -30, true, approachSpeed, false);
 		}
 		while (!inserted);		
 	}

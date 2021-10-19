@@ -129,7 +129,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 						mf.blinkRGB("RGB", 500);
 						move.swapLockDir();
 						posHoldMotion.cancel();
-						move.LINREL(0, 0, 0.01, true, 0.5);
+						move.LINREL(0, 0, 0.01, true, 0.5, false);
 						posHoldMotion = kiwa.moveAsync(move.getPosHold());
 					default:
 						padLog("Command not valid, try again");
@@ -140,7 +140,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		}
 		padLog("Exiting handguiding teaching mode...");
 		posHoldMotion.cancel();
-		move.LINREL(0, 0, 0.01, true, 0.5);
+		move.LINREL(0, 0, 0.01, true, 0.5, false);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
 		move.PTPhomeCobot();
 	}
@@ -179,7 +179,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 			move.LINsafe(targetFrame, approachSpeed);
 			cobot.checkPinPlace(5, probeSpeed);
 			inserted = move.twistJ7safe(45, 30, 0.15, 0.7);
-			move.LINREL(0, 0, -30, true, approachSpeed);
+			move.LINREL(0, 0, -30, true, approachSpeed, false);
 		}
 		while (!inserted);		
 	}

@@ -20,7 +20,7 @@ public class FrameList {
 	// Setter methods
 	public void add(Frame newFrame, boolean log) { 
 		frameList.add(newFrame); 
-		padLog("Added Frame #" + this.size() + " : " + this.getLast().toString());
+		if(log) padLog("Added Frame #" + this.size() + " : " + this.getLast().toString());
 	}
 	public void add(Frame newFrame) { this.add(newFrame, false); }
 	public void inject(int index, Frame newFrame) { frameList.add(index, newFrame); }

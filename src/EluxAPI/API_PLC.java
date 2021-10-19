@@ -34,6 +34,11 @@ public class API_PLC {
 		else return false;
 	}
 	
+	public boolean gripperIsIdle() {
+		if (_PLCin.getPinza_Idle()) return true;
+		else return false;
+	}
+	
 	public void openGripper(int millis) {
 		boolean holding = _PLCin.getPinza_Holding();
 		int timer = 0;

@@ -1,5 +1,6 @@
 package EluxAPI;
 
+import static EluxAPI.Utils.*;
 import javax.inject.Inject;
 
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
@@ -48,6 +49,91 @@ public class API_Pad extends RoboticsAPIApplication {
 		return maxTorque;
 	}
 	
+	public int changeValue(String variable, int startValue) {
+		int value = startValue;
+		int ans = 1;
+		mf.saveRGB();
+		mf.setRGB("B");
+		while (ans > 0) {
+			ans = this.question("Current value of " + variable + " is: " + value, "OK", 
+					"+1", "+5", "+10", "+50", "+100", "CANC",
+					"-1", "-5", "-10", "-50", "0");
+			switch (ans) {
+				case 0:							break;
+				case 1: value = value + 1;		break;
+				case 2: value = value + 5;		break;
+				case 3: value = value + 10;		break;
+				case 4: value = value + 50;		break;
+				case 5: value = value + 100;	break;
+				case 6: value = startValue; ans = 0; break;
+				case 7: value = value - 1;		break;
+				case 8: value = value - 5;		break;
+				case 9: value = value - 10;		break;
+				case 10: value = value - 50;	break;
+				case 11: value = 0;				break;
+			}
+		}
+		mf.resetRGB();
+		padLog("The variable " + variable + " has been set to " + value);
+		return value;
+	}
+	
+	public double changeValue(String variable, double startValue) {
+		double value = startValue;
+		int ans = 1;
+		mf.saveRGB();
+		mf.setRGB("B");
+		while (ans > 0) {
+			ans = this.question("Current value of " + variable + " is: " + value, "OK", 
+					"+0.01", "+0.1", "+1", "+10", "+100", "CANC",
+					"-0.01", "-0.1", "-1", "-10", "0");
+			switch (ans) {
+				case 0:							break;
+				case 1: value = value + 0.01;	break;
+				case 2: value = value + 0.1;	break;
+				case 3: value = value + 1;		break;
+				case 4: value = value + 10;		break;
+				case 5: value = value + 100;	break;
+				case 6: value = startValue; ans = 0; break;
+				case 7: value = value - 0.01;	break;
+				case 8: value = value - 0.1;	break;
+				case 9: value = value - 1;		break;
+				case 10: value = value - 10;	break;
+				case 11: value = 0;				break;
+			}
+		}
+		mf.resetRGB();
+		padLog("The variable " + variable + " has been set to " + value);
+		return value;
+	}
+	
+	// TEMPLATE FOR SOFT KEYS
+	/*
+	private void configPadKeys() { 					// BUTTONS						
+		IUserKeyListener padKeysListener = new IUserKeyListener() {
+			@Override public void onKeyEvent(IUserKey key, UserKeyEvent event) {
+				if (event == UserKeyEvent.KeyDown) {
+					switch (key.getSlot()) {
+						case 0:  						// KEY - 
+
+							break;
+						case 1: 						// KEY - 
+
+							break;
+						case 2:  						// KEY - 
+
+							break;
+						case 3:							// KEY - 
+
+							break;
+					}
+				}
+			}
+		};
+		pad.keyBarSetup(padKeysListener, "GROUP NAME", " ", " ", " ", " ");
+	}
+	*/
+	
 	public void keyBarSetup(IUserKeyListener padKeysListener, String barTitle, String key0, String key1, String key2, String key3) {
 		IUserKeyBar padKeyBar = getApplicationUI().createUserKeyBar(barTitle);
 		IUserKey padKey1 = padKeyBar.addUserKey(0, padKeysListener, true);
@@ -71,73 +157,12 @@ public class API_Pad extends RoboticsAPIApplication {
 		return  promptAns;
 	}
 	
-	public int question(String question, String ans0, String ans1) {
-		int promptAns;
+	public int question(String question, String ...ans) {
 		mf.saveRGB();
 		mf.setRGB("B");
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
-			.QUESTION, question, ans0, ans1);
+		int promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
+				.QUESTION, question, ans);
 		mf.resetRGB();
-		return  promptAns;
-	}
-	
-	public int question(String question, String ans0, String ans1, String ans2) {
-		int promptAns;
-		mf.saveRGB();
-		mf.setRGB("B");
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
-			.QUESTION, question, ans0, ans1, ans2);
-		mf.resetRGB();
-		return  promptAns;
-	}
-	
-	public int question(String question, String ans0, String ans1, String ans2, String ans3) {
-		int promptAns;
-		mf.saveRGB();
-		mf.setRGB("B");
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
-			.QUESTION, question, ans0, ans1, ans2, ans3);
-		mf.resetRGB();
-		return  promptAns;
-	}
-	
-	public int question(String question, String ans0, String ans1, String ans2, String ans3, String ans4) {
-		int promptAns;
-		mf.saveRGB();
-		mf.setRGB("B");
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
-			.QUESTION, question, ans0, ans1, ans2, ans3, ans4);
-		mf.resetRGB();
-		return  promptAns;
-	}
-	
-	public int question(String question, String ans0, String ans1, String ans2, String ans3, String ans4, String ans5) {
-		int promptAns;
-		mf.saveRGB();
-		mf.setRGB("B");
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
-			.QUESTION, question, ans0, ans1, ans2, ans3, ans4, ans5);
-		mf.resetRGB();
-		return  promptAns;
-	}
-	
-	public int question(String question, String ans0, String ans1, String ans2, String ans3, String ans4, String ans5, String ans6) {
-		int promptAns;
-		mf.saveRGB();
-		mf.setRGB("B");
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
-			.QUESTION, question, ans0, ans1, ans2, ans3, ans4, ans5, ans6);
-		mf.resetRGB();
-		return  promptAns;
-	}
-	
-	public int question(String question, String ans0, String ans1, String ans2, String ans3, String ans4, String ans5, String ans6, String ans7) {
-		int promptAns;
-		mf.saveRGB();
-		mf.setRGB("B");
-		promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
-			.QUESTION, question, ans0, ans1, ans2, ans3, ans4, ans5, ans6, ans7);
-		mf.resetRGB();
-		return  promptAns;
+		return promptAns;
 	}
 }

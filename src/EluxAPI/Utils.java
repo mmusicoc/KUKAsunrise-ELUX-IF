@@ -1,6 +1,8 @@
 package EluxAPI;
 
 import com.kuka.common.ThreadUtil;
+import com.kuka.roboticsAPI.geometricModel.Frame;
+//import java.net.*;
 
 public class Utils {
 	public static void waitMillis(int millis) { waitMillis(millis, false); }
@@ -8,7 +10,7 @@ public class Utils {
 		if (log) padLog("Wait for " + millis + " millis");
 		ThreadUtil.milliSleep(millis);
 	}
-	public static void sleep() {
+	public static void halt() {
 		padLog("Wait indefinitely - sleep");
 		for(;;) waitMillis(1000);
 	}
@@ -18,6 +20,8 @@ public class Utils {
 	public static void padLog(double msg) { System.out.println(msg); }
 	public static void padErr(String msg) { System.err.println(msg); }
 	public static void debug() { padLog("Arrived here"); }
+	public static void printAbsFrame(Frame pose) { padLog(pose.toStringInWorld()); }
+	public static void printRelFrame(Frame pose) { padLog(pose.toStringTrafo()); }
 	
 	public static double pi() { return 3.14159265359; }
 	public static double rad2deg(double rad) { return (rad * 180 / pi()); }
@@ -34,5 +38,9 @@ public class Utils {
 		while (deg > 180) deg -= 360;
 		while (deg <= -180) deg += 360;
 		return deg;
+	}
+	
+	public static double getTimeStamp() {
+		return System.currentTimeMillis();
 	}
 }
