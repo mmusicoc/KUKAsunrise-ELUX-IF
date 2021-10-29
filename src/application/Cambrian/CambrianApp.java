@@ -5,7 +5,6 @@ import EluxAPI.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
@@ -16,9 +15,11 @@ import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
 public class CambrianApp extends RoboticsAPIApplication {
 	
-	private static final String OEE_FILENAME = "OEEdata.txt";
-	private static final String WP_PATHROOT = "/_Cambrian/ScanPoints/";
-	private static final double APPROACH_SPEED = 0.4;
+	private static final String OEE_OBJ_FILENAME = "OEE_Object.txt";
+	private static final String OEE_STATS_FILENAME = "OEE_Stats.csv";
+	private static final String OEE_EVENTS_FILENAME = "OEE_Event_Log.csv";
+	private static final String SP_PATHROOT = "/_Cambrian/ScanPoints/";
+	private static final double APPR_SPEED = 0.4;
 	private static final double EXIT_SPEED = 0.4;
 	private static final int JOINT_BUBBLE = 20; // mm to consider already visited
 	private static final int RANDOM_RANGE = 20;
@@ -36,7 +37,7 @@ public class CambrianApp extends RoboticsAPIApplication {
 	@Inject private xAPI_Cambrian cambrian = new xAPI_Cambrian(elux);
 	
 	FrameList frameList;
-	boolean logger, sleep, approach;
+	boolean logger, sleep, onlyApproach;
 	int sniffing_pause;
 	int loop_joint;
 	int success;
@@ -46,19 +47,23 @@ public class CambrianApp extends RoboticsAPIApplication {
 	@Override public void initialize() {
 		configPadKeys();
 		
-		oee.init("JOINT", TOTAL_JOINTS, JOINT_TRIALS);
-		oee = oee.restoreOEEfromFile(OEE_FILENAME, true);
+		oee.init("JOINT", TOTAL_JOINTS, JOINT_TRIALS, 
+				OEE_OBJ_FILENAME, 
+				OEE_STATS_FILENAME,
+				OEE_EVENTS_FILENAME);
+		//oee = oee.restoreOEEfromFile(true); // DISABLE FIRST TIME
 		
 		// Init move
-		move.setJTconds(15.0);
-		move.setGlobalSpeed(0.25, true);
-		move.setBlending(20, 5);
+		move.setHome("/_Cambrian/_Home");
 		move.setTool(GripperCambrian);
 		move.setTCP("/TCP");
-		move.setHome("/_Cambrian/_Home");
-		
+		move.setGlobalSpeed(0.25, true);
+		move.setBlending(20, 5);
+		move.setJTconds(5.0);
+		move.setReleaseAuto(true);
+
 		// Init Cambrian
-		cambrianModel = new String("Elux_weldedpipes_6");
+		cambrianModel = new String("Elux_weldedpipes");
 		if(!cambrian.init("192.168.2.50", 4000)) dispose();
 		cambrian.loadModel(cambrianModel);
 		cambrian.getNewPrediction(cambrianModel);
@@ -69,7 +74,7 @@ public class CambrianApp extends RoboticsAPIApplication {
 		loop_joint = 0;
 		logger = false;
 		sleep = false;
-		approach = true;
+		onlyApproach = true;
 		if(!move.PTPhome(1, false)) stop();
 	}
 	
@@ -78,6 +83,11 @@ public class CambrianApp extends RoboticsAPIApplication {
 			if (frameList.get(i).distanceTo(target) < JOINT_BUBBLE) return true;
 		}
 		return false;
+	}
+	
+	private void sniff(int target) {
+		if(logger) padLog("Leak test #" + target);
+		mf.blinkRGB("B", sniffing_pause);
 	}
 
 	@Override public void run() {
@@ -91,23 +101,26 @@ public class CambrianApp extends RoboticsAPIApplication {
 					target = loop_joint;
 					i = TOTAL_JOINTS;
 				}
-				String path = WP_PATHROOT + "P" + target;
+				if (target == 9) { target = TOTAL_JOINTS; break;} // Ignore last joints
 				int trial_counter = JOINT_TRIALS;
-				Frame WP_frame = move.toFrame(path);
+				String path = SP_PATHROOT + "P" + target;
+				Frame SP_frame = move.toFrame(path);
 				while (true) {
 					if (trial_counter == 0) {
 						padLog("Skip joint #" + target + ", too many trials.");
-						oee.addBad(target);
 						mf.blinkRGB("R", 500);
+						oee.addTMI(target);
 						break;
 					}
-					if (target > 8) cambrianModel = "Elux_e";
-					else cambrianModel = "Elux_weldedpipes_6";
-					move.PTP(WP_frame, 1, false);
+					success = move.PTP(SP_frame, 1, false);
+					oee.event(target, success);
 					if(cambrian.getNewPrediction(cambrianModel) && 
 							!targetVisited(cambrian.getTargetFrame())) {
+						
+						// PREPARE CAMBRIAN AND DIGEST ANSWER --------------------------
 						Frame targetFrame = cambrian.getTargetFrame();
 						Frame approachFrame = cambrian.getApproachFrame();
+						/*
 						if (target == 8) {
 							cambrianModel = "Elux_e";
 							cambrian.loadModel(cambrianModel); 
@@ -122,17 +135,19 @@ public class CambrianApp extends RoboticsAPIApplication {
 							offset = Transformation.ofDeg(0, 0, 0, -90, -10, 0);
 							targetFrame.transform(offset);
 						}
-							
-						move.PTP(approachFrame, 1, !approach);
-						if(!approach) success = move.LIN(targetFrame, APPROACH_SPEED, false);
-						if(logger) padLog("Leak test #" + target);
-						mf.blinkRGB("B", sniffing_pause);	// Delay for sniffing-brazing
-						if(!approach) success = move.LINREL(0, 0, -EXIT_DIST  * 
+						*/
+						// VISIT JOINT -------------------------------------------------
+						success = move.PTP(approachFrame, 1, !onlyApproach);
+						oee.event(target, success);
+						if(!onlyApproach) success = move.LIN(targetFrame, APPR_SPEED, false);
+						oee.event(target, success);
+						sniff(target); // SNIFFING PROCESS ----------------------------
+						if(!onlyApproach) success = move.LINREL(0, 0, -EXIT_DIST  * 
 								(target == 10 ? 2 : 1), EXIT_SPEED, true);
-						else move.LINREL(0, 0, -(EXIT_DIST - APPROACH_DIST) * 
+						else success = move.LINREL(0, 0, -(EXIT_DIST - APPROACH_DIST) * 
 								(target == 10 ? 2 : 1), EXIT_SPEED, true);
+						oee.event(target, success);
 						frameList.add(cambrian.getTargetFrame().copy());
-						oee.addGood(target);
 						if (trial_counter == JOINT_TRIALS) {
 							oee.addRFT(target);
 						} else oee.addRNFT(target);
@@ -141,9 +156,9 @@ public class CambrianApp extends RoboticsAPIApplication {
 					else {
 						if (logger) padLog("Joint #" + target + " not found, randomizing");
 						if (trial_counter == JOINT_TRIALS) oee.addNRFT(target);
-						WP_frame = move.randomizeFrame(path, RANDOM_RANGE);
+						SP_frame = move.randomizeFrame(path, RANDOM_RANGE);
 						trial_counter--;
-						oee.addFail(target);
+						oee.addINR(target);
 					}
 					if(sleep) {
 						move.LIN("/_Cambrian/_Home", 1, true);
@@ -152,29 +167,28 @@ public class CambrianApp extends RoboticsAPIApplication {
 					}
 					while(sleep);
 				}
-				oee.addItem(target, success == 1);
 			}
 			frameList.free();
 			if(loop_joint == 0) {
 				move.PTPhome(1, true);
 				oee.addNewCycle();
-				oee.saveOEEtoFile(oee, OEE_FILENAME, false);
+				oee.saveOEEtoFile(oee, false);
 			}
 		}
 	}
 	
-	private void configPadKeys() { 					// BUTTONS						
+	private void configPadKeys() { // BUTTONS --------------------------------------------------------
 		IUserKeyListener padKeysListener1 = new IUserKeyListener() {
 			@Override public void onKeyEvent(IUserKey key, UserKeyEvent event) {
 				if (event == UserKeyEvent.KeyDown) {
 					switch (key.getSlot()) {
 						case 0:  						// KEY - OEE DATA
-							switch (pad.question("Manage / print OEE data", "CANCEL",
-									"Save OEE data", "Restore OEE data", "Reset OEE to 0", "Reset Cycle Time",
+							switch (pad.question("Manage / print OEE data", "CANCEL", "Save OEE data",
+									"Restore OEE data", "Reset OEE to 0", "Reset Cycle Time",
 									"Print Cycles data", "Print Joint Sum", "Print 1 joint")) {
 								case 0: break;
-								case 1: oee.saveOEEtoFile(oee, OEE_FILENAME, true); break;
-								case 2: oee = oee.restoreOEEfromFile(OEE_FILENAME, true); break;
+								case 1: oee.saveOEEtoFile(oee, true); break;
+								case 2: oee = oee.restoreOEEfromFile(true); break;
 								case 3: oee.resetCycle(); oee.resetItems(); break;
 								case 4: oee.resetCycleTime(); break;
 								case 5: oee.printStatsCycle(); break;
@@ -227,9 +241,9 @@ public class CambrianApp extends RoboticsAPIApplication {
 							else sniffing_pause = 500;
 							break;
 						case 2:  						// KEY - APPROACH
-							approach = !approach;
+							onlyApproach = !onlyApproach;
 							padLog("Robot will just reach the approach point " +
-									"to avoid crash: " + approach);
+									"to avoid crash: " + onlyApproach);
 							break;
 						case 3:							// KEY - 
 							break;
@@ -242,11 +256,7 @@ public class CambrianApp extends RoboticsAPIApplication {
 	
 	private void stop() {
 		padLog("Program stopped");
-		dispose();
-	}
-	
-	@Override public void dispose() { 
-		//cambrian.terminate();
-		super.dispose(); 
+		waitMillis(2000);
+		//dispose();
 	}
 }

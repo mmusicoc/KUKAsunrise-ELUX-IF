@@ -39,11 +39,11 @@ public class CambrianCalib extends RoboticsAPIApplication {
 		move.PTPhome(1, false);
 		waitMillis(1000);
 		padLog("Starting Multi Pose Calibration ... ");
-		//cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
+		cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
 		for(int i = 1; i <= 14; i++) {
 			move.PTP(basePath + "/P" + i, 1, false);
 			padLog("Calib in P" + i);
-			//cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
+			cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
 			padLog("Finished calib P" + i);
 		}
 		

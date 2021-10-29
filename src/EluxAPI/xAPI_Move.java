@@ -125,11 +125,9 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		if(logger) padLog("Max Axis Torque set to " + maxTorque + " Nm.");
 	}
 	
-	// MOVEMENT COMMANDS ---------------------------------------------------------------
-	
 	public boolean release() {
 		double rd = releaseDist;
-		if(releaseAuto) { LINREL(0, 0, -rd, 0.5, false); return false; }
+		if(releaseAuto) { LINREL(0, 0, -rd, 0.5, true); return false; }
 		int ans = 1;
 		while (ans != 0) {
 			ans = pad.question("Indicate desired movement of " + rd + 
@@ -150,6 +148,16 @@ public class xAPI_Move extends RoboticsAPIApplication {
 			}
 		}
 		return false;
+	}
+	
+	public void collision() {
+		padLog("Collision detected!");
+		mf.blinkRGB("RB", 500);
+	}
+	
+	public void unreachable() {
+		padErr("Unable to perform movement");
+		mf.blinkRGB("RG", 500);
 	}
 	
 	// #################################################################################
@@ -173,17 +181,14 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						mf.setRGB("RB");
-						padLog("Collision detected!");
-						if (release) release();
-						else if (release()) PTP(target, relSpeed, approx);
+						collision();
+						if (release) if (release()) PTP(target, relSpeed, approx);
 						return 0;
 					}
 				}
 			return 1;
 		} catch(CommandInvalidException e) {
-			padErr("Unable to perform movement");
-			mf.setRGB("RG");
+			unreachable();
 			return -1; 
 		}
 	}
@@ -212,17 +217,14 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						mf.setRGB("RB");
-						padLog("Collision detected!");
-						if (release) release();
-						else if (release()) LIN(target, relSpeed, approx);
+						collision();
+						if (release) if (release()) LIN(target, relSpeed, approx);
 						return 0;
 					}
 				}
 			return 1;
 		} catch(CommandInvalidException e) {
-			padErr("Unable to perform movement");
-			mf.setRGB("RG");
+			unreachable();
 			return -1; 
 		}
 	}
@@ -249,17 +251,15 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						mf.setRGB("RB");
-						padLog("Collision detected!");
-						if (release) release();
-						else if (release()) LINREL(x, y, z, Rz, Ry, Rx, relSpeed, approx);
+						collision();
+						if (release) if (release()) 
+								LINREL(x, y, z, Rz, Ry, Rx, relSpeed, approx);
 						return 0;
 					}
 				}
 			return 1;
 		} catch(CommandInvalidException e) {
-			padErr("Unable to perform movement");
-			mf.setRGB("RG");
+			unreachable();
 			return -1; 
 		}
 	}
@@ -282,17 +282,15 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						mf.setRGB("RB");
-						padLog("Collision detected!");
-						if (release) release();
-						else if (release()) CIRC(target1, target2, relSpeed, approx);
+						collision();
+						if (release) if (release()) 
+								CIRC(target1, target2, relSpeed, approx);
 						return 0;
 					}
 				}
 			return 1;
 		} catch(CommandInvalidException e) {
-			padErr("Unable to perform movement");
-			mf.setRGB("RG");
+			unreachable();
 			return -1; 
 		}
 	}

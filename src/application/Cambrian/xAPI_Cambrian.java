@@ -40,7 +40,8 @@ public class xAPI_Cambrian {
 	public void setDepthOffset(int depth_offset) { this.depth_offset = depth_offset; }
 	public void startCalibration(){ sendRequest("START CALIBRATION", ""); }
 	public void captureCalibration(){ sendRequest("CAPTURE CALIBRATION IMAGE", ""); }
-	public void loadModel(String model_name){ sendRequest("LOAD MODEL", model_name); }
+	public void loadModel(String model_name){ sendRequest("LOAD MODEL", model_name); 
+					padLog("Loading model " + model_name + "..."); }
     
 	// GETTER METHODS -----------------------------------------------------   
 	public Frame getTargetFrame() { return target_frame; }
@@ -117,7 +118,7 @@ public class xAPI_Cambrian {
                 cambrian_reply = msg.substring(msg.indexOf("<<") + 2, msg.indexOf(">>"));
                 
                 //padLog("Cambrian success: " + cambrianSuccess);
-                //padLog("Cambrian message type: " + cambrianMsgType);
+                if(ans == "") padLog("Cambrian message type: " + cambrian_msg_type);
                 //if(cambrianReply != "") padLog("Reply: " + cambrianReply);
                 return true;
             } catch (Exception e) { padErr("Failed to parse data"); return false; }
