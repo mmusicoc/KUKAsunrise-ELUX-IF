@@ -13,7 +13,7 @@ public class CambrianCalib extends RoboticsAPIApplication {
 	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject private xAPI_Move move = elux.getMove();
 	@Inject private xAPI_Pad pad = elux.getPad();
-	@Inject private xAPI_Cambrian cambrian = new xAPI_Cambrian(elux);
+	@Inject private CambrianAPI cambrian = new CambrianAPI(elux);
 	
 	@Override public void initialize() {
 		move.setTool(GripperCambrian);

@@ -2,7 +2,6 @@ package EluxAPI;
 
 import com.kuka.common.ThreadUtil;
 import com.kuka.roboticsAPI.geometricModel.Frame;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.io.File;
@@ -34,14 +33,21 @@ public class Utils {
 		if (num < 0) return -num;
 		else return num;
 	}
+	
 	public static double abs(double num) { 
 		if (num < 0) return -num;
 		else return num;
 	}
+	
 	public static double deg(double deg) {
 		while (deg > 180) deg -= 360;
 		while (deg <= -180) deg += 360;
 		return deg;
+	}
+	
+	public static double round(double value, int decimals) {
+		double aux = Math.pow(10, decimals);
+		return Math.round(value * aux) / aux;
 	}
 	
 	public static double getTimeStamp() {

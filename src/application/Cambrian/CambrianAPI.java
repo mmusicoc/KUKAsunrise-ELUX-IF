@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class xAPI_Cambrian {
+public class CambrianAPI {
 	private xAPI__ELUX elux;
     private Client_Socket socket;
     
@@ -26,7 +26,7 @@ public class xAPI_Cambrian {
     private int depth_offset;
     
 	// CONSTRUCTOR --------------------------------------------------------
-	@Inject public xAPI_Cambrian(xAPI__ELUX _elux) { this.elux = _elux; }
+	@Inject public CambrianAPI(xAPI__ELUX _elux) { this.elux = _elux; }
     
 	// INIT METHODS -------------------------------------------------------
 	public boolean init(String IP, int port) { 

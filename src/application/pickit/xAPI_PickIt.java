@@ -32,7 +32,7 @@ public class xAPI_PickIt{
 	// (UNUSED)
 	private volatile Transformation _pick_offset_tr;
 	private volatile double _obj_age = 0;
-	private volatile double[] obj_size = {0, 0, 0};
+	private volatile double[] _obj_size = {0, 0, 0};
 	private volatile double _pickref_id = 0;
 	
 	// Ethernet socket communication
@@ -51,6 +51,10 @@ public class xAPI_PickIt{
 	public int getPickID() { return _pick_id; }
 	public int getObjType() { return _obj_type; }
 	public int getRemainingObj() { return _obj_remaining; }
+	public Transformation getPickOffsetTr() { return _pick_offset_tr; }
+	public double getObjAge() { return _obj_age; }
+	public double[] getObjSize() { return _obj_size; }
+	public double getPickRefID() { return _pickref_id; }
 	public boolean isRunning() { return _status != _STOPPED && _status != _ERROR; }
 	public boolean isReady() { return _status != _WAITING; }
 	public Frame getPickFrame() { return _pick_frame; }

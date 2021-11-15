@@ -1,6 +1,11 @@
 package EluxAPI;
 
-// Movement returns: 1 = success, 0 = collision, -1 = unreachable, -2 = nonexistent
+/* Movement returns: 
+		1 = success
+		0 = collision
+		-1 = unreachable
+		-10 = nonexistent
+		*/
 
 import static EluxAPI.Utils.*;
 
@@ -13,17 +18,18 @@ import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
 import com.kuka.roboticsAPI.motionModel.IMotionContainer;
 import com.kuka.roboticsAPI.conditionModel.ICondition;
 import com.kuka.roboticsAPI.conditionModel.JointTorqueCondition;
+import com.kuka.roboticsAPI.controllerModel.Controller;
 import com.kuka.roboticsAPI.deviceModel.JointEnum;
 import com.kuka.roboticsAPI.executionModel.CommandInvalidException;
 import com.kuka.roboticsAPI.executionModel.IFiredConditionInfo;
 import com.kuka.roboticsAPI.geometricModel.*;
-import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 @Singleton
 public class xAPI_Move extends RoboticsAPIApplication {
 	@Override public void run() { while (true) { break; } }
 	@Inject private LBR kiwa;
+	@Inject private Controller kiwaController;
 	@Inject private xAPI_MF mf;
 	@Inject private xAPI_Pad pad;
 		
@@ -77,11 +83,23 @@ public class xAPI_Move extends RoboticsAPIApplication {
 											getFlange()).copyWithRedundancy(); }
 	public Frame getFlangeTarget() { return kiwa.getCommandedCartesianPosition(kiwa.
 											getFlange()).copyWithRedundancy(); }
-	
+	public Frame getTCPpos() {
+		Frame tcpPos = new Frame();
+		Frame flangePos = kiwa.getCurrentCartesianPosition(kiwa.
+				getFlange()).copyWithRedundancy();
+		tcpPos.setParent(flangePos, false);
+		tcpPos.setTransformationFromParent(Transformation.ofRad(
+				tcp.getX(), tcp.getY(), tcp.getZ(),
+				tcp.getAlphaRad(), tcp.getBetaRad(), tcp.getGammaRad()));
+		tcpPos.setTransformationFromParent(tcpPos.transformationFromWorld());
+		return tcpPos;
+	}
 		
 	// SETTERS --------------------------------------------------------------------------
 	
 	public void setHome(String targetPath) {
+		kiwaController = (Controller) getContext().getControllers().toArray()[0];
+		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
 		homeFramePath = targetPath;
 		kiwa.setHomePosition(toFrame(targetPath));
 	}
@@ -103,7 +121,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		this.bAngle = deg2rad(angle);
 	}
 	
-	// COLLISION MANAGEMENT ----------------------------------------------------
+	// ERROR/COLLISION MANAGEMENT -----------------------------------------------
 	
 	public void setRelease(boolean _release) { release = _release; }
 	public void setReleaseAuto(boolean _releaseAuto) { releaseAuto = _releaseAuto; }
@@ -150,14 +168,22 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		return false;
 	}
 	
-	public void collision() {
-		padLog("Collision detected!");
+	public int collision() {
+		padLog("Collision detected at\n" + getFlangePos().toStringInWorld());
 		mf.blinkRGB("RB", 500);
+		return 0;
 	}
 	
-	public void unreachable() {
-		padErr("Unable to perform movement");
+	public int unreachable() {
+		padErr("Unable to perform movement to\n" + getFlangeTarget().toStringInWorld());
 		mf.blinkRGB("RG", 500);
+		return -1;
+	}
+	
+	public int nonexistent(String targetPath) {
+		padErr("Target \"" + targetPath + "\" does not exist.");
+		mf.blinkRGB("R", 500);
+		return -10;
 	}
 	
 	// #################################################################################
@@ -170,6 +196,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	
 	public int PTP(Frame target, double relSpeed, boolean approx) {
 		try { 
+			int success = 1;
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(ptp(target)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
@@ -181,23 +208,17 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						collision();
+						success = collision();
 						if (release) if (release()) PTP(target, relSpeed, approx);
-						return 0;
 					}
 				}
-			return 1;
-		} catch(CommandInvalidException e) {
-			unreachable();
-			return -1; 
-		}
+			return success;
+		} catch(CommandInvalidException e) { return unreachable(); }
 	}
 	
 	public int PTP(String targetPath, double relSpeed, boolean approx) {
-		int success = 0;
-		try { success = PTP(toFrame(targetPath), relSpeed, approx); }
-		catch(Exception e) { padErr("Target does not exist."); success = -2; }
-		return success;
+		try { return PTP(toFrame(targetPath), relSpeed, approx); }
+		catch(Exception e) { return nonexistent(targetPath); }
 	}
 	
 	// LIN -----------------------------------------------------------------------------
@@ -205,7 +226,8 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		return this.LIN(homeFramePath, relSpeed, approx) == 1 ? true : false; }
 	
 	public int LIN(Frame target, double relSpeed, boolean approx) {
-		try { 
+		try {
+			int success = 1;
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(ptp(target)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
@@ -217,29 +239,24 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						collision();
+						success = collision();
 						if (release) if (release()) LIN(target, relSpeed, approx);
-						return 0;
 					}
 				}
-			return 1;
-		} catch(CommandInvalidException e) {
-			unreachable();
-			return -1; 
-		}
+			return success;
+		} catch(CommandInvalidException e) { return unreachable(); }
 	}
 	
 	public int LIN(String targetPath, double relSpeed, boolean approx) {
-		int success = 0;
-		try { success = LIN(toFrame(targetPath), relSpeed, approx); }
-		catch(Exception e) { padErr("Target does not exist."); success = -2; }
-		return success;
+		try { return LIN(toFrame(targetPath), relSpeed, approx); }
+		catch(Exception e) { return nonexistent(targetPath); }
 	}
 	
 	// LINREL --------------------------------------------------------------------------
 	public int LINREL(double x, double y, double z, double Rz, double Ry, double Rx, 
 						double relSpeed, boolean approx) {
-		try { 
+		try {
+			int success = 1;
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx))
 					.setJointVelocityRel(scaleSpeed(relSpeed))
@@ -251,17 +268,13 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						collision();
+						success = collision();
 						if (release) if (release()) 
 								LINREL(x, y, z, Rz, Ry, Rx, relSpeed, approx);
-						return 0;
 					}
 				}
-			return 1;
-		} catch(CommandInvalidException e) {
-			unreachable();
-			return -1; 
-		}
+			return success;
+		} catch(CommandInvalidException e) { return unreachable(); }
 	}
 	
 	public int LINREL(double x, double y, double z, double relSpeed, boolean approx) {
@@ -271,6 +284,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	// CIRC ----------------------------------------------------------------------------
 	public int CIRC(Frame target1, Frame target2, double relSpeed, boolean approx) {
 		try { 
+			int success = 1;
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(circ(target1, target2)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
@@ -282,24 +296,18 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						.breakWhen(JTConds));
 					JTBreak = JTMotion.getFiredBreakConditionInfo();
 					if(JTBreak != null) {
-						collision();
+						success = collision();
 						if (release) if (release()) 
 								CIRC(target1, target2, relSpeed, approx);
-						return 0;
 					}
 				}
-			return 1;
-		} catch(CommandInvalidException e) {
-			unreachable();
-			return -1; 
-		}
+			return success;
+		} catch(CommandInvalidException e) { return unreachable(); }
 	}
 	
 	public int CIRC(String target1, String target2, double relSpeed, boolean approx) {
-		int success = 0;
-		try { success = CIRC(toFrame(target1), toFrame(target2), relSpeed, approx); }
-		catch(Exception e) { padErr("Target does not exist."); success = -2; }
-		return success;
+		try { return CIRC(toFrame(target1), toFrame(target2), relSpeed, approx); }
+		catch(Exception e) { return nonexistent(target1 + " or " + target2); }
 	}
 	
 	// GENERAL TOOLS -------------------------------------------------------------------
