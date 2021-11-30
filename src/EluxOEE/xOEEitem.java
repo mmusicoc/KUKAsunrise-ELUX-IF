@@ -16,12 +16,13 @@ public class xOEEitem implements Serializable {
 	private int PWC;	// Process/item with collision
 	
 						// Intent Not Right	
-	private int INR;	// = IWC + IUR + IAE + INV + INF
+	private int INR;	// = IWC + IUR + IAE + INV + INF + INP
 	private int IWC;	//  0 - Intent With Collision
 	private int IUR;	// -1 - Intent Un-Reachable (path planner error)
 	private int IAE;	// -2 - Intent Already Executed (visited)
 	private int INV;	// -3 - Intent Non Valid (filtered)
 	private int INF;	// -4 - Intent Not Found
+	private int INP;	// -5 - Intent Not Precise
 	
 	boolean firstCycle;
 	private double lastCT;
@@ -32,8 +33,8 @@ public class xOEEitem implements Serializable {
 	}
 	
 	// GETTER METHODS -------------------------------------
-	public int getTotal() 	{ return total; }
-	public int getGood() 	{ return good; }
+	public int getTotal()	{ return total; }
+	public int getGood()	{ return good; }
 	public int getBad() 	{ return bad; }
 	public int getTMI() 	{ return TMI; }
 	public int getPWC() 	{ return PWC; }
@@ -48,6 +49,7 @@ public class xOEEitem implements Serializable {
 	public int getIAE() 	{ return IAE; }
 	public int getINV() 	{ return INV; }
 	public int getINF() 	{ return INF; }
+	public int getINP()		{ return INP; }
 	
 	public double getLastCT() { return lastCT; }
 	public double getAvgCT()  { return avgCT; }
@@ -56,7 +58,7 @@ public class xOEEitem implements Serializable {
 	public void reset() {
 		total = good = bad = TMI = PWC = 0;
 		RFT = RNFT = NRFT = 0;
-		INR = IWC = IUR = IAE = INV = INF = 0;
+		INR = IWC = IUR = IAE = INV = INF = INP = 0;
 		
 		firstCycle = true;
 		lastCT = avgCT = 0.0;
@@ -74,6 +76,7 @@ public class xOEEitem implements Serializable {
 	public void addIAE() 	{ IAE++; INR++; }
 	public void addINV() 	{ INV++; INR++; }
 	public void addINF() 	{ INF++; INR++; }
+	public void addINP()	{ INP++; INR++; }
 	
 	public void setFirstCycle() { firstCycle = true; }
 	public void setLastCT(double _lastCT) { 

@@ -311,15 +311,6 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	}
 	
 	// GENERAL TOOLS -------------------------------------------------------------------
-	public Frame randomizeFrame(String path, int range) {
-		Frame target = toFrame(path);
-		target.transform(Transformation.ofDeg(
-				range * (Math.random() - 0.5),
-				range * (Math.random() - 0.5),
-				range * (Math.random() - 0.5),
-				0, 0, 0));
-		return target;
-	}
 	
 	public boolean twistJ7withCheck(double minAngle, double maxAngle, 
 									double relSpeed, double maxTorque) {

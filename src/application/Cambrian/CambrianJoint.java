@@ -5,6 +5,7 @@ import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class CambrianJoint {
+	private boolean enabled;
 	private String jointName;
 	private String cambrianModel;
 	private SimpleFrame nominalTarget;
@@ -17,6 +18,7 @@ public class CambrianJoint {
 	}
 	
 	// GETTERS ---------------------------------------------------------------
+	public boolean isEnabled() { return enabled; }
 	public String getName() { return this.jointName; }
 	public String getModel() { return this.cambrianModel; }
 	public SimpleFrame getNominalTarget() { return this.nominalTarget; }

@@ -109,9 +109,10 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 		return value;
 	}
 	
-	public String askName(String variable, String startName) {
+	public String askName(String variable, String startName, 
+			boolean forceCaps, boolean log) {
 		String name = startName;
-		int ans = 0;
+		boolean end = false;
 		boolean caps = true;
 		int page = 0;
 		mf.saveRGB();
@@ -119,26 +120,24 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 		do {
 			switch(page) {
 				case 0:
-					ans = this.question("The name of " + variable + " will be _"
-						+ name + "_",
-						"OK","CANC","CLEAR","DEL","SPACE","-","_","NUMS","LETTERS");
-						
-					switch(ans) {
-						case  0:						break;
-						case  1: name = startName; ans = 0; break;
-						case  2: name = " ";			break;
+					switch(this.question(variable + " will be "	+ name + ".",
+						"OK","CANC","CLEAR","DEL","SPACE","-","_","NUMS",
+						"A-I","J-R","S-Z")) {
+						case  0: end = true;			break;
+						case  1: name = startName; end = true; break;
+						case  2: name = "";				break;
 						case  3: name = name.substring(0, name.length() - 1); break;
-						case  5: name = name + " ";		break;
-						case  6: name = name + "-";		break;
-						case  7: name = name + "_";		break;
-						case  8: page = 1;				break;
-						case  9: page = 2;				break;
+						case  4: name = name + " ";		break;
+						case  5: name = name + "-";		break;
+						case  6: name = name + "_";		break;
+						case  7: page = 1;				break;
+						case  8: page = 2;				break;
+						case  9: page = 3;				break;
+						case 10: page = 4;				break;
 					} break;
 				case 1:
-					ans = this.question("The name of " + variable + " will be _"
-						+ name + "_",
-						"MENU","LETTERS","0","1","2","3","4","5","6","7","8","9");
-					switch(ans) {
+					switch(this.question(variable + " will be " + name + ".",
+						"MENU","LETTERS","0","1","2","3","4","5","6","7","8","9")) {
 						case  0: page = 0;				break;
 						case  1: page = 2;				break;
 						case  2: name = name + "0";		break;
@@ -153,13 +152,12 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 						case 11: name = name + "9";		break;
 					} break;
 				case 2:
-					ans = this.question("The name of " + variable + " will be _"
-						+ name + "_" + (caps?" (CAPS is ON)":""),
-						"MENU","NUMBERS","CAPS","MORE LETTERS",
-						"A","B","C","D","E","F","G","H","I");
-					switch(ans) {
+					switch(this.question(variable + " will be " + name + "." + 
+						(caps?" (CAPS is ON)":""),
+						"MENU","CAPS","MORE LETTERS",
+						"A","B","C","D","E","F","G","H","I")) {
 						case  0: page = 0;						break;
-						case  1: caps = !caps;					break;
+						case  1: caps = (forceCaps?true:!caps);	break;
 						case  2: page++;						break;
 						case  3: name = name + (caps?"A":"a"); 	break;
 						case  4: name = name + (caps?"B":"b"); 	break;
@@ -172,34 +170,32 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 						case 11: name = name + (caps?"I":"i"); 	break;
 					} break;
 				case 3:
-					ans = this.question("The name of " + variable + " will be _"
-							+ name + "_" + (caps?" (CAPS is ON)":""),
-							"MENU","NUMBERS","CAPS","MORE LETTERS",
-							"I","J","K","L","M","N","O","P","Q");
-					switch(ans) {
+					switch(this.question(variable + " will be " + name + "." + 
+							(caps?" (CAPS is ON)":""),
+							"MENU","CAPS","MORE LETTERS",
+							"J","K","L","M","N","O","P","Q","R")) {
 						case  0: page = 0;						break;
-						case  1: page = 1;						break;
-						case  2: caps = !caps;					break;
-						case  3: page++;						break;
-						case  4: name = name + (caps?"J":"j"); 	break;
-						case  5: name = name + (caps?"K":"k"); 	break;
-						case  6: name = name + (caps?"L":"l"); 	break;
-						case  7: name = name + (caps?"M":"m"); 	break;
-						case  8: name = name + (caps?"N":"n"); 	break;
-						case  9: name = name + (caps?"O":"o"); 	break;
-						case 10: name = name + (caps?"P":"p"); 	break;
-						case 34: name = name + (caps?"Q":"q"); 	break;
+						case  1: caps = (forceCaps?true:!caps);	break;
+						case  2: page++;						break;
+						case  3: name = name + (caps?"J":"j"); 	break;
+						case  4: name = name + (caps?"K":"k"); 	break;
+						case  5: name = name + (caps?"L":"l"); 	break;
+						case  6: name = name + (caps?"M":"m"); 	break;
+						case  7: name = name + (caps?"N":"n"); 	break;
+						case  8: name = name + (caps?"O":"o"); 	break;
+						case  9: name = name + (caps?"P":"p"); 	break;
+						case 10: name = name + (caps?"Q":"q"); 	break;
+						case 11: name = name + (caps?"R":"r");	break;
 					} break;
 				case 4:
-					ans = this.question("The name of " + variable + " will be _"
-							+ name + "_" + (caps?" (CAPS is ON)":""),
-							"MENU","CAPS","MORE LETTERS",
-							"R","S","T","U","V","W","X","Y","Z");
-					switch(ans) {
+					switch(this.question("The name of " + variable + " will be "
+							+ name + "." + (caps?" (CAPS is ON)":""),
+							"MENU","CAPS","MORE LETTERS","NUMS",
+							"S","T","U","V","W","X","Y","Z")) {
 						case  0: page = 0;						break;
-						case  1: caps = !caps;					break;
+						case  1: caps = (forceCaps?true:!caps);	break;
 						case  2: page = 2;						break;
-						case  3: name = name + (caps?"R":"r"); 	break;
+						case  3: page = 1;						break;
 						case  4: name = name + (caps?"S":"s"); 	break;
 						case  5: name = name + (caps?"T":"t");	break;
 						case  6: name = name + (caps?"U":"u");	break;
@@ -210,9 +206,9 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 						case 11: name = name + (caps?"Z":"z");	break;
 					} break;
 			}
-		} while (ans > 0);
+		} while (!end);
 		mf.resetRGB();
-		padLog(variable + " has been set to " + name);
+		if(log)padLog(variable + " has been set to " + name);
 		return name;
 	}
 	

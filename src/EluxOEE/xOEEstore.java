@@ -30,7 +30,8 @@ public class xOEEstore implements Serializable {
 			f.close();
 			if(log) padLog("OEE data stored to " + 
 					System.getProperty("user.dir") + "\\" + oee_obj_filename);
-		} catch (FileNotFoundException e) { padErr("File not found");
+		} catch (FileNotFoundException e) { 
+			padErr("File " + oee_obj_filename + " not found");
 		} catch (IOException e) { padErr("Error initializing output stream"); }
 	}
 	
@@ -44,7 +45,8 @@ public class xOEEstore implements Serializable {
 			if(log) padLog("OEE data loaded from " + 
 					System.getProperty("user.dir") + "\\" + oee_obj_filename);
 			return oee;
-		} catch (FileNotFoundException e) { padErr("File not found");
+		} catch (FileNotFoundException e) { 
+			padErr("File " + oee_obj_filename + " not found");
 		} catch (IOException e) { padErr("Error initializing input stream");
 		} catch (ClassNotFoundException e) { padErr("Object not found"); }
 		return null;

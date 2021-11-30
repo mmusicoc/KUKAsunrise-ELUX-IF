@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Locale;
 
 public class xOEEprinter implements Serializable {
 	private static final long serialVersionUID = 3L;
@@ -43,12 +44,13 @@ public class xOEEprinter implements Serializable {
 	
 	public String reasonCode(int reasonCode) {
 		switch(reasonCode) {
-			case 0:  return "Collision";
+			case  0: return "Collision";
 			case -1: return "Un-Reachable";
 			case -2: return "Already Executed";
 			case -3: return "Non Valid (filtered)";
 			case -4: return "Not Found";
-			case -5: return "Too Many Intents";
+			case -5: return "Not Precise";
+			case -6: return "Too Many Intents";
 			case -10:return "Path non existent";
 			default: return "Other";
 		}
@@ -101,6 +103,7 @@ public class xOEEprinter implements Serializable {
 		stats = (stats + "\n   of which Already Executed: " + items[item].getIAE());
 		stats = (stats + "\n   of which Non Valid: " + items[item].getINV());
 		stats = (stats + "\n   of which Not Found: " + items[item].getINF());
+		stats = (stats + "\n   of which Not Precise: " + items[item].getINP());
 		
 		stats = (stats + "\nSUCCESS RATES -----------------------------------");
 		rate = (items[item].getGood() + items[item].getINR() - items[item].getTMI() * 
@@ -204,10 +207,17 @@ public class xOEEprinter implements Serializable {
 			for(int i = 0; i <= itemAmount; i++) 
 				logCSV(fw, items[i].getINF(), true);
 			fw.append("\n");
+			
+			logCSV(fw, "INP", false); logCSV(fw, cycle.getINP(), true);
+			for(int i = 0; i <= itemAmount; i++) 
+				logCSV(fw, items[i].getINP(), true);
+			fw.append("\n");
 			// --------------------------------
 			logCSV(fw, "CT", false); logCSV(fw, cycle.getAvgCT(), true);
-			for(int i = 0; i <= itemAmount; i++) 
+			for(int i = 0; i <= itemAmount; i++) {
 				logCSV(fw, items[i].getAvgCT(), true);
+				
+			}
 			fw.append("\n");
 			
 			// CLOSE STREAM -------------------------------------------------
@@ -216,7 +226,7 @@ public class xOEEprinter implements Serializable {
 			if(log) padLog("OEE metrics stored to " + 
 					System.getProperty("user.dir") + "\\" + oee_stats_filename);
 		} catch (FileNotFoundException e) {
-			padErr("File not found");
+			padErr("File " + oee_stats_filename + " not found");
 		} catch (IOException e) {
 			padErr("Error initializing output stream"); }
 	}
@@ -239,7 +249,7 @@ public class xOEEprinter implements Serializable {
 			fw.flush();
 			fw.close();
 		} catch (FileNotFoundException e) {
-			padErr("File not found");
+			padErr("File " + oee_events_filename + " not found");
 		} catch (IOException e) {
 			padErr("Error initializing output stream"); }
 		saveOEEtoCSV(false);
@@ -259,6 +269,6 @@ public class xOEEprinter implements Serializable {
 	}
 	
 	private boolean logCSV(FileWriter fw, double value, boolean comma) {
-		return logCSV(fw, String.format("%,.2f",value), comma);
+		return logCSV(fw, String.format(Locale.US, "%,.2f",value / 1000.0), comma);
 	}
 }

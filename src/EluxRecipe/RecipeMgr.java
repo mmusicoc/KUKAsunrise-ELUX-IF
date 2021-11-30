@@ -1,6 +1,7 @@
 package EluxRecipe;
 
 import static EluxAPI.Utils.*;
+import EluxAPI.xAPI_Pad;
 
 import java.util.ArrayList;
 import java.io.File;
@@ -11,30 +12,68 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class RecipeMgr<I> {
-	protected String filename;
+	protected String recipeDBFilename;
 	protected ArrayList<Recipe<I>> recipeList;
 	protected Recipe<I> activeRecipe;
+	protected xAPI_Pad pad;
 	
 	public RecipeMgr() { 	// CONSTRUCTOR
 	}
 	
-	public void init(String _filename) {
-		this.filename = _filename;
+	protected void init(xAPI_Pad _pad, String _filename) {
+		this.recipeDBFilename = _filename;
 		this.recipeList = new ArrayList<Recipe<I>>();
 		this.activeRecipe = new Recipe<I>();
+		this.pad = _pad;
 	}
 	// GETTERS ---------------------------------------------------------------
 	public int getPNCamount() { return recipeList.size(); }
 	
-	public void selectRecipePNC(String PNC) {
-		activeRecipe = getRecipe(PNC);
-		if (activeRecipe == null) padErr("Recipe for PNC=" + PNC + " not found.");
-		else padLog("PNC=" + activeRecipe.getPNC() + " has been selected");
+	public String getActivePNC() { return activeRecipe.getPNC(); }
+	
+	public int askPNC() {
+		int ans = pad.question("Which PNC do you want to select?", getLastPNCs());
+		switch(ans) {
+			case 0:
+				padLog("Operation cancelled");
+				return -1;
+			case 1:
+				String PNC = pad.askName("PNC", "", true, false);
+				if(!selectRecipePNC(PNC)) {
+					switch(pad.question("Do you want to create a new recipe for PNC=" +
+							PNC, "YES", "NO, CANCEL")) {
+						case 0:
+							newRecipe(PNC);
+							return 0;
+						default:
+							padLog("Operation cancelled");
+							return -1;
+					}
+				}
+				break;
+			default:
+				if(!selectRecipeIndex(ans - 2)) return -1;
+		}
+		return 1;
 	}
 	
-	public void selectRecipeIndex(int index) {
-		activeRecipe = recipeList.get(index);
-		padLog("PNC=" + activeRecipe.getPNC() + " has been selected");
+	public boolean selectRecipePNC(String PNC) {
+		int index = findRecipe(PNC);
+		if(index == -1) {
+			padErr("Recipe for PNC=" + PNC + " not found.");
+			return false;
+		} else return selectRecipeIndex(index);
+	}
+	
+	public boolean selectRecipeIndex(int index) {
+		if(index < 0 || index >= recipeList.size()) padErr("Index out of bound");
+		else {
+			activeRecipe = recipeList.get(index);
+			padLog("PNC=" + activeRecipe.getPNC() + " has been selected");
+			saveActiveRecipe();
+			return true;
+		}
+		return false;
 	}
 	
 	public String getRecipeToString(String PNC) {
@@ -61,14 +100,14 @@ public class RecipeMgr<I> {
 		return -1;
 	}
 	
-	public String[] getPNClistString() {
-		int listSize = getPNCamount();
+	public String[] getLastPNCs() {
+		int listSize = (getPNCamount() > 10) ? 10 : getPNCamount();
 		String[] PNClist = new String[listSize + 2];
 		for(int i = 0; i < listSize; i++) {
-			PNClist[i] = recipeList.get(i).getPNC();
+			PNClist[i + 2] = recipeList.get(i).getPNC();
 		}
-		PNClist[listSize] = "NEW";
-		PNClist[listSize + 1] = "CANC";
+		PNClist[0] = "CANC";
+		PNClist[1] = "TYPE";
 		return PNClist;
 	}
 	
@@ -89,24 +128,25 @@ public class RecipeMgr<I> {
 	// SETTERS ---------------------------------------------------------------
 	public void newRecipe(String PNC) {
 		activeRecipe.setPNC(PNC);
+		saveActiveRecipe();
 	}
 	
-	public void saveRecipe() {
+	public void saveActiveRecipe() {
 		fetchAllRecipes();
-		int index = findRecipe(activeRecipe.getPNC());
-		if(index == -1) addRecipe(activeRecipe);
-		else recipeList.set(index, activeRecipe);
+		int PNCindex = findRecipe(activeRecipe.getPNC());
+		if(PNCindex != -1) recipeList.remove(PNCindex);
+		recipeList.add(0, activeRecipe);
 		try {
-			FileWriter fw = new FileWriter(new File(filename), false);
+			FileWriter fw = new FileWriter(new File(recipeDBFilename), false);
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			gson.toJson(recipeList, fw);
 			fw.flush();
 			fw.close();
 			String notice = "Recipe for PNC=" + activeRecipe.getPNC() + " has been ";
-			notice = notice + ((index == -1)?"added.":"updated.");
+			notice = notice + ((PNCindex == -1)?"added.":"updated.");
 			padLog(notice);
 		} catch (FileNotFoundException e) {
-			padErr("File " + filename + " not found");
+			padErr("File " + recipeDBFilename + " not found");
 		} catch (IOException e) {
 			//e.printStackTrace();
 			padLog("Unexpected error");

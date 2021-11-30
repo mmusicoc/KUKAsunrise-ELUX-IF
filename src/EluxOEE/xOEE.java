@@ -24,8 +24,8 @@ public class xOEE implements Serializable {
 						String oee_stats_filename,
 						String oee_events_filename) {
 		this.itemAmount = _itemAmount;
-		this.resetItems();
 		this.resetCycle();
+		this.resetItems();
 		this.print.init(_cycleName, _itemName,
 						_itemAmount, _maxTrials,
 						cycle, items,
@@ -73,25 +73,41 @@ public class xOEE implements Serializable {
 			items[i].setFirstCycle();
 		}
 		cycle.setFirstCycle();
+		padLog("Cycle Time stats have ben resetted."); 
 	}
 	
 	// START/END MANAGERS ------------------------------------------------
 	
-	public void startCycle() { cycleFlags.reset(); }
-	public void startItem() { itemFlags.reset(); }
+	public void startCycle() { 
+		cycleFlags.reset(); 
+		prevCycle = prevItem = getTimeStamp();
+	}
+	public void startItem() { 
+		itemFlags.reset(); 
+		prevItem = getTimeStamp();
+	}
 	
 	public void endCycle() {
-		if(cycleFlags.getTMI() > 0) cycle.addTMI();
-		if(cycleFlags.getIUR() > 0) cycle.addIUR();
-		if(cycleFlags.getIAE() > 0) cycle.addIAE();
-		if(cycleFlags.getINV() > 0) cycle.addINV();
-		if(cycleFlags.getINF() > 0) cycle.addINF();
-		if(cycleFlags.getIWC() > 0) cycle.addIWC();
+		if(cycleFlags.getINR() == 0) cycle.addRFT();
 		else {
-			double currentTime = getTimeStamp();
-			double cycleTime = currentTime - prevCycle;
-			prevCycle = currentTime;
-			cycle.setLastCT(cycleTime);
+			cycle.addNRFT();
+			if(cycleFlags.getIWC() == 0 &&
+			   cycleFlags.getTMI() == 0) cycle.addRNFT();
+			
+			if(cycleFlags.getTMI() > 0) cycle.addTMI();
+			if(cycleFlags.getIUR() > 0) cycle.addIUR();
+			if(cycleFlags.getIAE() > 0) cycle.addIAE();
+			if(cycleFlags.getINV() > 0) cycle.addINV();
+			if(cycleFlags.getINF() > 0) cycle.addINF();
+			if(cycleFlags.getINP() > 0) cycle.addINP();
+			
+			if(cycleFlags.getIWC() > 0) { cycle.addIWC(); cycle.addPWC(); }
+			else {
+				double currentTime = getTimeStamp();
+				double cycleTime = currentTime - prevCycle;
+				prevCycle = currentTime;
+				cycle.setLastCT(cycleTime);
+			}
 		}
 	}
 	
@@ -113,14 +129,16 @@ public class xOEE implements Serializable {
 	
 	public void addTMI(int item) {  items[item].addTMI(); items[0].addTMI();
 									cycleFlags.addTMI(); itemFlags.addTMI();
-									print.logOEEevent(item, -5); }
-	
+									print.logOEEevent(item, -6); }
 	public void addIAE(int item) {	items[item].addIAE(); items[0].addIAE(); 
 									cycleFlags.addIAE(); itemFlags.addIAE();}
 	public void addINV(int item) {  items[item].addINV(); items[0].addINV(); 
 									cycleFlags.addINV(); itemFlags.addINV();}
 	public void addINF(int item) {  items[item].addINF(); items[0].addINF(); 
 									cycleFlags.addINF(); itemFlags.addINF();}
+	public void addINP(int item) {  items[item].addINP(); items[0].addINP(); 
+									cycleFlags.addINP(); itemFlags.addINP();
+									print.logOEEevent(item, -5);}
 	
 	// FILE MANAGEMENT ----------------------------------------------------
 	

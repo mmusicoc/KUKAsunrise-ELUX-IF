@@ -3,6 +3,7 @@ package application.Cambrian;
 import static EluxAPI.Utils.*;
 import EluxAPI.SimpleFrame;
 import EluxRecipe.*;
+import EluxAPI.xAPI_Pad;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,8 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	}
 	
 	@Override
-	public void init(String _filename) {
-		super.init(_filename);
+	public void init(xAPI_Pad _pad, String _filename) {
+		super.init(_pad, _filename);
 		activeJointIndex = 0;
 	}
 	
@@ -35,12 +36,12 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	public void fetchAllRecipes() {
 		Gson gson = new Gson();
 		try {
-			JsonReader reader = new JsonReader(new FileReader(filename));
+			JsonReader reader = new JsonReader(new FileReader(recipeDBFilename));
 			recipeList = new ArrayList<Recipe<CambrianJoint>>();
 			Type objType = new TypeToken<List<Recipe<CambrianJoint>>>(){}.getType();
 			recipeList = gson.fromJson(reader, objType);
 		} catch (FileNotFoundException e) {
-			padErr("File " + filename + " not found");
+			padErr("File " + recipeDBFilename + " not found");
 		} 
 	}
 	
@@ -48,7 +49,8 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	
 	public String getNextCambrianModel(int jointIndex) {
 		int size = activeRecipe.items.size();
-		if (jointIndex < 0 || jointIndex >= size) { padErr("JointID not valid"); return " "; }
+		if (jointIndex < 0 || jointIndex >= size) { 
+			padErr("JointID not valid"); return " "; }
 		else if (jointIndex == size - 1) return activeRecipe.items.get(0).getModel();
 		else return activeRecipe.items.get(jointIndex + 1).getModel();
 	}
@@ -80,7 +82,7 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	// SETTERS ---------------------------------------------------------------
 	public void saveJoint() {
 		activeRecipe.items.set(activeJointIndex, activeJoint);
-		saveRecipe();
+		saveActiveRecipe();
 	}
 	
 	public void newJoint(String jointName, String cambrianModel) {
@@ -105,8 +107,8 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 				round(target.getX(), 2),
 				round(target.getY(), 2),
 				round(target.getZ(), 2),
-				round(rad2deg(target.getAlphaRad()), 2),
-				round(rad2deg(target.getBetaRad()), 2),
-				round(rad2deg(target.getGammaRad()), 2));
+				roundAngle(rad2deg(target.getAlphaRad()), 2, 0.5),
+				roundAngle(rad2deg(target.getBetaRad()), 2, 0.5),
+				roundAngle(rad2deg(target.getGammaRad()), 2, 0.5));
 	}
 }
