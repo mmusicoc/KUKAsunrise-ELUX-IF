@@ -3,19 +3,19 @@ package EluxOEE;
 import java.io.Serializable;
 	
 public class xOEEitem implements Serializable {
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 	
 	private int total;	// = GOOD + BAD
 	private int good;	// = RFT + RNFT
 	private int bad;	// = TMI + PWC
 	private int TMI;	// = NRFT - RNFT = Too Many Intents
+	private int PWC;	// Process/item with collision
 	
 	private int RFT;	// Right First Time
 	private int RNFT;	// Right Not First Time
 	private int NRFT;	// Not Right First Time
-	private int PWC;	// Process/item with collision
 	
-						// Intent Not Right	
+	// Intents Not Right	
 	private int INR;	// = IWC + IUR + IAE + INV + INF + INP
 	private int IWC;	//  0 - Intent With Collision
 	private int IUR;	// -1 - Intent Un-Reachable (path planner error)

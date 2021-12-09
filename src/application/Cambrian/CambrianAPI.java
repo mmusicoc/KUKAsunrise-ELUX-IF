@@ -1,6 +1,7 @@
 package application.Cambrian;
 
 import static EluxAPI.Utils.*;
+import static EluxAPI.Utils_math.*;
 import EluxAPI.*;
 
 import java.io.DataOutputStream;
@@ -94,9 +95,9 @@ public class CambrianAPI {
         robot_pose += Double.toString(pose.getX()) + ",";
         robot_pose += Double.toString(pose.getY()) + ",";
         robot_pose += Double.toString(pose.getZ()) + ",";
-        robot_pose += Double.toString(rad2deg(pose.getAlphaRad())) + ",";
-        robot_pose += Double.toString(rad2deg(pose.getBetaRad())) + ",";
-        robot_pose += Double.toString(rad2deg(pose.getGammaRad())) + "]";
+        robot_pose += Double.toString(r2d(pose.getAlphaRad())) + ",";
+        robot_pose += Double.toString(r2d(pose.getBetaRad())) + ",";
+        robot_pose += Double.toString(r2d(pose.getGammaRad())) + "]";
         
         String request, ans, success, msg;
         request = command + "#" + data + "#" + robot_pose + 

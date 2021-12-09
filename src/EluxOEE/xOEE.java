@@ -2,49 +2,66 @@ package EluxOEE;
 
 import static EluxAPI.Utils.*;
 
-import java.io.Serializable;
-
-public class xOEE implements Serializable {
-	private static final long serialVersionUID = 1L;
-	private xOEEprinter print = new xOEEprinter();
-	private xOEEstore store = new xOEEstore();
-	private int itemAmount;
+public class xOEE {
+	private xOEEstore store;
+	private xOEEpadPrinter padPrintOEE;
+	private xOEEstatsCSV statsCSV;
+	private xOEEeventLogger OEELogger;
 	
-	private xOEEitem cycleFlags = new xOEEitem();
-	private xOEEitem itemFlags = new xOEEitem();
-	private xOEEitem cycle = new xOEEitem();
-	private xOEEitem[] items;
+	private int itemAmount;
+	private xOEEdata d;
+	private xOEEitem cycleFlags, itemFlags;
 	private double prevCycle, prevItem;
 	
 	public xOEE() { } 	// CONSTRUCTOR ---------------------------------
 	
 	public void init(String _cycleName, String _itemName, 
 						int _itemAmount, int _maxTrials, 
-						String oee_obj_filename,
-						String oee_stats_filename,
-						String oee_events_filename) {
+						String _oee_obj_filename,
+						String _oee_stats_filename,
+						String _oee_events_filename, boolean restore) {
 		this.itemAmount = _itemAmount;
+		
+		this.cycleFlags = new xOEEitem();
+		this.itemFlags = new xOEEitem();
+		d = new xOEEdata();
+		d.cycle = new xOEEitem();
+		d.items = new xOEEitem[itemAmount + 1];
+		for (int i = 0; i <= itemAmount; i++) d.items[i] = new xOEEitem();
+				
 		this.resetCycle();
 		this.resetItems();
-		this.print.init(_cycleName, _itemName,
-						_itemAmount, _maxTrials,
-						cycle, items,
-						oee_stats_filename,
-						oee_events_filename);
-		this.store.init(oee_obj_filename);
+
+		this.store = new xOEEstore();
+		this.store.init(_oee_obj_filename);
+		
+		if(restore) store.restoreOEEimage(true);
+		
+		this.padPrintOEE = new xOEEpadPrinter();
+		this.padPrintOEE.init(_cycleName, _itemName,
+							  _maxTrials, d.cycle, d.items);
+		
+		this.statsCSV = new xOEEstatsCSV();
+		this.statsCSV.init(_itemName, _itemAmount, d,
+						   _oee_stats_filename);
+		
+		this.OEELogger = new xOEEeventLogger();
+		this.OEELogger.init(_itemName, _oee_events_filename);
 	}
 	
 	// PROCESS FAILURE MODES ----------------------------------------------
 	
 	public int checkMove(int item, int event) {
 		if (event != 1) {
-			print.logOEEevent(item, event);
+			OEELogger.logEvent(item, -event);
 			switch(event) {
-				case -1: items[item].addIUR(); items[0].addIUR();
-						 cycleFlags.addIUR(); itemFlags.addIUR(); break;
-				case  0: items[item].addIWC(); items[0].addIWC();
-						 cycleFlags.addIWC(); itemFlags.addIWC(); break;
-				default: padLog("Event not valid.");
+				case  0: d.items[item].addIWC(); d.items[0].addIWC();
+						 cycleFlags.addIWC(); itemFlags.addIWC();
+						 padErr("Intent With Collision at joint " + item); break;
+				case  1: d.items[item].addIUR(); d.items[0].addIUR();
+				 		 cycleFlags.addIUR(); itemFlags.addIUR(); 
+				 		 padErr("Intent Un-Reachable at joint " + item); break;
+				default: padErr("Event not valid.");
 			}
 			return 1;
 		} else return 0;
@@ -54,25 +71,21 @@ public class xOEE implements Serializable {
 	
 	public void resetCycle() {
 		cycleFlags.reset();
-		cycle.reset();
+		d.cycle.reset();
 		prevCycle = prevItem = getTimeStamp();
 	}
 	
 	public void resetItems() {		// Item 0 is aggregated data
 		itemFlags.reset();
-		items = new xOEEitem[itemAmount + 1];
-		for (int i = 0; i <= itemAmount; i++) {
-			items[i] = new xOEEitem();
-			items[i].reset();
-		}
+		for (int i = 0; i <= itemAmount; i++) d.items[i].reset();
 		prevItem = getTimeStamp();
 	}
 	
 	public void resetCycleTime() {
 		for (int i = 0; i<= itemAmount; i++) {
-			items[i].setFirstCycle();
+			d.items[i].setFirstCycle();
 		}
-		cycle.setFirstCycle();
+		d.cycle.setFirstCycle();
 		padLog("Cycle Time stats have ben resetted."); 
 	}
 	
@@ -88,67 +101,77 @@ public class xOEE implements Serializable {
 	}
 	
 	public void endCycle() {
-		if(cycleFlags.getINR() == 0) cycle.addRFT();
+		if(cycleFlags.getINR() == 0) d.cycle.addRFT();
 		else {
-			cycle.addNRFT();
+			d.cycle.addNRFT();
 			if(cycleFlags.getIWC() == 0 &&
-			   cycleFlags.getTMI() == 0) cycle.addRNFT();
+			   cycleFlags.getTMI() == 0) d.cycle.addRNFT();
 			
-			if(cycleFlags.getTMI() > 0) cycle.addTMI();
-			if(cycleFlags.getIUR() > 0) cycle.addIUR();
-			if(cycleFlags.getIAE() > 0) cycle.addIAE();
-			if(cycleFlags.getINV() > 0) cycle.addINV();
-			if(cycleFlags.getINF() > 0) cycle.addINF();
-			if(cycleFlags.getINP() > 0) cycle.addINP();
-			
-			if(cycleFlags.getIWC() > 0) { cycle.addIWC(); cycle.addPWC(); }
-			else {
-				double currentTime = getTimeStamp();
-				double cycleTime = currentTime - prevCycle;
-				prevCycle = currentTime;
-				cycle.setLastCT(cycleTime);
-			}
+			if(cycleFlags.getTMI() > 0) d.cycle.addTMI();
+			if(cycleFlags.getIUR() > 0) d.cycle.addIUR();
+			if(cycleFlags.getIAE() > 0) d.cycle.addIAE();
+			if(cycleFlags.getINV() > 0) d.cycle.addINV();
+			if(cycleFlags.getINF() > 0) d.cycle.addINF();
+			if(cycleFlags.getINP() > 0) d.cycle.addINP();
 		}
+		if(cycleFlags.getIWC() > 0) { d.cycle.addIWC(); d.cycle.addPWC(); }
+		
+		double currentTime = getTimeStamp();
+		double cycleTime = currentTime - prevCycle;
+		prevCycle = currentTime;
+		d.cycle.setLastCT(cycleTime);
 	}
 	
 	public void endItem(int item) {
-		if(itemFlags.getINR() == 0) { items[item].addRFT();  items[0].addRFT(); } 
-		else { 						  items[item].addNRFT(); items[0].addNRFT();
+		if(itemFlags.getINR() == 0) { d.items[item].addRFT();  d.items[0].addRFT(); } 
+		else { 						  d.items[item].addNRFT(); d.items[0].addNRFT();
 			if(itemFlags.getIWC() == 0 && 
-			   itemFlags.getTMI() == 0) { items[item].addRNFT();  items[0].addRNFT(); }
+			   itemFlags.getTMI() == 0) { d.items[item].addRNFT();  d.items[0].addRNFT(); }
 		}
-		if(itemFlags.getIWC() > 0) { items[item].addPWC(); items[0].addPWC(); }
-		else {
-			double currentTime = getTimeStamp();
-			double itemTime = currentTime - prevItem;
-			prevItem = currentTime;
-			items[0].setLastCT(itemTime);
-			items[item].setLastCT(itemTime);
-		}
+		if(itemFlags.getIWC() > 0) { d.items[item].addPWC(); d.items[0].addPWC(); }
+		
+		double currentTime = getTimeStamp();
+		double itemTime = currentTime - prevItem;
+		prevItem = currentTime;
+		d.items[0].setLastCT(itemTime);
+		d.items[item].setLastCT(itemTime);
 	}
 	
-	public void addTMI(int item) {  items[item].addTMI(); items[0].addTMI();
-									cycleFlags.addTMI(); itemFlags.addTMI();
-									print.logOEEevent(item, -6); }
-	public void addIAE(int item) {	items[item].addIAE(); items[0].addIAE(); 
-									cycleFlags.addIAE(); itemFlags.addIAE();}
-	public void addINV(int item) {  items[item].addINV(); items[0].addINV(); 
-									cycleFlags.addINV(); itemFlags.addINV();}
-	public void addINF(int item) {  items[item].addINF(); items[0].addINF(); 
-									cycleFlags.addINF(); itemFlags.addINF();}
-	public void addINP(int item) {  items[item].addINP(); items[0].addINP(); 
-									cycleFlags.addINP(); itemFlags.addINP();
-									print.logOEEevent(item, -5);}
+	// FAILURE NOTIFIERS ------------------------------------------------
+	
+	public void addTMI(int item) {
+		d.items[item].addTMI(); d.items[0].addTMI();
+		cycleFlags.addTMI(); itemFlags.addTMI();
+		OEELogger.logEvent(item, 6); 
+		statsCSV.saveOEEstats(false);
+	}
+	public void addIAE(int item) {
+		d.items[item].addIAE(); d.items[0].addIAE(); 
+		cycleFlags.addIAE(); itemFlags.addIAE();
+	}
+	public void addINV(int item) {
+		d.items[item].addINV(); d.items[0].addINV(); 
+		cycleFlags.addINV(); itemFlags.addINV();
+	}
+	public void addINF(int item) {
+		d.items[item].addINF(); d.items[0].addINF();
+		cycleFlags.addINF(); itemFlags.addINF();
+	}
+	public void addINP(int item) {
+		d.items[item].addINP(); d.items[0].addINP();
+		cycleFlags.addINP(); itemFlags.addINP();
+		OEELogger.logEvent(item, 5);
+	}
 	
 	// FILE MANAGEMENT ----------------------------------------------------
 	
 	public void saveOEEimage(boolean log) {
-		store.saveOEEimage(this, log);
-		print.saveOEEtoCSV(log);
+		store.saveOEEimage(d, log);
+		statsCSV.saveOEEstats(log);
 	}
 	
-	public xOEE restoreOEEimage(boolean log) {return store.restoreOEEimage(log);}
+	public void restoreOEEimage(boolean log) { d = store.restoreOEEimage(log);}
 	
-	public void printStatsCycle() { print.printStatsCycle(); }
-	public void printStatsItem(int item) { print.printStatsItem(item); }
+	public void printStatsCycle() { padPrintOEE.printStatsCycle(); }
+	public void printStatsItem(int item) { padPrintOEE.printStatsItem(item); }
 }

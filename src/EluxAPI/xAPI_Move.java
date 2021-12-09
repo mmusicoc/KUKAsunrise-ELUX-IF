@@ -8,6 +8,7 @@ package EluxAPI;
 		*/
 
 import static EluxAPI.Utils.*;
+import static EluxAPI.Utils_math.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,7 +35,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	@Inject private xAPI_Pad pad;
 		
 	// Global variables
-	private static final boolean logger = false;
+	private boolean logger;
 	private String homeFramePath;
 	private Tool tool;
 	private ObjectFrame tcp;
@@ -57,6 +58,8 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		
 		this.setGlobalSpeed(0.25);
 		bRadius = bAngle = 0;
+		
+		logger = false;
 		
 		//collisionDetection = true;
 		release = true;
@@ -118,8 +121,10 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	
 	public void setBlending(double radius, double angle) {
 		this.bRadius = radius;
-		this.bAngle = deg2rad(angle);
+		this.bAngle = d2r(angle);
 	}
+	
+	public void log(boolean log) { logger = log; }
 	
 	// ERROR/COLLISION MANAGEMENT -----------------------------------------------
 	
@@ -169,7 +174,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	}
 	
 	public int collision() {
-		padLog("Collision detected at\n" + getFlangePos().toStringInWorld());
+		if(logger) padLog("Collision detected at\n" + getFlangePos().toStringInWorld());
 		mf.blinkRGB("RB", 500);
 		return 0;
 	}
@@ -217,8 +222,41 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	}
 	
 	public int PTP(String targetPath, double relSpeed, boolean approx) {
-		try { return PTP(toFrame(targetPath), relSpeed, approx); }
+		try {
+			if(logger) padLog("Moving to " + targetPath);
+			return PTP(toFrame(targetPath), relSpeed, approx); }
 		catch(Exception e) { return nonexistent(targetPath); }
+	}
+	
+	public int PTP(double x, double y, double z,
+				   double a, double b, double c,
+				   double relSpeed, boolean approx) {
+		Frame target = new Frame(x,y,z,d2r(a),d2r(b),d2r(c));
+		return PTP(target, relSpeed, approx);
+	}
+	
+	public int PTP(double[] a, double relSpeed, boolean approx) {
+		try { 
+			int success = 1;
+			mf.setRGB("G");
+			if(approx) tcp.moveAsync(ptp(d2r(a[0]),d2r(a[1]),d2r(a[2]),d2r(a[3]),
+										 d2r(a[4]),d2r(a[5]),d2r(a[6]))
+					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setBlendingCart(bRadius)
+					.setBlendingOri(bAngle));
+			else {
+				JTMotion = tcp.move(ptp(d2r(a[0]),d2r(a[1]),d2r(a[2]),d2r(a[3]),
+						 				d2r(a[4]),d2r(a[5]),d2r(a[6]))
+						.setJointVelocityRel(scaleSpeed(relSpeed))
+						.breakWhen(JTConds));
+					JTBreak = JTMotion.getFiredBreakConditionInfo();
+					if(JTBreak != null) {
+						success = collision();
+						if (release) if (release()) PTP(a, relSpeed, approx);
+					}
+				}
+			return success;
+		} catch(CommandInvalidException e) { return unreachable(); }
 	}
 	
 	// LIN -----------------------------------------------------------------------------
@@ -251,6 +289,13 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		try { return LIN(toFrame(targetPath), relSpeed, approx); }
 		catch(Exception e) { return nonexistent(targetPath); }
 	}
+	
+	public int LIN(double x, double y, double z,
+			   double a, double b, double c,
+			   double relSpeed, boolean approx) {
+	Frame target = new Frame(x,y,z,d2r(a),d2r(b),d2r(c));
+	return LIN(target, relSpeed, approx);
+}
 	
 	// LINREL --------------------------------------------------------------------------
 	public int LINREL(double x, double y, double z, double Rz, double Ry, double Rx, 

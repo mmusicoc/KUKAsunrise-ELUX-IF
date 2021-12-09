@@ -1,6 +1,7 @@
 package application.Cambrian;
 
 import static EluxAPI.Utils.*;
+import static EluxAPI.Utils_math.*;
 import EluxAPI.SimpleFrame;
 import EluxRecipe.*;
 import EluxAPI.xAPI_Pad;
@@ -61,9 +62,9 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 		target.setX(targetSimple.getX());
 		target.setY(targetSimple.getY());
 		target.setZ(targetSimple.getZ());
-		target.setAlphaRad(deg2rad(targetSimple.getA()));
-		target.setBetaRad(deg2rad(targetSimple.getB()));
-		target.setGammaRad(deg2rad(targetSimple.getC()));
+		target.setAlphaRad(d2r(targetSimple.getA()));
+		target.setBetaRad(d2r(targetSimple.getB()));
+		target.setGammaRad(d2r(targetSimple.getC()));
 		return target;
 	}
 	
@@ -107,8 +108,8 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 				round(target.getX(), 2),
 				round(target.getY(), 2),
 				round(target.getZ(), 2),
-				roundAngle(rad2deg(target.getAlphaRad()), 2, 0.5),
-				roundAngle(rad2deg(target.getBetaRad()), 2, 0.5),
-				roundAngle(rad2deg(target.getGammaRad()), 2, 0.5));
+				roundAngle(r2d(target.getAlphaRad()), 2, 0.5),
+				roundAngle(r2d(target.getBetaRad()), 2, 0.5),
+				roundAngle(r2d(target.getGammaRad()), 2, 0.5));
 	}
 }

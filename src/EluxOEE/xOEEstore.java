@@ -2,7 +2,6 @@ package EluxOEE;
 
 import static EluxAPI.Utils.*;
 
-import java.io.Serializable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,8 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class xOEEstore implements Serializable {
-	private static final long serialVersionUID = 3L;
+public class xOEEstore {
 	private String oee_obj_filename;
 	
 	public xOEEstore() { } // CONSTRUCTOR ------------------------
@@ -21,7 +19,7 @@ public class xOEEstore implements Serializable {
 		this.oee_obj_filename = _oee_obj_filename;
 	}
 	
-	public void saveOEEimage(xOEE oee, boolean log) {
+	public void saveOEEimage(xOEEdata oee, boolean log) {
 		try {
 			FileOutputStream f = new FileOutputStream(new File(oee_obj_filename));
 			ObjectOutputStream o = new ObjectOutputStream(f);
@@ -32,14 +30,14 @@ public class xOEEstore implements Serializable {
 					System.getProperty("user.dir") + "\\" + oee_obj_filename);
 		} catch (FileNotFoundException e) { 
 			padErr("File " + oee_obj_filename + " not found");
-		} catch (IOException e) { padErr("Error initializing output stream"); }
+		} catch (IOException e) { padErr("Error writing to " + oee_obj_filename); }
 	}
 	
-	public xOEE restoreOEEimage(boolean log) {
+	public xOEEdata restoreOEEimage(boolean log) {
 		try {
 			FileInputStream fi = new FileInputStream(new File(oee_obj_filename));
 			ObjectInputStream oi = new ObjectInputStream(fi);
-			xOEE oee = (xOEE) oi.readObject();
+			xOEEdata oee = (xOEEdata) oi.readObject();
 			oi.close();
 			fi.close();
 			if(log) padLog("OEE data loaded from " + 
@@ -47,7 +45,7 @@ public class xOEEstore implements Serializable {
 			return oee;
 		} catch (FileNotFoundException e) { 
 			padErr("File " + oee_obj_filename + " not found");
-		} catch (IOException e) { padErr("Error initializing input stream");
+		} catch (IOException e) { padErr("Error reading from " + oee_obj_filename);
 		} catch (ClassNotFoundException e) { padErr("Object not found"); }
 		return null;
 	}

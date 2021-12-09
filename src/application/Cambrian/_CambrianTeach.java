@@ -67,7 +67,7 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 		padLog("New recipe stored");
 	}
 	
-	private void modifyRecipe() {
+	public void modifyRecipe() {
 		int jointIndex = pad.question("Which joint do you want to modify?",
 				rcpMgr.getJointListString());
 		if(jointIndex == rcpMgr.getJointAmount() + 1) { }
