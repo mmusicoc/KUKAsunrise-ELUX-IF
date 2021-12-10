@@ -7,7 +7,6 @@ import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class CambrianJoint {
 	private int jointID;
-	private boolean enabled;
 	private String cambrianModel;
 	private SimpleFrame NJ;			// Nominal Joint position
 	private SimpleFrame DO; 		// Detection Offset (compensation)
@@ -21,7 +20,7 @@ public class CambrianJoint {
 	}
 	
 	// GETTERS ---------------------------------------------------------------
-	public boolean isEnabled() { return enabled; }
+	//public boolean isEnabled() { return enabled; }
 	public int getID() { return this.jointID; }
 	public String getModel() { return this.cambrianModel; }
 	public SimpleFrame getNominalTarget() { return this.NJ; }
@@ -47,7 +46,6 @@ public class CambrianJoint {
 	
 	// SETTERS --------------------------------------------------------------
 	public void setID(int _id) { this.jointID = _id; }
-	public void setActive(boolean _enabled) { this.enabled = _enabled; }
 	public void setModel(String _model) { this.cambrianModel = _model; }
 	public void setNominalTarget(double x, double y, double z, 
 								 double a, double b, double c) { 

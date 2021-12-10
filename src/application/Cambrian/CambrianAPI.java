@@ -21,10 +21,7 @@ public class CambrianAPI {
     private String cambrian_reply;
     
     private Frame target_frame;
-    private Frame approach_frame;
     private int pick_type;
-    private int approach_dist;
-    private int depth_offset;
     
 	// CONSTRUCTOR --------------------------------------------------------
 	@Inject public CambrianAPI(xAPI__ELUX _elux) { this.elux = _elux; }
@@ -37,8 +34,6 @@ public class CambrianAPI {
 		else padLog("Unable to communicate with Cambrian, stopping application.");
 		return false;
 	}
-	public void setApproachDist(int approach_dist) { this.approach_dist = approach_dist; }
-	public void setDepthOffset(int depth_offset) { this.depth_offset = depth_offset; }
 	public void startCalibration(){ sendRequest("START CALIBRATION", ""); }
 	public void captureCalibration(){ sendRequest("CAPTURE CALIBRATION IMAGE", ""); }
 	public void loadModel(String model_name, boolean log){ 
@@ -47,7 +42,7 @@ public class CambrianAPI {
     
 	// GETTER METHODS -----------------------------------------------------   
 	public Frame getTargetFrame() { return target_frame; }
-	public Frame getApproachFrame() { return approach_frame; }
+	//public Frame getApproachFrame() { return approach_frame; }
 	public int getPickType() { return pick_type; }
 	public boolean getNewPrediction(String model_name) {
 		return getPrediction("GET PREDICTION", model_name); }
@@ -62,21 +57,17 @@ public class CambrianAPI {
 					Double x, y, z, a, b, c;
 					x    = Double.parseDouble(results[1]);
 					y    = Double.parseDouble(results[2]);
-					z    = Double.parseDouble(results[3]) + depth_offset;
+					z    = Double.parseDouble(results[3]);
 					a    = -Double.parseDouble(results[4]) + 90;
 					b    = Double.parseDouble(results[5]);
 					c    = Double.parseDouble(results[6]);
 					pick_type = Integer.parseInt(results[7]);
     
                     target_frame = new Frame(x, y, z, a, b, c);
-                    approach_frame = new Frame(x, y, z, a, b, c);
                     Frame flange_pos = elux.getMove().getFlangePos();
                     target_frame.setParent(flange_pos, false);
                     target_frame.setTransformationFromParent(Transformation.ofDeg
                     		(x, y, z, a, b, c));
-    				approach_frame.setParent(target_frame, false);
-    				approach_frame.setTransformationFromParent(Transformation.ofDeg
-    						(0, 0, -this.approach_dist, 0, 0, 0));
                     return true;
                 }                
             } catch (Exception e) {

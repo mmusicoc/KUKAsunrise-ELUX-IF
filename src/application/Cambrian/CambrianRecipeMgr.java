@@ -19,7 +19,7 @@ import com.google.gson.stream.JsonReader;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 
 public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
-	private int activeJointIndex;
+	private int activeJix;
 	private CambrianJoint activeJoint;
 	
 	public CambrianRecipeMgr() { // CONSTRUCTOR
@@ -27,12 +27,41 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	}
 	
 	@Override
-	public void init(xAPI_Pad _pad, String _filename) {
-		super.init(_pad, _filename);
-		activeJointIndex = 0;
+	public void init(xAPI_Pad pad, String filename, boolean logger) {
+		super.init(pad, filename, logger);
+		activeJix = 0;
 	}
 	
-	// GETTERS ---------------------------------------------------------------
+	// JOINT SELECTOR ------------------------------------------------------------
+	
+	public boolean selectJointID(int ID) {
+		int index = findJoint(ID);
+		if(index != -1) return selectJointIndex(index);
+		else {
+			padLog("Joint for ID=" + ID + " not found, creating it...");
+			newJoint(ID);
+			return false;
+		}
+	}
+	
+	public boolean selectJointIndex(int index) {
+		if(index >= 0 && index < activeRcp.items.size()) {
+			activeJix = index;
+			activeJoint = activeRcp.items.get(activeJix);
+			if(logger) padLog("Joint " + activeJoint.getID() + " has been selected");
+			return true;
+		}
+		else padErr("Joint Index not valid, kept existing one");
+		return false;
+	}
+	
+	public int findJoint(int ID) {
+		for(int i = 0; i < getItemsAmount(); i++) {
+			if(activeRcp.items.get(i).getID() == ID) return i;
+		}
+		return -1;
+	}
+	
 	@Override
 	public void fetchAllRecipes() {
 		Gson gson = new Gson();
@@ -47,16 +76,22 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 		} 
 	}
 	
-	public int getJointAmount() { return activeRecipe.items.size(); }
+	// GETTERS ---------------------------------------------------------------
 	
+	public int getJointID() { return activeJoint.getID(); }
+	
+	public String getModel() { 
+		return activeJoint.getModel();
+	}
+	/*
 	public String getNextCambrianModel(int jointIndex) {
-		int size = activeRecipe.items.size();
+		int size = getJointAmount()
 		if (jointIndex < 0 || jointIndex >= size) { 
 			padErr("JointID not valid"); return " "; }
-		else if (jointIndex == size - 1) return activeRecipe.items.get(0).getModel();
-		else return activeRecipe.items.get(jointIndex + 1).getModel();
+		else if (jointIndex == size - 1) return activeRcp.items.get(0).getModel();
+		else return activeRcp.items.get(jointIndex + 1).getModel();
 	}
-	
+	*/
 	public Frame getTarget() {
 		Frame target = new Frame();
 		SimpleFrame targetSimple = activeJoint.getNominalTarget();
@@ -70,41 +105,46 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	}
 	
 	public String[] getJointListString() {
-		int listSize = getJointAmount();
+		int listSize = getItemsAmount();
 		String[] jointList = new String[listSize + 2];
 		
 		for(int i = 0; i < listSize; i++) {
-			jointList[i] = i2s(activeRecipe.items.get(i).getID());
+			jointList[i] = i2s(activeRcp.items.get(i).getID());
 		}
 		jointList[listSize] = "NEW";
 		jointList[listSize + 1] = "CANC";
 		return jointList;
 	}
 	
+	
 	// SETTERS ---------------------------------------------------------------
+	
 	public void saveActiveJoint() {
-		activeRecipe.items.set(activeJointIndex, activeJoint);
+		int index = findJoint(activeJoint.getID());
+		if(index != -1) activeRcp.items.set(index, activeJoint);
+		else saveNewJoint();
 		//saveActiveRecipe();
+	}
+	
+	public void saveNewJoint() {
+		for(int i = 0; i < getItemsAmount(); i++) {
+			if (activeRcp.items.get(i).getID() > activeJoint.getID()) {
+				activeRcp.items.add(i, activeJoint);
+				activeJix = i;
+				return;
+			}
+		}
+		activeRcp.items.add(activeJoint);
+		activeJix = activeRcp.items.size() - 1;
 	}
 	
 	public void newJoint(int jointID) {
 		activeJoint = new CambrianJoint();
 		activeJoint.setID(jointID);
-		activeJointIndex = activeRecipe.items.size();
-		activeRecipe.items.add(activeJoint);
+		//saveActiveJoint();
 	}
 	
-	public void setActive(boolean enabled) { activeJoint.setActive(enabled); }
 	public void setModel(String model) { activeJoint.setModel(model); }
-	
-	public void selectJoint(int jointIndex) {
-		if(jointIndex >= 0 && jointIndex < activeRecipe.items.size()) {
-			activeJointIndex = jointIndex;
-			activeJoint = activeRecipe.items.get(activeJointIndex);
-			padLog("Joint " + activeJoint.getID() + " has been selected");
-		}
-		else padErr("Joint Index not valid, kept existing one");
-	}
 	
 	public void setTarget(Frame target) {
 		activeJoint.setNominalTarget(
