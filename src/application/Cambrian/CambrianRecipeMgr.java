@@ -1,8 +1,8 @@
 package application.Cambrian;
 
-import static EluxAPI.Utils.*;
-import static EluxAPI.Utils_math.*;
-import EluxAPI.SimpleFrame;
+import static EluxUtils.Utils.*;
+import static EluxUtils.UMath.*;
+import EluxUtils.SimpleFrame;
 import EluxRecipe.*;
 import EluxAPI.xAPI_Pad;
 
@@ -37,7 +37,8 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	public void fetchAllRecipes() {
 		Gson gson = new Gson();
 		try {
-			JsonReader reader = new JsonReader(new FileReader(recipeDBFilename));
+			JsonReader reader = new JsonReader(
+					new FileReader(FILE_ROOTPATH + recipeDBFilename));
 			recipeList = new ArrayList<Recipe<CambrianJoint>>();
 			Type objType = new TypeToken<List<Recipe<CambrianJoint>>>(){}.getType();
 			recipeList = gson.fromJson(reader, objType);
@@ -59,12 +60,12 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	public Frame getTarget() {
 		Frame target = new Frame();
 		SimpleFrame targetSimple = activeJoint.getNominalTarget();
-		target.setX(targetSimple.getX());
-		target.setY(targetSimple.getY());
-		target.setZ(targetSimple.getZ());
-		target.setAlphaRad(d2r(targetSimple.getA()));
-		target.setBetaRad(d2r(targetSimple.getB()));
-		target.setGammaRad(d2r(targetSimple.getC()));
+		target.setX(targetSimple.X());
+		target.setY(targetSimple.Y());
+		target.setZ(targetSimple.Z());
+		target.setAlphaRad(d2r(targetSimple.A()));
+		target.setBetaRad(d2r(targetSimple.B()));
+		target.setGammaRad(d2r(targetSimple.C()));
 		return target;
 	}
 	
@@ -73,7 +74,7 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 		String[] jointList = new String[listSize + 2];
 		
 		for(int i = 0; i < listSize; i++) {
-			jointList[i] = activeRecipe.items.get(i).getName();
+			jointList[i] = i2s(activeRecipe.items.get(i).getID());
 		}
 		jointList[listSize] = "NEW";
 		jointList[listSize + 1] = "CANC";
@@ -81,24 +82,26 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	}
 	
 	// SETTERS ---------------------------------------------------------------
-	public void saveJoint() {
+	public void saveActiveJoint() {
 		activeRecipe.items.set(activeJointIndex, activeJoint);
-		saveActiveRecipe();
+		//saveActiveRecipe();
 	}
 	
-	public void newJoint(String jointName, String cambrianModel) {
+	public void newJoint(int jointID) {
 		activeJoint = new CambrianJoint();
-		activeJoint.setName(jointName);
-		activeJoint.setModel(cambrianModel);
+		activeJoint.setID(jointID);
 		activeJointIndex = activeRecipe.items.size();
 		activeRecipe.items.add(activeJoint);
 	}
+	
+	public void setActive(boolean enabled) { activeJoint.setActive(enabled); }
+	public void setModel(String model) { activeJoint.setModel(model); }
 	
 	public void selectJoint(int jointIndex) {
 		if(jointIndex >= 0 && jointIndex < activeRecipe.items.size()) {
 			activeJointIndex = jointIndex;
 			activeJoint = activeRecipe.items.get(activeJointIndex);
-			padLog("Joint " + activeJoint.getName() + " has been selected");
+			padLog("Joint " + activeJoint.getID() + " has been selected");
 		}
 		else padErr("Joint Index not valid, kept existing one");
 	}
@@ -111,5 +114,10 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 				roundAngle(r2d(target.getAlphaRad()), 2, 0.5),
 				roundAngle(r2d(target.getBetaRad()), 2, 0.5),
 				roundAngle(r2d(target.getGammaRad()), 2, 0.5));
+	}
+	
+	public void setDetectionOffset(double[] off) {
+		activeJoint.setDetectionOffset(off[0], off[1], off[2],
+									   off[3], off[4], off[5]);
 	}
 }

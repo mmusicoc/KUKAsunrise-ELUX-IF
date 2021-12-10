@@ -2,7 +2,7 @@ package EluxOEE;
 
 import java.io.Serializable;
 	
-public class xOEEitem implements Serializable {
+public class OEEitem implements Serializable {
 	private static final long serialVersionUID = 3L;
 	
 	private int total;	// = GOOD + BAD
@@ -28,7 +28,7 @@ public class xOEEitem implements Serializable {
 	private double lastCT;
 	private double avgCT;
 
-	public xOEEitem() {
+	public OEEitem() {
 		this.reset();
 	}
 	

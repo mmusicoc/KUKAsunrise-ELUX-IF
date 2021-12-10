@@ -1,4 +1,4 @@
-package EluxAPI;
+package EluxUtils;
 
 public class SimpleFrame {
 	private double X, Y, Z, A, B, C;
@@ -31,10 +31,10 @@ public class SimpleFrame {
 		return frame;
 	}
 	
-	public double getX() { return X; }
-	public double getY() { return Y; }
-	public double getZ() { return Z; }
-	public double getA() { return A; }
-	public double getB() { return B; }
-	public double getC() { return C; }
+	public double X() { return X; }
+	public double Y() { return Y; }
+	public double Z() { return Z; }
+	public double A() { return A; }
+	public double B() { return B; }
+	public double C() { return C; }
 }

@@ -1,19 +1,19 @@
 package EluxOEE;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 
-public class xOEE {
-	private xOEEstore store;
-	private xOEEpadPrinter padPrintOEE;
-	private xOEEstatsCSV statsCSV;
-	private xOEEeventLogger OEELogger;
+public class OEEmgr {
+	private OEEstore store;
+	private OEEpadPrinter padPrintOEE;
+	private OEEstatsCSV statsCSV;
+	private OEEeventLogger OEELogger;
 	
 	private int itemAmount;
-	private xOEEdata d;
-	private xOEEitem cycleFlags, itemFlags;
-	private double prevCycle, prevItem;
+	private OEEdata d;
+	private OEEitem cycleFlags, itemFlags;
+	private double currentTime, cycleStartTime, itemStartTime, pausedCT, pausedIT;
 	
-	public xOEE() { } 	// CONSTRUCTOR ---------------------------------
+	public OEEmgr() { } 	// CONSTRUCTOR ---------------------------------
 	
 	public void init(String _cycleName, String _itemName, 
 						int _itemAmount, int _maxTrials, 
@@ -22,30 +22,30 @@ public class xOEE {
 						String _oee_events_filename, boolean restore) {
 		this.itemAmount = _itemAmount;
 		
-		this.cycleFlags = new xOEEitem();
-		this.itemFlags = new xOEEitem();
-		d = new xOEEdata();
-		d.cycle = new xOEEitem();
-		d.items = new xOEEitem[itemAmount + 1];
-		for (int i = 0; i <= itemAmount; i++) d.items[i] = new xOEEitem();
+		this.cycleFlags = new OEEitem();
+		this.itemFlags = new OEEitem();
+		d = new OEEdata();
+		d.cycle = new OEEitem();
+		d.items = new OEEitem[itemAmount + 1];
+		for (int i = 0; i <= itemAmount; i++) d.items[i] = new OEEitem();
 				
 		this.resetCycle();
 		this.resetItems();
 
-		this.store = new xOEEstore();
+		this.store = new OEEstore();
 		this.store.init(_oee_obj_filename);
 		
-		if(restore) store.restoreOEEimage(true);
+		if(restore) d = store.restoreOEEimage(true);
 		
-		this.padPrintOEE = new xOEEpadPrinter();
+		this.padPrintOEE = new OEEpadPrinter();
 		this.padPrintOEE.init(_cycleName, _itemName,
 							  _maxTrials, d.cycle, d.items);
 		
-		this.statsCSV = new xOEEstatsCSV();
+		this.statsCSV = new OEEstatsCSV();
 		this.statsCSV.init(_itemName, _itemAmount, d,
 						   _oee_stats_filename);
 		
-		this.OEELogger = new xOEEeventLogger();
+		this.OEELogger = new OEEeventLogger();
 		this.OEELogger.init(_itemName, _oee_events_filename);
 	}
 	
@@ -72,13 +72,13 @@ public class xOEE {
 	public void resetCycle() {
 		cycleFlags.reset();
 		d.cycle.reset();
-		prevCycle = prevItem = getTimeStamp();
+		cycleStartTime = itemStartTime = getTimeStamp();
 	}
 	
 	public void resetItems() {		// Item 0 is aggregated data
 		itemFlags.reset();
 		for (int i = 0; i <= itemAmount; i++) d.items[i].reset();
-		prevItem = getTimeStamp();
+		itemStartTime = getTimeStamp();
 	}
 	
 	public void resetCycleTime() {
@@ -93,11 +93,23 @@ public class xOEE {
 	
 	public void startCycle() { 
 		cycleFlags.reset(); 
-		prevCycle = prevItem = getTimeStamp();
+		cycleStartTime = itemStartTime = getTimeStamp();
 	}
 	public void startItem() { 
 		itemFlags.reset(); 
-		prevItem = getTimeStamp();
+		itemStartTime = getTimeStamp();
+	}
+	
+	public void pause() {
+		currentTime = getTimeStamp();
+		pausedCT = currentTime - cycleStartTime;
+		pausedIT = currentTime - itemStartTime;
+	}
+	
+	public void resume() {
+		currentTime = getTimeStamp();
+		cycleStartTime = currentTime - pausedCT;
+		itemStartTime = currentTime - pausedIT;
 	}
 	
 	public void endCycle() {
@@ -116,10 +128,8 @@ public class xOEE {
 		}
 		if(cycleFlags.getIWC() > 0) { d.cycle.addIWC(); d.cycle.addPWC(); }
 		
-		double currentTime = getTimeStamp();
-		double cycleTime = currentTime - prevCycle;
-		prevCycle = currentTime;
-		d.cycle.setLastCT(cycleTime);
+		currentTime = getTimeStamp();
+		d.cycle.setLastCT(currentTime - cycleStartTime);
 	}
 	
 	public void endItem(int item) {
@@ -130,11 +140,9 @@ public class xOEE {
 		}
 		if(itemFlags.getIWC() > 0) { d.items[item].addPWC(); d.items[0].addPWC(); }
 		
-		double currentTime = getTimeStamp();
-		double itemTime = currentTime - prevItem;
-		prevItem = currentTime;
-		d.items[0].setLastCT(itemTime);
-		d.items[item].setLastCT(itemTime);
+		currentTime = getTimeStamp();
+		d.items[0].setLastCT(currentTime - itemStartTime);
+		d.items[item].setLastCT(currentTime - itemStartTime);
 	}
 	
 	// FAILURE NOTIFIERS ------------------------------------------------

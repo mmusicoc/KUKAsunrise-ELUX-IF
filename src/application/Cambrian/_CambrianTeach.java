@@ -1,17 +1,17 @@
 package application.Cambrian;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 import EluxAPI.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
-import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class _CambrianTeach extends RoboticsAPIApplication {
 	private static final String RECIPE_FILENAME = "CambrianRecipes.json";
+	private static final int[] JOINT_SEQUENCE = {1,2,3,5,6,8,9,10,4,7};
 	
-	@Inject	@Named("Cambrian") private Tool GripperCambrian;
+	@Inject	@Named("Cambrian") private Tool tool;
 	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject private xAPI_Move move = elux.getMove();
 	@Inject private xAPI_Pad pad = elux.getPad();
@@ -19,52 +19,65 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 	//@Inject private CambrianAPI cambrian = new CambrianAPI(elux);
 	@Inject private CambrianRecipeMgr rcpMgr = 
 				new CambrianRecipeMgr();
-	//private CambrianHistoryMgr historyMgr = new CambrianHistoryMgr();
+	
+	String PNC = "F2";
+	String SP_PATHROOT = "/_Cambrian/F3scanPoints/";
+	String NJ_PATHROOT = "/_Cambrian/F3nominalJoints/";
+	String cambrianModel = "Elux_weldedpipes";
 	
 	@Override public void initialize() {
-		move.setTool(GripperCambrian);
-		move.setTCP("/TCP");
-		move.setGlobalSpeed(1);
-		move.setJTconds(15.0);
-		move.setBlending(20, 5);
-		move.setHome("/_Cambrian/_Home");
+		move.init("/_Cambrian/_Home",		// Home path
+				tool, "/TCP",				// Tool, TCP
+				1.0, 1.0,					// Relative speed and acceleration
+				20.0, 5.0,					// Blending
+				15.0, true,					// Collision detection (Nm), response
+				false);						// Logging
 		//move.PTPhome(1, false);
 		//cambrian.init("192.168.2.50", 4000);
 		rcpMgr.init(pad, RECIPE_FILENAME);
 		rcpMgr.fetchAllRecipes();
-		//historyMgr.init("CambrianHistory.csv");
+		selectPNC();
 	}
 
 	@Override public void run() {
+		while(true) waitMillis(1000);
+	}
+	
+	private void selectPNC() {
 		switch(rcpMgr.askPNC()) {
-			case -1:
-				padLog("No PNC selected, program end.");
-				break;
-			case 0:
-				newRecipe();
-				break;
-			case 1:
-				switch(pad.question("What do you want to do?",
-						"Cancel", "Visualize recipe data",
-						"Select Joint"
-						)) {
-					case 0: break;
-					case 1: padLog(rcpMgr.getRecipeToString(rcpMgr.getActivePNC())); 
-							break;
-					case 2:
-						break;
-					case 3:
-						break;
-				}
-				
+		case -1:
+			padLog("No PNC selected, program end.");
+			break;
+		case 0:
+			newRecipe();
+			break;
+		case 1:
+			switch(pad.question("What do you want to do?",
+					"Cancel", "Visualize recipe data",
+					"Select Joint"
+					)) {
+				case 0: break;
+				case 1: 
+					padLog(rcpMgr.getRecipeToString(rcpMgr.getActivePNC())); 
+					break;
+				case 2:
+					break;
+			}
+			break;
 		}
 	}
 	
 	private void newRecipe() {
-		rcpMgr.newJoint("1", "Eluxweldedpipes");
-		rcpMgr.setTarget(new Frame(30,70,60,0,0,0));
-		rcpMgr.saveJoint();
-		padLog("New recipe stored");
+		for (int i = 1; i <= JOINT_SEQUENCE.length; i++) {
+			rcpMgr.newJoint(JOINT_SEQUENCE[i - 1]);
+			rcpMgr.setActive(true);
+			rcpMgr.setModel(cambrianModel);
+			rcpMgr.setTarget(move.toFrame(NJ_PATHROOT + "P" + JOINT_SEQUENCE[i - 1]));
+			double[] detectionOffset = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
+			rcpMgr.setDetectionOffset(detectionOffset);
+			rcpMgr.saveActiveJoint();
+		}
+		rcpMgr.saveActiveRecipe(true);
 	}
 	
 	public void modifyRecipe() {
@@ -73,12 +86,12 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 		if(jointIndex == rcpMgr.getJointAmount() + 1) { }
 		else if(jointIndex == rcpMgr.getJointAmount()) {
 			int newJoint = pad.askValue("Joint Name", rcpMgr.getJointAmount());
-			String cambrianModel = pad.askName("cambrianModel", "Eluxweldedpipes", false, false);
-			rcpMgr.newJoint(Integer.toString(newJoint), cambrianModel);
+			//String cambrianModel = pad.askName("cambrianModel", "Eluxweldedpipes", false, false);
+			rcpMgr.newJoint(newJoint);
 		} else {
 			rcpMgr.selectJoint(jointIndex);
 		}
 		rcpMgr.setTarget(move.getTCPpos());
-		rcpMgr.saveJoint();
+		rcpMgr.saveActiveJoint();
 	}
 }

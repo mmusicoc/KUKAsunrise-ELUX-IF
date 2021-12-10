@@ -1,55 +1,61 @@
 package application.Cambrian;
 
-import EluxAPI.SimpleFrame;
+import static EluxUtils.UMath.*;
+import EluxUtils.SimpleFrame;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class CambrianJoint {
+	private int jointID;
 	private boolean enabled;
-	private String jointName;
 	private String cambrianModel;
-	private SimpleFrame nominalTarget;
-	private Transformation detectionOffset; // X,Y,Z
-	private Transformation scanPointOffset; // X,Y,Z
+	private SimpleFrame NJ;			// Nominal Joint position
+	private SimpleFrame DO; 		// Detection Offset (compensation)
+	private SimpleFrame SPO; 		// ScanPoint relative to Nominal Joint
 	private double threshold[];					// X+,X-,Y+,Y-,Z+,Z-
 	
 	public CambrianJoint() { 	// CONSTRUCTOR
-		nominalTarget = new SimpleFrame();
+		NJ = new SimpleFrame();
+		DO = new SimpleFrame();
+		//SPO = new SimpleFrame();
 	}
 	
 	// GETTERS ---------------------------------------------------------------
 	public boolean isEnabled() { return enabled; }
-	public String getName() { return this.jointName; }
+	public int getID() { return this.jointID; }
 	public String getModel() { return this.cambrianModel; }
-	public SimpleFrame getNominalTarget() { return this.nominalTarget; }
-	public Transformation getDetectionOffset() { return this.detectionOffset; }
-	public Transformation getScanPointOffset() { return this.scanPointOffset; }
+	public SimpleFrame getNominalTarget() { return this.NJ; }
+	public Transformation getDetectionOffset() { 
+		return Transformation.ofDeg(DO.X(), DO.Y(), DO.Z(), 
+									d2r(DO.A()),d2r(DO.B()),d2r(DO.C())); }
+	public Transformation getScanPointOffset() { 
+		return Transformation.ofDeg(SPO.X(), SPO.Y(), SPO.Z(), 
+									d2r(SPO.A()),d2r(SPO.B()),d2r(SPO.C())); }
 	
 	public boolean checkWithinThreshold(Frame detection) {
-		Frame detectionWithOffset = detection.transform(scanPointOffset);
+		Frame detectionWithOffset = detection.transform(this.getDetectionOffset());
 		boolean outOfThreshold = false;
 		double delta;
-		delta = detectionWithOffset.getX() - nominalTarget.getX();
+		delta = detectionWithOffset.getX() - NJ.X();
 		if(delta > threshold[0] || delta < threshold[1]) outOfThreshold = true;
-		delta = detectionWithOffset.getY() - nominalTarget.getY();
+		delta = detectionWithOffset.getY() - NJ.Y();
 		if(delta > threshold[2] || delta < threshold[3]) outOfThreshold = true;
-		delta = detectionWithOffset.getZ() - nominalTarget.getZ();
+		delta = detectionWithOffset.getZ() - NJ.Z();
 		if(delta > threshold[4] || delta < threshold[5]) outOfThreshold = true;
 		return outOfThreshold;
 	}
 	
 	// SETTERS --------------------------------------------------------------
-	public void setName(String _name) { this.jointName = _name; }
+	public void setID(int _id) { this.jointID = _id; }
+	public void setActive(boolean _enabled) { this.enabled = _enabled; }
 	public void setModel(String _model) { this.cambrianModel = _model; }
 	public void setNominalTarget(double x, double y, double z, 
-			double a, double b, double c) { 
-		nominalTarget.build(x, y, z, a, b, c); }
+								 double a, double b, double c) { 
+		NJ.build(x, y, z, a, b, c); }
 	
-	public void setDetectionOffset(Transformation offset) {
-		detectionOffset = offset;
-	}
-	public void setScanPointOffset(Transformation offset) {
-		scanPointOffset = offset; }
+	public void setDetectionOffset(double x, double y, double z, 
+								 double a, double b, double c) { 
+		DO.build(x, y, z, a, b, c); }
 	
 	public void setThreshold(double Xpos, double Xneg, 
 							 double Ypos, double Yneg,

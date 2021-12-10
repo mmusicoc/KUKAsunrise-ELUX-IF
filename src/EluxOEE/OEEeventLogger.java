@@ -1,14 +1,13 @@
 package EluxOEE;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
+import EluxUtils.CSVLogger;
 
-import EluxAPI.CSVLogger;
-
-public class xOEEeventLogger {
+public class OEEeventLogger {
 	private String itemName;
 	private CSVLogger csv;
 	
-	public xOEEeventLogger() { } // CONSTRUCTOR ------------------------
+	public OEEeventLogger() { } // CONSTRUCTOR ------------------------
 	
 	public void init(String _itemName, String _oee_events_filename) {
 		this.itemName = _itemName;

@@ -1,6 +1,7 @@
 package application.Training;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
+import EluxUtils.FrameList;
 import EluxAPI.*;
 
 import javax.inject.Inject;

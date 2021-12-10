@@ -1,7 +1,7 @@
 package application.Cambrian;
 
-import static EluxAPI.Utils.*;
-import static EluxAPI.Utils_math.*;
+import static EluxUtils.Utils.*;
+import static EluxUtils.UMath.*;
 import EluxAPI.*;
 
 import java.io.DataOutputStream;
@@ -41,8 +41,9 @@ public class CambrianAPI {
 	public void setDepthOffset(int depth_offset) { this.depth_offset = depth_offset; }
 	public void startCalibration(){ sendRequest("START CALIBRATION", ""); }
 	public void captureCalibration(){ sendRequest("CAPTURE CALIBRATION IMAGE", ""); }
-	public void loadModel(String model_name){ sendRequest("LOAD MODEL", model_name); 
-					padLog("Loading model " + model_name + "..."); }
+	public void loadModel(String model_name, boolean log){ 
+		sendRequest("LOAD MODEL", model_name); 
+		if(log) padLog("Loading model " + model_name + "..."); }
     
 	// GETTER METHODS -----------------------------------------------------   
 	public Frame getTargetFrame() { return target_frame; }
@@ -76,9 +77,6 @@ public class CambrianAPI {
     				approach_frame.setParent(target_frame, false);
     				approach_frame.setTransformationFromParent(Transformation.ofDeg
     						(0, 0, -this.approach_dist, 0, 0, 0));
-                    
-                    //padLog(target_frame.toStringInWorld());
-    				//padLog(target_frame.toStringTrafo());
                     return true;
                 }                
             } catch (Exception e) {

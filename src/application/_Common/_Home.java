@@ -1,6 +1,6 @@
-package utils;
+package application._Common;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 import EluxAPI.*;
 import javax.inject.Inject;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;

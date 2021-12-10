@@ -1,19 +1,19 @@
 package EluxOEE;
 
-import EluxAPI.CSVLogger;
+import EluxUtils.CSVLogger;
 
-public class xOEEstatsCSV {
+public class OEEstatsCSV {
 	private String itemName;
 	private char itemInitial;
 	private int itemAmount;
 	
-	private xOEEdata d;
+	private OEEdata d;
 	private CSVLogger csv;
 	
-	public xOEEstatsCSV() { } // CONSTRUCTOR ------------------------
+	public OEEstatsCSV() { } // CONSTRUCTOR ------------------------
 	
 	public void init(String _itemName, int _itemAmount, 
-						xOEEdata _d,
+						OEEdata _d,
 						String _oee_stats_filename) {
 		this.itemName = _itemName;
 		this.itemInitial = Character.toUpperCase(itemName.charAt(0));
@@ -113,7 +113,8 @@ public class xOEEstatsCSV {
 		csv.eol();
 		
 		// -------------- CYCLE TIME
-		csv.log("CT," + (d.cycle.getAvgCT() / 1000.0), false);
+		csv.log("CT", false);
+		csv.log(d.cycle.getAvgCT() / 1000.0, true);
 		for(int i = 0; i <= itemAmount; i++)
 			csv.log(d.items[i].getAvgCT() / 1000.0, true);
 		csv.eol();

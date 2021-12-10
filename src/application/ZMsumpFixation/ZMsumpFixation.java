@@ -1,7 +1,7 @@
 package application.ZMsumpFixation;
 
-import static EluxAPI.Utils.*;
-import static EluxAPI.Utils_math.*;
+import static EluxUtils.Utils.*;
+import static EluxUtils.UMath.*;
 import EluxAPI.*;
 
 import javax.inject.Inject;

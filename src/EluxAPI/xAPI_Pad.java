@@ -1,6 +1,6 @@
 package EluxAPI;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 import javax.inject.Inject;
 
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
@@ -121,15 +121,15 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 			switch(page) {
 				case 0:
 					switch(this.question(variable + " will be "	+ name + ".",
-						"OK","CANC","CLEAR","DEL","SPACE","-","_","NUMS",
-						"A-I","J-R","S-Z")) {
+						"OK","CLEAR","DEL","SPACE","-","_",
+						"CANC","NUMS","A-I","J-R","S-Z")) {
 						case  0: end = true;			break;
-						case  1: name = startName; end = true; break;
-						case  2: name = "";				break;
-						case  3: name = name.substring(0, name.length() - 1); break;
-						case  4: name = name + " ";		break;
-						case  5: name = name + "-";		break;
-						case  6: name = name + "_";		break;
+						case  1: name = "";				break;
+						case  2: name = name.substring(0, name.length() - 1); break;
+						case  3: name = name + " ";		break;
+						case  4: name = name + "-";		break;
+						case  5: name = name + "_";		break;
+						case  6: name = startName; end = true; break;
 						case  7: page = 1;				break;
 						case  8: page = 2;				break;
 						case  9: page = 3;				break;

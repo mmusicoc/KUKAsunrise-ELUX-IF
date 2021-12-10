@@ -28,7 +28,7 @@ public class xAPI__ELUX extends RoboticsAPIApplication {
 	@Inject private xAPI_Move move = new xAPI_Move(mf, pad);
 	@Inject private xAPI_Compliance comp = new xAPI_Compliance(mf, move);
 	@Inject private xAPI_Cobot cobot = new xAPI_Cobot(mf, plc, move, comp);
-	@Inject private xOEE oee = new xOEE();
+	@Inject private OEEmgr oee = new OEEmgr();
 
 	@Inject	public xAPI__ELUX() { }
 	
@@ -47,5 +47,5 @@ public class xAPI__ELUX extends RoboticsAPIApplication {
 	public xAPI_Move getMove() { return move; }
 	public xAPI_Compliance getCompliance() { return comp; }
 	public xAPI_Cobot getCobot() { return cobot; }
-	public xOEE getOEE() { return oee; }
+	public OEEmgr getOEE() { return oee; }
 }

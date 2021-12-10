@@ -7,8 +7,8 @@ package EluxAPI;
 		-10 = nonexistent
 		*/
 
-import static EluxAPI.Utils.*;
-import static EluxAPI.Utils_math.*;
+import static EluxUtils.Utils.*;
+import static EluxUtils.UMath.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -40,6 +40,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	private Tool tool;
 	private ObjectFrame tcp;
 	private double[] speed = {0,0,0,0,0,0,0};
+	private double[] accel = {0,0,0,0,0,0,0};
 	private double bRadius, bAngle;
 	
 	// Collision control
@@ -68,6 +69,24 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		releaseDist = 10;
 		maxTorque = 5;
 	}
+	
+	public void init(String home,
+						Tool tool, String tcp,
+						double globalSpeed, double globalAccel,
+						double blendingRadius, double blendingAngle,
+						double JTconditions, boolean releaseAuto,
+						boolean log) {
+		this.setHome(home);
+		this.setTool(tool);
+		this.setTCP(tcp);
+		this.setGlobalSpeed(globalSpeed, true);
+		this.setGlobalAccel(globalAccel, false);
+		this.setBlending(blendingRadius, blendingAngle);
+		this.setJTconds(JTconditions);
+		this.setReleaseAuto(releaseAuto);
+		this.setLogger(log);
+		
+	}
 
 	// GETTERS --------------------------------------------------------------------------		
 	public ObjectFrame getTCP() { return this.tcp; }
@@ -78,6 +97,11 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		double[] scaledSpeed = {1, 1, 1, 1, 1, 1, 1};
 		for (int i = 0; i < 7; i++) scaledSpeed[i] = speed[i] * relSpeed;
 		return scaledSpeed;
+	}
+	public double[] scaleAccel(double relAccel) {
+		double[] scaledAccel = {1, 1, 1, 1, 1, 1, 1};
+		for (int i = 0; i < 7; i++) scaledAccel[i] = accel[i] * relAccel;
+		return scaledAccel;
 	}
 	
 	public Frame toFrame(String framePath) { return getApplicationData()
@@ -119,12 +143,19 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	}
 	public void setA7Speed(double speed) { this.speed[6] = speed; }
 	
+	public void setGlobalAccel(double accel) { this.setGlobalAccel(accel, false); }
+	public void setGlobalAccel(double accel, boolean log) { 
+		for (int i = 0; i < 7; i++) this.accel[i] = accel;
+		if(log) padLog("Now accel is " + String.format("%,.0f", accel * 100) + "%");
+	}
+	public void setA7Accel(double accel) { this.accel[6] = accel; }
+	
 	public void setBlending(double radius, double angle) {
 		this.bRadius = radius;
 		this.bAngle = d2r(angle);
 	}
 	
-	public void log(boolean log) { logger = log; }
+	public void setLogger(boolean log) { logger = log; }
 	
 	// ERROR/COLLISION MANAGEMENT -----------------------------------------------
 	
@@ -205,18 +236,20 @@ public class xAPI_Move extends RoboticsAPIApplication {
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(ptp(target)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
 					.setBlendingCart(bRadius)
 					.setBlendingOri(bAngle));
 			else {
 				JTMotion = tcp.move(ptp(target)
-						.setJointVelocityRel(scaleSpeed(relSpeed))
-						.breakWhen(JTConds));
-					JTBreak = JTMotion.getFiredBreakConditionInfo();
-					if(JTBreak != null) {
-						success = collision();
-						if (release) if (release()) PTP(target, relSpeed, approx);
-					}
+					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
+					.breakWhen(JTConds));
+				JTBreak = JTMotion.getFiredBreakConditionInfo();
+				if(JTBreak != null) {
+					success = collision();
+					if (release) if (release()) PTP(target, relSpeed, approx);
 				}
+			}
 			return success;
 		} catch(CommandInvalidException e) { return unreachable(); }
 	}
@@ -242,19 +275,21 @@ public class xAPI_Move extends RoboticsAPIApplication {
 			if(approx) tcp.moveAsync(ptp(d2r(a[0]),d2r(a[1]),d2r(a[2]),d2r(a[3]),
 										 d2r(a[4]),d2r(a[5]),d2r(a[6]))
 					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
 					.setBlendingCart(bRadius)
 					.setBlendingOri(bAngle));
 			else {
 				JTMotion = tcp.move(ptp(d2r(a[0]),d2r(a[1]),d2r(a[2]),d2r(a[3]),
 						 				d2r(a[4]),d2r(a[5]),d2r(a[6]))
-						.setJointVelocityRel(scaleSpeed(relSpeed))
-						.breakWhen(JTConds));
-					JTBreak = JTMotion.getFiredBreakConditionInfo();
-					if(JTBreak != null) {
-						success = collision();
-						if (release) if (release()) PTP(a, relSpeed, approx);
-					}
+					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
+					.breakWhen(JTConds));
+				JTBreak = JTMotion.getFiredBreakConditionInfo();
+				if(JTBreak != null) {
+					success = collision();
+					if (release) if (release()) PTP(a, relSpeed, approx);
 				}
+			}
 			return success;
 		} catch(CommandInvalidException e) { return unreachable(); }
 	}
@@ -269,18 +304,20 @@ public class xAPI_Move extends RoboticsAPIApplication {
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(ptp(target)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
 					.setBlendingCart(bRadius)
 					.setBlendingOri(bAngle));
 			else {
 				JTMotion = tcp.move(ptp(target)
-						.setJointVelocityRel(scaleSpeed(relSpeed))
-						.breakWhen(JTConds));
-					JTBreak = JTMotion.getFiredBreakConditionInfo();
-					if(JTBreak != null) {
-						success = collision();
-						if (release) if (release()) LIN(target, relSpeed, approx);
-					}
+					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
+					.breakWhen(JTConds));
+				JTBreak = JTMotion.getFiredBreakConditionInfo();
+				if(JTBreak != null) {
+					success = collision();
+					if (release) if (release()) LIN(target, relSpeed, approx);
 				}
+			}
 			return success;
 		} catch(CommandInvalidException e) { return unreachable(); }
 	}
@@ -305,19 +342,21 @@ public class xAPI_Move extends RoboticsAPIApplication {
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx))
 					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
 					.setBlendingCart(bRadius)
 					.setBlendingOri(bAngle));
 			else {
 				JTMotion = tcp.move(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx))
-						.setJointVelocityRel(scaleSpeed(relSpeed))
-						.breakWhen(JTConds));
-					JTBreak = JTMotion.getFiredBreakConditionInfo();
-					if(JTBreak != null) {
-						success = collision();
-						if (release) if (release()) 
-								LINREL(x, y, z, Rz, Ry, Rx, relSpeed, approx);
-					}
+					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
+					.breakWhen(JTConds));
+				JTBreak = JTMotion.getFiredBreakConditionInfo();
+				if(JTBreak != null) {
+					success = collision();
+					if (release) if (release()) 
+							LINREL(x, y, z, Rz, Ry, Rx, relSpeed, approx);
 				}
+			}
 			return success;
 		} catch(CommandInvalidException e) { return unreachable(); }
 	}
@@ -333,19 +372,21 @@ public class xAPI_Move extends RoboticsAPIApplication {
 			mf.setRGB("G");
 			if(approx) tcp.moveAsync(circ(target1, target2)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
 					.setBlendingCart(bRadius)
 					.setBlendingOri(bAngle));
 			else {
 				JTMotion = tcp.move(circ(target1, target2)
-						.setJointVelocityRel(scaleSpeed(relSpeed))
-						.breakWhen(JTConds));
-					JTBreak = JTMotion.getFiredBreakConditionInfo();
-					if(JTBreak != null) {
-						success = collision();
-						if (release) if (release()) 
-								CIRC(target1, target2, relSpeed, approx);
-					}
+					.setJointVelocityRel(scaleSpeed(relSpeed))
+					.setJointAccelerationRel(accel)
+					.breakWhen(JTConds));
+				JTBreak = JTMotion.getFiredBreakConditionInfo();
+				if(JTBreak != null) {
+					success = collision();
+					if (release) if (release()) 
+							CIRC(target1, target2, relSpeed, approx);
 				}
+			}
 			return success;
 		} catch(CommandInvalidException e) { return unreachable(); }
 	}

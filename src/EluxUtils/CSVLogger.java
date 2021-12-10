@@ -1,7 +1,7 @@
-package EluxAPI;
+package EluxUtils;
 
-import static EluxAPI.Utils.*;
-import static EluxAPI.Utils_math.*;
+import static EluxUtils.Utils.*;
+import static EluxUtils.UMath.*;
 
 import java.io.FileWriter;
 import java.io.File;
@@ -24,48 +24,75 @@ public class CSVLogger {
 	
 	public void header(String _header) { this.header = new String(_header); }
 	
-	public void open() {
+	public boolean open() {
 		try{
-			if(append) fw = new FileWriter(filename, true);
-			else fw = new FileWriter(new File(filename), false);
+			if(append) fw = new FileWriter(FILE_ROOTPATH + filename, true);
+			else fw = new FileWriter(new File(FILE_ROOTPATH + filename), false);
 			if(isFileEmpty(filename) || !append) {
 				if(append) padLog(filename + " is empty, creating new one.");
 				fw.append(header);
 			}
+			return true;
 		} catch (FileNotFoundException e) {
 			padErr("File " + filename + " not found");
+			return false;
 		} catch (IOException e) {
-			padErr("Error opening " + filename); }
+			padErr("Error opening " + filename);
+			return false;
+		}
 	}
 	
-	public void close(boolean log) {
-		if(fw != null) try {
+	public boolean close(boolean log) {
+		try {
 			fw.flush();
 			fw.close();
 			if(log) padLog("Data stored to " + 
 					System.getProperty("user.dir") + "\\" + filename);
+			return true;
 		} catch (FileNotFoundException e) {
 			padErr("File " + filename + " not found");
+			return false;
 		} catch (IOException e) {
-			padErr("Error closing " + filename); }
+			padErr("Error closing " + filename); 
+			return false;
+		}
 		
 	}
 	
+	public boolean reset() {
+		try {
+			open();
+			fw = new FileWriter(new File(FILE_ROOTPATH + filename), false);
+			close(false);
+			return true;
+		} catch (FileNotFoundException e) {
+			padErr("File " + filename + " not found");
+			return false;
+		} catch (IOException e) {
+			padErr("Error closing " + filename); 
+			return false;
+		}
+	}
+	
 	public boolean eol() {
-		try{
+		try {
 			fw.append("\n");
 			return true;
 		} catch (IOException e) {
-			padErr("Error writing to " + filename); return false;}
+			padErr("Error writing to " + filename); 
+			return false;
+		}
 	}
 	
 	public boolean log(String msg, boolean commaBefore) {
-		try{
+		try {
 			if(commaBefore) fw.append(",");
 			fw.append(msg);
 			return true;
 		} catch (IOException e) {
-			padErr("Error writing to " + filename); return false;}
+			padErr("Error writing to " + filename);
+			return false;
+		}
 	}
 	
 	public boolean log(int value, boolean comma) {

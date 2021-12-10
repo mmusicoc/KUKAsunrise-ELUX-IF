@@ -1,6 +1,6 @@
 package EluxOEE;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,18 +10,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class xOEEstore {
+public class OEEstore {
 	private String oee_obj_filename;
 	
-	public xOEEstore() { } // CONSTRUCTOR ------------------------
+	public OEEstore() { } // CONSTRUCTOR ------------------------
 	
 	public void init(String _oee_obj_filename) {
 		this.oee_obj_filename = _oee_obj_filename;
 	}
 	
-	public void saveOEEimage(xOEEdata oee, boolean log) {
+	public void saveOEEimage(OEEdata oee, boolean log) {
 		try {
-			FileOutputStream f = new FileOutputStream(new File(oee_obj_filename));
+			FileOutputStream f = new FileOutputStream(
+					new File(FILE_ROOTPATH + oee_obj_filename));
 			ObjectOutputStream o = new ObjectOutputStream(f);
 			o.writeObject(oee);
 			o.close();
@@ -33,11 +34,12 @@ public class xOEEstore {
 		} catch (IOException e) { padErr("Error writing to " + oee_obj_filename); }
 	}
 	
-	public xOEEdata restoreOEEimage(boolean log) {
+	public OEEdata restoreOEEimage(boolean log) {
 		try {
-			FileInputStream fi = new FileInputStream(new File(oee_obj_filename));
+			FileInputStream fi = new FileInputStream(
+					new File(FILE_ROOTPATH + oee_obj_filename));
 			ObjectInputStream oi = new ObjectInputStream(fi);
-			xOEEdata oee = (xOEEdata) oi.readObject();
+			OEEdata oee = (OEEdata) oi.readObject();
 			oi.close();
 			fi.close();
 			if(log) padLog("OEE data loaded from " + 

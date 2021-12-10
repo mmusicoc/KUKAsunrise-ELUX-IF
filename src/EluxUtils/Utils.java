@@ -1,6 +1,7 @@
-package EluxAPI;
+package EluxUtils;
 
-import static EluxAPI.Utils_math.*;
+import static EluxUtils.UMath.*;
+
 import com.kuka.common.ThreadUtil;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
@@ -10,6 +11,8 @@ import java.util.Date;
 import java.io.File;
 
 public class Utils {
+	public static final String FILE_ROOTPATH = "_ELUXiiwa\\";
+	
 	public static void waitMillis(int millis) { waitMillis(millis, false); }
 	public static void waitMillis(int millis, boolean log) {
 		if (log) padLog("Wait for " + millis + " millis");
@@ -69,7 +72,7 @@ public class Utils {
 	}
 	
 	public static boolean isFileEmpty(String filename) {
-		File f = new File(filename);
+		File f = new File(FILE_ROOTPATH + filename);
 		return (f.length() == 0);
 	}
 }

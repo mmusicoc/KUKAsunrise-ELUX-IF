@@ -1,6 +1,6 @@
 package EluxRecipe;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 import EluxAPI.xAPI_Pad;
 
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class RecipeMgr<I> {
 		else {
 			activeRecipe = recipeList.get(index);
 			padLog("PNC=" + activeRecipe.getPNC() + " has been selected");
-			saveActiveRecipe();
+			saveActiveRecipe(false);
 			return true;
 		}
 		return false;
@@ -128,23 +128,26 @@ public class RecipeMgr<I> {
 	// SETTERS ---------------------------------------------------------------
 	public void newRecipe(String PNC) {
 		activeRecipe.setPNC(PNC);
-		saveActiveRecipe();
+		saveActiveRecipe(false);
 	}
 	
-	public void saveActiveRecipe() {
+	public void saveActiveRecipe(boolean log) {
 		fetchAllRecipes();
 		int PNCindex = findRecipe(activeRecipe.getPNC());
 		if(PNCindex != -1) recipeList.remove(PNCindex);
 		recipeList.add(0, activeRecipe);
 		try {
-			FileWriter fw = new FileWriter(new File(recipeDBFilename), false);
+			FileWriter fw = new FileWriter(
+					new File(FILE_ROOTPATH + recipeDBFilename), false);
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			gson.toJson(recipeList, fw);
 			fw.flush();
 			fw.close();
-			String notice = "Recipe for PNC=" + activeRecipe.getPNC() + " has been ";
-			notice = notice + ((PNCindex == -1)?"added.":"updated.");
-			padLog(notice);
+			if(log) {
+				String notice = "Recipe for PNC=" + activeRecipe.getPNC() + " has been ";
+				notice = notice + ((PNCindex == -1)?"added.":"updated.");
+				padLog(notice);
+			}
 		} catch (FileNotFoundException e) {
 			padErr("File " + recipeDBFilename + " not found");
 		} catch (IOException e) {

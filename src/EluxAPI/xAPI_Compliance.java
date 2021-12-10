@@ -4,7 +4,7 @@ package EluxAPI;
 * <b> STANDARD API CLASS BY mario.musico@electrolux.com </b> <p>
 */
 
-import static EluxAPI.Utils.waitMillis;
+import static EluxUtils.Utils.*;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.positionHold;
 
 import javax.inject.Inject;

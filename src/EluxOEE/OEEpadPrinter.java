@@ -1,19 +1,19 @@
 package EluxOEE;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 
-public class xOEEpadPrinter {
+public class OEEpadPrinter {
 	private String cycleName;
 	private String itemName;
 	private int maxTrials;
 	
-	private xOEEitem cycle;
-	private xOEEitem[] items;
+	private OEEitem cycle;
+	private OEEitem[] items;
 	
-	public xOEEpadPrinter() { } // CONSTRUCTOR ------------------------
+	public OEEpadPrinter() { } // CONSTRUCTOR ------------------------
 	
 	public void init(String _cycleName, String _itemName, int _maxTrials, 
-						xOEEitem _cycle, xOEEitem[] _items) {
+						OEEitem _cycle, OEEitem[] _items) {
 		this.cycleName = _cycleName;
 		this.itemName = _itemName;
 		this.maxTrials = _maxTrials;
