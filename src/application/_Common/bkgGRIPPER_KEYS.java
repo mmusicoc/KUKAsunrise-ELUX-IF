@@ -22,8 +22,8 @@ public class bkgGRIPPER_KEYS extends RoboticsAPICyclicBackgroundTask {
 	
 	@Override public void initialize() {
 		initializeCyclic(0, 500, TimeUnit.MILLISECONDS,	CycleBehavior.BestEffort);
-		configPadKeysGLOBAL();
-		padLog("App switcher started, access it pressing the key");
+		//configPadKeysGLOBAL();
+		//padLog("App switcher started, access it pressing the key");
 	}
 
 	public void runCyclic() {

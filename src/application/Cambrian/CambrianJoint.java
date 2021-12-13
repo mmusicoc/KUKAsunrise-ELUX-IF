@@ -1,6 +1,7 @@
 package application.Cambrian;
 
-import static EluxUtils.UMath.*;
+//import static EluxUtils.Utils.*;
+//import static EluxUtils.UMath.*;
 import EluxUtils.SimpleFrame;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
@@ -9,13 +10,13 @@ public class CambrianJoint {
 	private int jointID;
 	private String cambrianModel;
 	private SimpleFrame NJ;			// Nominal Joint position
-	private SimpleFrame DO; 		// Detection Offset (compensation)
+	private SimpleFrame DC; 		// Detection Compensation
 	private SimpleFrame SPO; 		// ScanPoint relative to Nominal Joint
 	private double threshold[];					// X+,X-,Y+,Y-,Z+,Z-
 	
 	public CambrianJoint() { 	// CONSTRUCTOR
 		NJ = new SimpleFrame();
-		DO = new SimpleFrame();
+		DC = new SimpleFrame();
 		//SPO = new SimpleFrame();
 	}
 	
@@ -24,22 +25,22 @@ public class CambrianJoint {
 	public int getID() { return this.jointID; }
 	public String getModel() { return this.cambrianModel; }
 	public SimpleFrame getNominalTarget() { return this.NJ; }
-	public Transformation getDetectionOffset() { 
-		return Transformation.ofDeg(DO.X(), DO.Y(), DO.Z(), 
-									d2r(DO.A()),d2r(DO.B()),d2r(DO.C())); }
+	public Transformation getDC() { 
+		return Transformation.ofDeg(DC.X, DC.Y, DC.Z, 
+									DC.A, DC.B, DC.C); }
 	public Transformation getScanPointOffset() { 
-		return Transformation.ofDeg(SPO.X(), SPO.Y(), SPO.Z(), 
-									d2r(SPO.A()),d2r(SPO.B()),d2r(SPO.C())); }
+		return Transformation.ofDeg(SPO.X, SPO.Y, SPO.Z, 
+									SPO.A, SPO.B, SPO.C); }
 	
 	public boolean checkWithinThreshold(Frame detection) {
-		Frame detectionWithOffset = detection.transform(this.getDetectionOffset());
+		Frame detectionWithOffset = detection.transform(this.getDC());
 		boolean outOfThreshold = false;
 		double delta;
-		delta = detectionWithOffset.getX() - NJ.X();
+		delta = detectionWithOffset.getX() - NJ.X;
 		if(delta > threshold[0] || delta < threshold[1]) outOfThreshold = true;
-		delta = detectionWithOffset.getY() - NJ.Y();
+		delta = detectionWithOffset.getY() - NJ.Y;
 		if(delta > threshold[2] || delta < threshold[3]) outOfThreshold = true;
-		delta = detectionWithOffset.getZ() - NJ.Z();
+		delta = detectionWithOffset.getZ() - NJ.Z;
 		if(delta > threshold[4] || delta < threshold[5]) outOfThreshold = true;
 		return outOfThreshold;
 	}
@@ -53,7 +54,7 @@ public class CambrianJoint {
 	
 	public void setDetectionOffset(double x, double y, double z, 
 								 double a, double b, double c) { 
-		DO.build(x, y, z, a, b, c); }
+		DC.build(x, y, z, a, b, c); }
 	
 	public void setThreshold(double Xpos, double Xneg, 
 							 double Ypos, double Yneg,

@@ -1,7 +1,10 @@
 package application.Cambrian;
 
 import static EluxUtils.Utils.*;
+import static EluxUtils.UMath.*;
 import EluxAPI.*;
+import EluxUtils.CSVLogger;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
@@ -16,8 +19,8 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 	@Inject private xAPI_Pad pad = elux.getPad();
 	//@Inject private xAPI_Compliance compl = elux.getCompliance();
 	//@Inject private CambrianAPI cambrian = new CambrianAPI(elux);
-	@Inject private CambrianRecipeMgr rcpMgr = 
-				new CambrianRecipeMgr();
+	CambrianRecipeMgr rcp = new CambrianRecipeMgr();
+	CSVLogger csv = new CSVLogger();
 	
 	String PNC = "F3";
 	int[] JOINT_SEQUENCE = {1,2,3,5,6,7,8,9,10,4,7};
@@ -34,22 +37,26 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 				false);						// Logging
 		//move.PTPhome(1, false);
 		//cambrian.init("192.168.2.50", 4000);
-		rcpMgr.init(pad, RECIPE_FILENAME, false);
-		rcpMgr.fetchAllRecipes();
+		rcp.init(pad, RECIPE_FILENAME, false);
+		rcp.fetchAllRecipes();
+		
+		csv.init("CambrianDC.csv", false);
 		//selectPNC();
 	}
 
 	@Override public void run() {
-		rcpMgr.selectRecipePNC(PNC);
-		newRecipe();
+	//	rcp.selectRecipePNC(PNC);
+	//	newRecipe();
 		
 		PNC = "F2";
-		JOINT_SEQUENCE = new int[]{1,3,4,7};
-		SP_PATHROOT = "/_Cambrian/F2scanPoints/";
-		NJ_PATHROOT = "/_Cambrian/F2nominalJoints/";
+	//	JOINT_SEQUENCE = new int[]{1,3,4,7};
+	//	SP_PATHROOT = "/_Cambrian/F2scanPoints/";
+	//	NJ_PATHROOT = "/_Cambrian/F2nominalJoints/";
 		
-		rcpMgr.selectRecipePNC(PNC);
-		newRecipe();
+		rcp.selectRecipePNC(PNC);
+		//newRecipe();
+		
+		DCtoCSV();
 		
 		while(true) waitMillis(1000);
 	}
@@ -80,31 +87,47 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 		}
 	}*/
 	
+	private void DCtoCSV() {
+		csv.open();
+		for (int i = 0; i < rcp.getItemsAmount(); i++) {
+			rcp.selectJointIndex(i);
+			csv.log(i, false);
+			csv.log(rcp.getDC().getX(), true);
+			csv.log(rcp.getDC().getY(), true);
+			csv.log(rcp.getDC().getZ(), true);
+			csv.log(r2d(rcp.getDC().getAlphaRad()), true);
+			csv.log(r2d(rcp.getDC().getBetaRad()), true);
+			csv.log(r2d(rcp.getDC().getGammaRad()), true);
+			csv.eol();
+		}
+		csv.close(true);
+	}
+	
 	private void newRecipe() {
 		for (int i = 1; i <= JOINT_SEQUENCE.length; i++) {
-			rcpMgr.newJoint(JOINT_SEQUENCE[i - 1]);
-			rcpMgr.setModel(cambrianModel);
-			rcpMgr.setTarget(move.toFrame(NJ_PATHROOT + "P" + JOINT_SEQUENCE[i - 1]));
+			rcp.newJoint(JOINT_SEQUENCE[i - 1]);
+			rcp.setModel(cambrianModel);
+			rcp.setTarget(move.toFrame(NJ_PATHROOT + "P" + JOINT_SEQUENCE[i - 1]));
 			double[] detectionOffset = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
-			rcpMgr.setDetectionOffset(detectionOffset);
-			rcpMgr.saveActiveJoint();
+			rcp.setDetectionOffset(detectionOffset);
+			rcp.saveActiveJoint();
 		}
-		rcpMgr.addItems(JOINT_SEQUENCE);
-		rcpMgr.saveActiveRecipe(false);
+		rcp.addItems(JOINT_SEQUENCE);
+		rcp.saveActiveRecipe(false);
 	}
 	
 	public void modifyRecipe() {
 		int jointIndex = pad.question("Which joint do you want to modify?",
-				rcpMgr.getJointListString());
-		if(jointIndex == rcpMgr.getItemsAmount() + 1) { }
-		else if(jointIndex == rcpMgr.getItemsAmount()) {
-			int newJoint = pad.askValue("Joint Name", rcpMgr.getItemsAmount());
+				rcp.getJointListString());
+		if(jointIndex == rcp.getItemsAmount() + 1) { }
+		else if(jointIndex == rcp.getItemsAmount()) {
+			int newJoint = pad.askValue("Joint Name", rcp.getItemsAmount());
 			//String cambrianModel = pad.askName("cambrianModel", "Eluxweldedpipes", false, false);
-			rcpMgr.newJoint(newJoint);
+			rcp.newJoint(newJoint);
 		} else {
-			rcpMgr.selectJointIndex(jointIndex);
+			rcp.selectJointIndex(jointIndex);
 		}
-		rcpMgr.setTarget(move.getTCPpos());
-		rcpMgr.saveActiveJoint();
+		rcp.setTarget(move.getTCPpos());
+		rcp.saveActiveJoint();
 	}
 }

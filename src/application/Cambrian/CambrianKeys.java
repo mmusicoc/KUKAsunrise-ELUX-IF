@@ -82,15 +82,10 @@ public class CambrianKeys {
 									else padLog("Looping joint #" + app.loop_joint);
 									break;
 								case 2:
-									double speed = app.move.getGlobalSpeed();
 									double newSpeed = app.pad.askSpeed();
-									if (newSpeed != speed) {
-										app.move.setGlobalSpeed(newSpeed, true);
-										app.oee.resetCycleTime();
-										app.remote.setSpeed(newSpeed);
-									}
+									if (newSpeed != app.move.getGlobalSpeed()) app.setSpeed(newSpeed);
 									else padLog("Speed didn't change, still " + 
-											String.format("%,.0f", speed * 100) + "%");
+											String.format("%,.0f", newSpeed * 100) + "%");
 									break;
 								case 3:
 									if(app.pad.question("Sniffing Pause", "True - 3s", "Test - 0.5s") == 0)
@@ -103,10 +98,7 @@ public class CambrianKeys {
 											"Just scan", "Scan + Approach", "Scan + approach + test");
 									break;
 								case 5:
-									app.logger = !app.logger;
-									app.move.setLogger(app.logger);
-									app.rcp.setLogger(app.logger);
-									padLog(app.logger ? "Logger on" : "Logger off");
+									app.setLogger(!app.logger);
 									break;
 							}
 							break;

@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.kuka.roboticsAPI.geometricModel.Frame;
+import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	private int activeJix;
@@ -95,14 +96,16 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	public Frame getTarget() {
 		Frame target = new Frame();
 		SimpleFrame targetSimple = activeJoint.getNominalTarget();
-		target.setX(targetSimple.X());
-		target.setY(targetSimple.Y());
-		target.setZ(targetSimple.Z());
-		target.setAlphaRad(d2r(targetSimple.A()));
-		target.setBetaRad(d2r(targetSimple.B()));
-		target.setGammaRad(d2r(targetSimple.C()));
+		target.setX(targetSimple.X);
+		target.setY(targetSimple.Y);
+		target.setZ(targetSimple.Z);
+		target.setAlphaRad(d2r(targetSimple.A));
+		target.setBetaRad(d2r(targetSimple.B));
+		target.setGammaRad(d2r(targetSimple.C));
 		return target;
 	}
+	
+	public Transformation getDC() { return activeJoint.getDC(); }
 	
 	public String[] getJointListString() {
 		int listSize = getItemsAmount();

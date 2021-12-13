@@ -13,6 +13,11 @@ import java.io.File;
 public class Utils {
 	public static final String FILE_ROOTPATH = "_ELUXiiwa\\";
 	
+	/*private static TCPsocket_client socket;
+	public static void initLoggerSocket(String IP, int port) {
+		socket = new TCPsocket_client(IP, port);
+	}*/
+	
 	public static void waitMillis(int millis) { waitMillis(millis, false); }
 	public static void waitMillis(int millis, boolean log) {
 		if (log) padLog("Wait for " + millis + " millis");
@@ -22,15 +27,15 @@ public class Utils {
 		padLog("Wait indefinitely - sleep");
 		for(;;) waitMillis(1000);
 	}
-	//public static void padClear() { System.out.print("\033[H\033[2J"); }
-	public static void padLog(String msg) { System.out.println(msg); }
-	public static void padLog(int msg) { System.out.println(msg); }
-	public static void padLog(boolean msg) { System.out.println(msg); }
-	public static void padLog(double msg) { System.out.println(msg); }
-	public static void padErr(String msg) { System.err.println(msg); }
+	//public static void padClear() { System.out.print("\033[H\033[2J"); } // NOT WORKING
+	public static void padLog(String msg) { System.out.println(msg); /*socket.send(msg);*/ }
+	public static void padLog(int msg) { System.out.println(msg); /*socket.send(i2s(msg));*/ }
+	public static void padLog(boolean msg) { System.out.println(msg); /*socket.send(b2s(msg));*/ }
+	public static void padLog(double msg) { System.out.println(msg); /*socket.send(d2s(msg));*/ }
+	public static void padErr(String msg) { System.err.println(msg); /*socket.send(msg); */}
 	public static void debug() { padLog("Arrived here"); }
-	public static String absFrameToString (Frame pose) { return pose.toStringInWorld(); }
-	public static String relFrameToString (Frame pose, boolean csv, boolean dist) {
+	public static String af2s(Frame pose) { return pose.toStringInWorld(); }
+	public static String rf2s(Frame pose, boolean csv, boolean dist) {
 		if(csv) {
 			String sFrame = new String();
 			sFrame = sFrame + d2s(pose.getX()) + ",";

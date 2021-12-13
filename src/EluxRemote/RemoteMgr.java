@@ -25,17 +25,19 @@ public class RemoteMgr {
 	// GETTERS ---------------------------------------------------------------
 	
 	public void checkIdle() {
-		if(fetchRemoteData() && data.getIdle()) {
+		if(fetchRemoteData() && data.idle) {
 			padLog("Remote has enabled idle mode, set FALSE to resume");
-			while(data.getIdle()) {
+			while(data.idle) {
 				waitMillis(1000);
 				fetchRemoteData();
 			}
 			padLog("Remote has resumed operations");
 		}
 	}
-	public double getSpeed() { return data.getSpeed(); }
-	public String getProg() { return data.getProg(); }
+	public boolean getLogger() { return data.logger; }
+	public double getSpeed() { return data.speed; }
+	public double getAccel() { return data.accel; }
+	public String getProg() { return data.prog; }
 	
 	public boolean fetchRemoteData() {
 		Gson gson = new Gson();
@@ -51,11 +53,12 @@ public class RemoteMgr {
 	}
 	
 	// SETTERS ---------------------------------------------------------------
-	public void setIdle(boolean idle) { data.setIdle(idle); }
-	public void setSpeed(double speed) { data.setSpeed(speed); }
-	public void setProg(String prog) { data.setProg(prog); }
+	public void setIdle(boolean idle) { data.idle = idle; saveData(); }
+	public void setLogger(boolean logger) { data.logger = logger; saveData(); }
+	public void setSpeed(double speed) { data.speed = speed; saveData(); }
+	public void setProg(String prog) { data.prog = prog; saveData(); }
 	
-	public void saveCurrentData() {
+	public void saveData() {
 		try {
 			FileWriter fw = new FileWriter(
 					new File(FILE_ROOTPATH + filename), false);

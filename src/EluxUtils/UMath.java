@@ -8,6 +8,7 @@ public class UMath {
 	public static String d2s(double value) { return 
 			String.format(Locale.US, "%,.2f",value); }
 	public static String i2s(int value) { return (Integer.toString(value)); }
+	public static String b2s(boolean value) { return  value ? "true" : "false"; }
 	
 	public static double r2d(double rad) { return (rad * 180 / pi()); }
 	public static double d2r(double deg) { return (deg * pi() / 180); }

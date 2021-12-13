@@ -1,7 +1,7 @@
 package EluxUtils;
 
 public class SimpleFrame {
-	private double X, Y, Z, A, B, C;
+	public double X, Y, Z, A, B, C;
 	
 	public SimpleFrame(double x, double y, double z, double a, double b, double c) {
 		this.build(x, y, z, a, b, c);
@@ -20,7 +20,7 @@ public class SimpleFrame {
 	
 	public void build(double x, double y, double z) { this.build(x, y, z,0,0,0); }
 	
-	public SimpleFrame getFrame() { return this; }
+	//public SimpleFrame getFrame() { return this; }
 	
 	public double[] toArray() {
 		double[] trafo = {X,Y,Z,A,B,C};
@@ -30,11 +30,4 @@ public class SimpleFrame {
 		String frame = "{"+X+","+Y+","+Z+","+A+","+B+","+C+"}";
 		return frame;
 	}
-	
-	public double X() { return X; }
-	public double Y() { return Y; }
-	public double Z() { return Z; }
-	public double A() { return A; }
-	public double B() { return B; }
-	public double C() { return C; }
 }

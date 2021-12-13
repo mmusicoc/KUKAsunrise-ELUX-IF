@@ -3,18 +3,20 @@ package application.Cambrian;
 import static EluxUtils.Utils.*;
 import static EluxUtils.UMath.*;
 import EluxAPI.*;
-
+import EluxUtils.*;
+/*
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.Socket;
+*/
 import javax.inject.Inject;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class CambrianAPI {
 	private xAPI__ELUX elux;
-    private Client_Socket socket;
+    private TCPsocket_client socket;
     
     private boolean cambrian_success;
     private int cambrian_msg_type;
@@ -28,9 +30,9 @@ public class CambrianAPI {
     
 	// INIT METHODS -------------------------------------------------------
 	public boolean init(String IP, int port) { 
-		this.socket = new Client_Socket(IP, port); 
+		this.socket = new TCPsocket_client(IP, port); 
 		sendRequest("PING", "");
-		if (cambrian_success) { padLog("Connection established"); return true; }
+		if (cambrian_success) { padLog("Connection with Cambrian established"); return true; }
 		else padLog("Unable to communicate with Cambrian, stopping application.");
 		return false;
 	}
@@ -92,8 +94,8 @@ public class CambrianAPI {
         request = command + "#" + data + "#" + robot_pose + 
         		"#p[0,0,0,0,0,0]#p[0,0,0,0,0,0]#<<"; 
         //padLog(request);
-        socket.Send(request);
-        ans = socket.Read();
+        socket.send(request);
+        ans = socket.read();
 
         if(ans != "") {
             try {
@@ -115,7 +117,7 @@ public class CambrianAPI {
         } else { padErr("Received no data"); return false; }
 	}
 }
-
+/*
 //SOCKET HANDLER CLASS -----------------------------------------------------------------
 
 class Client_Socket {
@@ -125,7 +127,7 @@ class Client_Socket {
 
 	public Client_Socket(String IP, int port) { this.TCP_IP = IP; this.TCP_port = port; }
 
-	public void Send(String command) {
+	public void send(String command) {
 		try {
 			socket = new Socket(TCP_IP, TCP_port);
 			if (socket.isConnected()){
@@ -139,7 +141,7 @@ class Client_Socket {
 		} catch (IOException e) { System.out.println(e); }
 	}
 
-	public String Read() {
+	public String read() {
 		try {
 			InputStreamReader reader = new InputStreamReader(socket.getInputStream());
 			int character;
@@ -152,4 +154,4 @@ class Client_Socket {
 			return data.toString();
 		} catch (IOException e) { System.out.println(e); return "ERR";}
 	}
-}
+} */

@@ -43,6 +43,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		keys.configPadKeys();
 		remote.init(REMOTE_FILENAME);
 		remote.fetchRemoteData();
+		//initLoggerSocket("192.168.2.11", 4001);
 		
 		// INIT MOVE ---------------------------------------------
 		move.init("/_Cambrian/_Home",			// Home path
@@ -61,10 +62,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 
 		// INIT CAMBRIAN -----------------------------------------
 		//cambrianModel = new String("Elux_weldedpipes");
-		if(!cambrian.init("192.168.2.50", 4000)) {
-			padLog("Unable to communicate with Cambrian, terminating app...");
-			stop();
-		}
+		if(!cambrian.init("192.168.2.50", 4000)) stop();
 		cambrianModel = rcp.getModel();
 		cambrian.loadModel(cambrianModel, false);
 		//cambrian.getNewPrediction(cambrianModel);
@@ -108,7 +106,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		precLog.open();
 		//precLog.log(getDateAndTime(), false);
 		precLog.log(item, false);
-		precLog.log(relFrameToString(offset, true, true), true);
+		precLog.log(rf2s(offset, true, true), true);
 		precLog.eol();
 		precLog.close(false);
 	}
@@ -153,6 +151,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		frameList = new FrameList();
 		while (true) {
 			if (loop_joint == 0 && logger) padLog("Start testing sequence");
+			rcp.fetchAllRecipes();
 			oee.startCycle();
 			for(int i = 0; i < rcp.getItemsAmount(); i++) {
 				oee.startItem();
@@ -173,6 +172,9 @@ public class _CambrianApp extends RoboticsAPIApplication {
 					oee.pause();
 					if(sleep == 1) sleep();
 					remote.checkIdle();
+					setLogger(remote.getLogger());
+					setSpeed(remote.getSpeed());
+					move.setGlobalAccel(remote.getAccel());
 					oee.resume();
 					
 					if (trial_counter == 0) {	// TOO MANY INTENTS ------------------------
@@ -186,16 +188,13 @@ public class _CambrianApp extends RoboticsAPIApplication {
 					unfinished += oee.checkMove(target, moveAns);
 					if(cambrian.getNewPrediction(cambrianModel)) {
 						Frame targetFrame = cambrian.getTargetFrame();
+						// TRANSFORM ANSWER ------------------------------------------------
+						targetFrame.transform(rcp.getDC().invert());
 						
 						// PRECISION TRACKING ----------------------------------------------
 						Frame nominalJoint = move.toFrame(NJ_path);
 						Frame relativeJoint = targetFrame.copyWithRedundancy(nominalJoint);
 						logPrecision(target, relativeJoint);
-						
-						// TRANSFORM ANSWER ------------------------------------------------
-						if(target == 4 || target == 7) {
-							targetFrame.transform(Transformation.ofDeg(0,0,0,-90,0,0));
-						}
 						
 						if(!targetVisited(targetFrame)) {
 							if(targetFilter(relativeJoint)) {
@@ -273,6 +272,24 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		do {
 			waitMillis(1000);
 		} while(sleep != 0);
+	}
+	
+	void setLogger(boolean logger) {
+		if(this.logger != logger) {
+			padLog(logger ? "Logger on" : "Logger off");
+			this.logger = logger;
+			move.setLogger(logger);
+			rcp.setLogger(logger);
+			remote.setLogger(logger);
+		}
+	}
+	
+	void setSpeed(double speed) {
+		if(move.getGlobalSpeed() != speed) {
+			move.setGlobalSpeed(speed, true);
+			oee.resetCycleTime();
+			remote.setSpeed(speed);
+		}
 	}
 	
 	private void stop() {

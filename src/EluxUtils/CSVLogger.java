@@ -17,9 +17,9 @@ public class CSVLogger {
 	
 	public CSVLogger() { } // CONSTRUCTOR ------------------------
 	
-	public void init(String _filename, boolean _append) {
-		this.filename = _filename;
-		this.append = _append;
+	public void init(String filename, boolean append) {
+		this.filename = filename;
+		this.append = append;
 	}
 	
 	public void header(String _header) { this.header = new String(_header); }
@@ -46,8 +46,8 @@ public class CSVLogger {
 		try {
 			fw.flush();
 			fw.close();
-			if(log) padLog("Data stored to " + 
-					System.getProperty("user.dir") + "\\" + filename);
+			if(log) padLog("Data stored to " + System.getProperty("user.dir") + 
+								"\\" + FILE_ROOTPATH + filename);
 			return true;
 		} catch (FileNotFoundException e) {
 			padErr("File " + filename + " not found");
@@ -95,11 +95,11 @@ public class CSVLogger {
 		}
 	}
 	
-	public boolean log(int value, boolean comma) {
-		return log(String.valueOf(value), comma);
+	public boolean log(int value, boolean commaBefore) {
+		return log(String.valueOf(value), commaBefore);
 	}
 	
-	public boolean log(double value, boolean comma) {
-		return log(d2s(value), comma);
+	public boolean log(double value, boolean commaBefore) {
+		return log(d2s(value), commaBefore);
 	}
 }
