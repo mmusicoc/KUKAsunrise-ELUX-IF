@@ -49,24 +49,6 @@ public class OEEmgr {
 		this.OEELogger.init(_itemName, _oee_events_filename);
 	}
 	
-	// PROCESS FAILURE MODES ----------------------------------------------
-	
-	public int checkMove(int item, int event) {
-		if (event != 1) {
-			OEELogger.logEvent(item, -event);
-			switch(event) {
-				case  0: d.items[item].addIWC(); d.items[0].addIWC();
-						 cycleFlags.addIWC(); itemFlags.addIWC();
-						 padErr("Intent With Collision at joint " + item); break;
-				case  1: d.items[item].addIUR(); d.items[0].addIUR();
-				 		 cycleFlags.addIUR(); itemFlags.addIUR(); 
-				 		 padErr("Intent Un-Reachable at joint " + item); break;
-				default: padErr("Event not valid.");
-			}
-			return 1;
-		} else return 0;
-	}
-	
 	// RESETTER METHODS --------------------------------------------------
 	
 	public void resetCycle() {
@@ -145,7 +127,24 @@ public class OEEmgr {
 		d.items[item].setLastCT(currentTime - itemStartTime);
 	}
 	
-	// FAILURE NOTIFIERS ------------------------------------------------
+	// PROCESS FAILURE MODES, NOTIFIERS ----------------------------------------------
+	
+	public int checkMoveFailure(int item, int event) {
+		if(event != 1) OEELogger.logEvent(item, event);
+		switch (event) {
+			case  1: 	return 0;
+			case -1: 	d.items[item].addIWC(); d.items[0].addIWC();
+						cycleFlags.addIWC(); itemFlags.addIWC();
+						padErr("Intent With Collision at joint " + item);
+						return -event;
+			case -10:	d.items[item].addIUR(); d.items[0].addIUR();
+			 			cycleFlags.addIUR(); itemFlags.addIUR(); 
+			 			padErr("Intent Un-Reachable at joint " + item);
+			 			return -event;
+			default: 	padErr("Event " + event + " not valid.");
+						return -10000;
+		}
+	}
 	
 	public void addTMI(int item) {
 		d.items[item].addTMI(); d.items[0].addTMI();
@@ -178,8 +177,9 @@ public class OEEmgr {
 		statsCSV.saveOEEstats(log);
 	}
 	
-	public void restoreOEEimage(boolean log) { d = store.restoreOEEimage(log);}
+	public void restoreOEEimage(boolean log) { d = store.restoreOEEimage(log); }
 	
 	public void printStatsCycle() { padPrintOEE.printStatsCycle(); }
 	public void printStatsItem(int item) { padPrintOEE.printStatsItem(item); }
+	public String reason(int reasonCode) { return OEELogger.reason(reasonCode); }
 }

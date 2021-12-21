@@ -6,34 +6,33 @@ import EluxUtils.SimpleFrame;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class CambrianJoint {
+public class Joint {
 	private int jointID;
 	private String cambrianModel;
 	private SimpleFrame NJ;			// Nominal Joint position
-	private SimpleFrame DC; 		// Detection Compensation
+	private SimpleFrame DO; 		// Detection Avg Offset to Nominal Joint
 	private SimpleFrame SPO; 		// ScanPoint relative to Nominal Joint
 	private double threshold[];					// X+,X-,Y+,Y-,Z+,Z-
 	
-	public CambrianJoint() { 	// CONSTRUCTOR
+	public Joint() { 	// CONSTRUCTOR
 		NJ = new SimpleFrame();
-		DC = new SimpleFrame();
+		DO = new SimpleFrame();
 		//SPO = new SimpleFrame();
 	}
 	
 	// GETTERS ---------------------------------------------------------------
-	//public boolean isEnabled() { return enabled; }
 	public int getID() { return this.jointID; }
 	public String getModel() { return this.cambrianModel; }
 	public SimpleFrame getNominalTarget() { return this.NJ; }
-	public Transformation getDC() { 
-		return Transformation.ofDeg(DC.X, DC.Y, DC.Z, 
-									DC.A, DC.B, DC.C); }
+	public Transformation getDO() { 
+		return Transformation.ofDeg(DO.X, DO.Y, DO.Z, 
+									DO.A, DO.B, DO.C); }
 	public Transformation getScanPointOffset() { 
 		return Transformation.ofDeg(SPO.X, SPO.Y, SPO.Z, 
 									SPO.A, SPO.B, SPO.C); }
 	
 	public boolean checkWithinThreshold(Frame detection) {
-		Frame detectionWithOffset = detection.transform(this.getDC());
+		Frame detectionWithOffset = detection.transform(this.getDO());
 		boolean outOfThreshold = false;
 		double delta;
 		delta = detectionWithOffset.getX() - NJ.X;
@@ -54,7 +53,7 @@ public class CambrianJoint {
 	
 	public void setDetectionOffset(double x, double y, double z, 
 								 double a, double b, double c) { 
-		DC.build(x, y, z, a, b, c); }
+		DO.build(x, y, z, a, b, c); }
 	
 	public void setThreshold(double Xpos, double Xneg, 
 							 double Ypos, double Yneg,

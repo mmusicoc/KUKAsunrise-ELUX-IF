@@ -6,37 +6,30 @@ import EluxUtils.SimpleFrame;
 import EluxRecipe.*;
 import EluxAPI.xAPI_Pad;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.lang.reflect.Type;
-
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
-	private int activeJix;
-	private CambrianJoint activeJoint;
+public class RecipeMgr extends EluxRecipe.RecipeMgr<Joint> {
+	private Joint activeJoint;
 	
-	public CambrianRecipeMgr() { // CONSTRUCTOR
-		super();
-	}
+	public RecipeMgr() { super(); } // CONSTRUCTOR
 	
-	@Override
-	public void init(xAPI_Pad pad, String filename, boolean logger) {
+	@Override public void init(xAPI_Pad pad, String filename, boolean logger) {
 		super.init(pad, filename, logger);
-		activeJix = 0;
+		activeIndex = 0;
 	}
 	
 	// JOINT SELECTOR ------------------------------------------------------------
 	
 	public boolean selectJointID(int ID) {
-		int index = findJoint(ID);
+		int index = findJointIndex(ID);
 		if(index != -1) return selectJointIndex(index);
 		else {
 			padLog("Joint for ID=" + ID + " not found, creating it...");
@@ -47,8 +40,8 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	
 	public boolean selectJointIndex(int index) {
 		if(index >= 0 && index < activeRcp.items.size()) {
-			activeJix = index;
-			activeJoint = activeRcp.items.get(activeJix);
+			activeIndex = index;
+			activeJoint = activeRcp.items.get(activeIndex);
 			if(logger) padLog("Joint " + activeJoint.getID() + " has been selected");
 			return true;
 		}
@@ -56,8 +49,8 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 		return false;
 	}
 	
-	public int findJoint(int ID) {
-		for(int i = 0; i < getItemsAmount(); i++) {
+	public int findJointIndex(int ID) {
+		for(int i = 0; i < getTotItemAmount(); i++) {
 			if(activeRcp.items.get(i).getID() == ID) return i;
 		}
 		return -1;
@@ -68,31 +61,28 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 		Gson gson = new Gson();
 		try {
 			JsonReader reader = new JsonReader(
-					new FileReader(FILE_ROOTPATH + recipeDBFilename));
-			recipeList = new ArrayList<Recipe<CambrianJoint>>();
-			Type objType = new TypeToken<List<Recipe<CambrianJoint>>>(){}.getType();
-			recipeList = gson.fromJson(reader, objType);
+					new FileReader(FILE_ROOTPATH + filename));
+			db = new RecipeDB<Joint>();
+			Type objType = new TypeToken<RecipeDB<Joint>>(){}.getType();
+			db = gson.fromJson(reader, objType);
 		} catch (FileNotFoundException e) {
-			padErr("File " + recipeDBFilename + " not found");
+			padErr("File " + filename + " not found");
 		} 
 	}
 	
 	// GETTERS ---------------------------------------------------------------
 	
 	public int getJointID() { return activeJoint.getID(); }
+	public String getCurrentCambrianModel() { return activeJoint.getModel(); }
+	public String getNextCambrianModel(int orderIndex) {
+		int size = getTotItemAmount();
+		if (orderIndex < 0 || orderIndex >= size) { 
+			padErr("JointID not valid"); return "ERR"; }
+		else if (orderIndex == size - 1) 
+			 return activeRcp.items.get(findJointIndex(getOItemID(0))).getModel();
+		else return activeRcp.items.get(findJointIndex(getOItemID(orderIndex + 1))).getModel();
+	}
 	
-	public String getModel() { 
-		return activeJoint.getModel();
-	}
-	/*
-	public String getNextCambrianModel(int jointIndex) {
-		int size = getJointAmount()
-		if (jointIndex < 0 || jointIndex >= size) { 
-			padErr("JointID not valid"); return " "; }
-		else if (jointIndex == size - 1) return activeRcp.items.get(0).getModel();
-		else return activeRcp.items.get(jointIndex + 1).getModel();
-	}
-	*/
 	public Frame getTarget() {
 		Frame target = new Frame();
 		SimpleFrame targetSimple = activeJoint.getNominalTarget();
@@ -105,10 +95,10 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 		return target;
 	}
 	
-	public Transformation getDC() { return activeJoint.getDC(); }
+	public Transformation getDO() { return activeJoint.getDO(); }
 	
 	public String[] getJointListString() {
-		int listSize = getItemsAmount();
+		int listSize = getTotItemAmount();
 		String[] jointList = new String[listSize + 2];
 		
 		for(int i = 0; i < listSize; i++) {
@@ -123,32 +113,32 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 	// SETTERS ---------------------------------------------------------------
 	
 	public void saveActiveJoint() {
-		int index = findJoint(activeJoint.getID());
+		int index = findJointIndex(activeJoint.getID());
 		if(index != -1) activeRcp.items.set(index, activeJoint);
 		else saveNewJoint();
 		//saveActiveRecipe();
 	}
 	
 	public void saveNewJoint() {
-		for(int i = 0; i < getItemsAmount(); i++) {
+		for(int i = 0; i < getTotItemAmount(); i++) {
 			if (activeRcp.items.get(i).getID() > activeJoint.getID()) {
 				activeRcp.items.add(i, activeJoint);
-				activeJix = i;
+				activeIndex = i;
 				return;
 			}
 		}
 		activeRcp.items.add(activeJoint);
-		activeJix = activeRcp.items.size() - 1;
+		activeIndex = activeRcp.items.size() - 1;
 	}
 	
 	public void newJoint(int jointID) {
-		activeJoint = new CambrianJoint();
+		activeJoint = new Joint();
 		activeJoint.setID(jointID);
 		//saveActiveJoint();
 	}
 	
 	public void setModel(String model) { activeJoint.setModel(model); }
-	
+	/*
 	public void setTarget(Frame target) {
 		activeJoint.setNominalTarget(
 				round(target.getX(), 2),
@@ -158,7 +148,7 @@ public class CambrianRecipeMgr extends RecipeMgr<CambrianJoint> {
 				roundAngle(r2d(target.getBetaRad()), 2, 0.5),
 				roundAngle(r2d(target.getGammaRad()), 2, 0.5));
 	}
-	
+	*/
 	public void setDetectionOffset(double[] off) {
 		activeJoint.setDetectionOffset(off[0], off[1], off[2],
 									   off[3], off[4], off[5]);

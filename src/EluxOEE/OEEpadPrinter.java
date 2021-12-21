@@ -59,7 +59,7 @@ public class OEEpadPrinter {
 		stats = (stats + "\n   of which PWC " + itemID + ": " + items[item].getPWC());
 		stats = (stats + "\nNRFT " + itemID + ": " + items[item].getNRFT());
 		
-		stats = (stats + "\nINTENT STATISTICS -----------------------------------");
+		stats = (stats + "\n\nINTENT STATISTICS ----------------------------");
 		stats = (stats + "\nIntents Not Right in " + itemID + ": " + items[item].getINR());
 		stats = (stats + "\n   of which With Collision: " + items[item].getIWC());
 		stats = (stats + "\n   of which Un-Reachable: " + items[item].getIUR());
@@ -68,10 +68,10 @@ public class OEEpadPrinter {
 		stats = (stats + "\n   of which Not Found: " + items[item].getINF());
 		stats = (stats + "\n   of which Not Precise: " + items[item].getINP());
 		
-		stats = (stats + "\nSUCCESS RATES -----------------------------------");
+		stats = (stats + "\n\nSUCCESS RATES -----------------------------");
 		rate = (items[item].getGood() + items[item].getINR() - items[item].getTMI() * 
 				maxTrials - items[item].getPWC()) / (items[item].getGood() + 0.0);
-		stats = (stats + "\n\nTRIALS/GOOD: " + String.format("%,.2f", rate));
+		stats = (stats + "\nTRIALS/GOOD: " + String.format("%,.2f", rate));
 		rate = items[item].getINR() / (items[item].getTotal() + 0.0);
 		stats = (stats + "\nNRI/TOTAL: " + String.format("%,.2f", rate));
 		rate = items[item].getTMI() / (items[item].getTotal() + 0.0);
@@ -79,8 +79,8 @@ public class OEEpadPrinter {
 		rate = items[item].getPWC() / (items[item].getTotal() + 0.0);
 		stats = (stats + "\nPWC/TOTAL: " + String.format("%,.2f",100 * rate) + "%");
 		
-		stats = (stats + "\nCYCLE TIME -----------------------------------");
-		stats = (stats + "\n\nLAST Cycle Time: " + String.format("%,.2f",
+		stats = (stats + "\n\nCYCLE TIME -----------------------------------");
+		stats = (stats + "\nLAST Cycle Time: " + String.format("%,.2f",
 				items[item].getLastCT() / 1000));
 		stats = (stats + "\nAVG Cycle Time: " + String.format("%,.2f",
 				items[item].getAvgCT() / 1000));

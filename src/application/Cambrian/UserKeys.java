@@ -6,9 +6,9 @@ import com.kuka.roboticsAPI.uiModel.userKeys.IUserKey;
 import com.kuka.roboticsAPI.uiModel.userKeys.IUserKeyListener;
 import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 
-public class CambrianKeys {
+public class UserKeys {
 	private _CambrianApp app;
-	public CambrianKeys(_CambrianApp cambrianApp) {
+	public UserKeys(_CambrianApp cambrianApp) {
 		this.app = cambrianApp;
 	}
 	
@@ -44,27 +44,28 @@ public class CambrianKeys {
 								case 0: break;
 								case 1:
 									app.oee.addINP(app.target);
-									app.unfinished++;
+									app.failure++;
 									padLog("Intent Not Precise Recorded for joint " + app.target);
 									break;
 								case 2:
 									app.oee.addINP(app.target - 1);
-									app.unfinished++;
+									app.failure++;
 									padLog("Intent Not Precise Recorded for joint " + (app.target - 1));
 									break;
 							} break;
 						case 2: 						// KEY - SLEEP
-							if(app.sleep == 0) switch(app.pad.question("Sleep before next...",
+							if(app.idle == 0) switch(app.pad.question("Sleep before next...",
 									"CANC", "Joint", "Fridge cycle")) {
 								case 0: break;
 								case 1: padLog("Robot will pause before next joint.");
-										app.sleep = 1; break;
+										app.idle = 1; break;
 								case 2: padLog("Robot will pause before next fridge cycle.");
-										app.sleep = 2; break;
+										app.idle = 2; break;
 							} else {
 								padLog("Robot will resume operations.");
-								app.sleep = 0;
+								app.idle = 0;
 							}
+							if(app.idle != app.remote.getIdle()) app.remote.setIdle(app.idle);
 							break;
 						case 3:  						// KEY - OTHER
 							switch(app.pad.question("Select option", "CANC", "Choose joint",

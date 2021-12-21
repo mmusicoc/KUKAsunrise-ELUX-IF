@@ -19,7 +19,7 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 	@Inject private xAPI_Pad pad = elux.getPad();
 	//@Inject private xAPI_Compliance compl = elux.getCompliance();
 	//@Inject private CambrianAPI cambrian = new CambrianAPI(elux);
-	CambrianRecipeMgr rcp = new CambrianRecipeMgr();
+	RecipeMgr rcp = new RecipeMgr();
 	CSVLogger csv = new CSVLogger();
 	
 	String PNC = "F3";
@@ -56,7 +56,7 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 		rcp.selectRecipePNC(PNC);
 		//newRecipe();
 		
-		DCtoCSV();
+		DOtoCSV();
 		
 		while(true) waitMillis(1000);
 	}
@@ -87,47 +87,48 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 		}
 	}*/
 	
-	private void DCtoCSV() {
+	void DOtoCSV() {
 		csv.open();
-		for (int i = 0; i < rcp.getItemsAmount(); i++) {
+		for (int i = 0; i < rcp.getTotItemAmount(); i++) {
 			rcp.selectJointIndex(i);
 			csv.log(i, false);
-			csv.log(rcp.getDC().getX(), true);
-			csv.log(rcp.getDC().getY(), true);
-			csv.log(rcp.getDC().getZ(), true);
-			csv.log(r2d(rcp.getDC().getAlphaRad()), true);
-			csv.log(r2d(rcp.getDC().getBetaRad()), true);
-			csv.log(r2d(rcp.getDC().getGammaRad()), true);
+			csv.log(rcp.getDO().getX(), false);
+			csv.log(rcp.getDO().getY(), true);
+			csv.log(rcp.getDO().getZ(), true);
+			csv.log(r2d(rcp.getDO().getAlphaRad()), true);
+			csv.log(r2d(rcp.getDO().getBetaRad()), true);
+			csv.log(r2d(rcp.getDO().getGammaRad()), true);
 			csv.eol();
 		}
 		csv.close(true);
 	}
 	
-	private void newRecipe() {
+	void newRecipe() {
 		for (int i = 1; i <= JOINT_SEQUENCE.length; i++) {
 			rcp.newJoint(JOINT_SEQUENCE[i - 1]);
 			rcp.setModel(cambrianModel);
-			rcp.setTarget(move.toFrame(NJ_PATHROOT + "P" + JOINT_SEQUENCE[i - 1]));
-			double[] detectionOffset = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
-			rcp.setDetectionOffset(detectionOffset);
+			//rcp.setTarget(move.toFrame(NJ_PATHROOT + "P" + JOINT_SEQUENCE[i - 1]));
+			//double[] detectionOffset = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
+			//rcp.setDetectionOffset(detectionOffset);
 			rcp.saveActiveJoint();
 		}
-		rcp.addItems(JOINT_SEQUENCE);
+		rcp.addOItems(JOINT_SEQUENCE);
 		rcp.saveActiveRecipe(false);
 	}
-	
-	public void modifyRecipe() {
+	/*
+	void modifyRecipe() {
 		int jointIndex = pad.question("Which joint do you want to modify?",
 				rcp.getJointListString());
-		if(jointIndex == rcp.getItemsAmount() + 1) { }
-		else if(jointIndex == rcp.getItemsAmount()) {
-			int newJoint = pad.askValue("Joint Name", rcp.getItemsAmount());
+		if(jointIndex == rcp.getItemAmount() + 1) { }
+		else if(jointIndex == rcp.getItemAmount()) {
+			int newJoint = pad.askValue("Joint Name", rcp.getItemAmount());
 			//String cambrianModel = pad.askName("cambrianModel", "Eluxweldedpipes", false, false);
 			rcp.newJoint(newJoint);
 		} else {
 			rcp.selectJointIndex(jointIndex);
 		}
-		rcp.setTarget(move.getTCPpos());
+		//rcp.setTarget(move.getTCPpos());
 		rcp.saveActiveJoint();
 	}
+	*/
 }

@@ -8,7 +8,7 @@ import javax.inject.Named;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
-public class CambrianCalib extends RoboticsAPIApplication {
+public class _CambrianCalib extends RoboticsAPIApplication {
 	@Inject	@Named("Cambrian") private Tool GripperCambrian;
 	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject private xAPI_Move move = elux.getMove();
@@ -22,7 +22,9 @@ public class CambrianCalib extends RoboticsAPIApplication {
 		move.setJTconds(15.0);
 		move.setBlending(20, 5);
 		move.setHome("/_Cambrian/_Home");
+		if(pad.question("Are you sure you want to recalibrate?", "YES", "NO") == 0)
 		cambrian.init("192.168.2.50", 4000);
+		else dispose();
 	}
 
 	@Override public void run() {

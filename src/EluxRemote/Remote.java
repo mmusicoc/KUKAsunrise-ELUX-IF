@@ -1,7 +1,7 @@
 package EluxRemote;
 
 public class Remote {
-	boolean idle;
+	int idle;
 	boolean logger;
 	double speed;
 	double accel;

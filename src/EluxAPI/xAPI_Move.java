@@ -2,9 +2,9 @@ package EluxAPI;
 
 /* Movement returns: 
 		1 = success
-		0 = collision
-		-1 = unreachable
-		-10 = nonexistent
+		-1 = collision
+		-10 = unreachable
+		-100 = nonexistent
 		*/
 
 import static EluxUtils.Utils.*;
@@ -104,8 +104,10 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		return scaledAccel;
 	}
 	
-	public Frame toFrame(String framePath) { return getApplicationData()
-											.getFrame(framePath).copyWithRedundancy(); }
+	public Frame toFrame(String framePath) { 
+		try { return getApplicationData().getFrame(framePath).copyWithRedundancy(); }
+		catch(Exception e) { nonexistent(framePath); return null; }
+	}
 	public Frame getFlangePos() { return kiwa.getCurrentCartesianPosition(kiwa.
 											getFlange()).copyWithRedundancy(); }
 	public Frame getFlangeTarget() { return kiwa.getCommandedCartesianPosition(kiwa.
@@ -207,19 +209,19 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	public int collision() {
 		if(logger) padLog("Collision detected at\n" + getFlangePos().toStringInWorld());
 		mf.blinkRGB("RB", 500);
-		return 0;
+		return -1;
 	}
 	
 	public int unreachable() {
 		padErr("Unable to perform movement to\n" + getFlangeTarget().toStringInWorld());
 		mf.blinkRGB("RG", 500);
-		return -1;
+		return -10;
 	}
 	
 	public int nonexistent(String targetPath) {
 		padErr("Target \"" + targetPath + "\" does not exist.");
 		mf.blinkRGB("R", 500);
-		return -10;
+		return -100;
 	}
 	
 	// #################################################################################

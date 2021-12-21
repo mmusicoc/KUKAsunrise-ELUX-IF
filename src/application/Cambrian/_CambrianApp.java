@@ -2,7 +2,6 @@ package application.Cambrian;
 
 import static EluxUtils.Utils.*;
 import static EluxUtils.UMath.*;
-import static application.Cambrian._CambrianParams.*;
 import EluxUtils.*;
 import EluxAPI.*;
 import EluxOEE.*;
@@ -13,37 +12,38 @@ import javax.inject.Named;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
-import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class _CambrianApp extends RoboticsAPIApplication {	
-	@Inject	@Named("Cambrian") 	private Tool tool;
+	@Inject	@Named("Cambrian") private Tool tool;
 	xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject xAPI_MF	mf = elux.getMF();
 	@Inject xAPI_Pad pad = elux.getPad();
 	@Inject xAPI_Move move = elux.getMove();
 	@Inject CambrianAPI cambrian = new CambrianAPI(elux);
-	CambrianRecipeMgr rcp = new CambrianRecipeMgr();
-	CambrianKeys keys = new CambrianKeys(this);
+	Params p = new Params();
+	JSONmgr<Params> paramsMgr = new JSONmgr<Params>();
+	RecipeMgr rcp = new RecipeMgr();
+	UserKeys keys = new UserKeys(this);
 	OEEmgr oee = elux.getOEE();
 	RemoteMgr remote = new RemoteMgr();
 	CSVLogger precLog = new CSVLogger();
 	
 	FrameList frameList;
 	boolean logger;
-	int approachMode;
-	int sleep;
-	int sniffing_pause;
-	int loop_joint;
-	int moveAns, unfinished;
-	int target;
-	String cambrianModel;
-	Transformation offset;
+	int approachMode, idle, sniffing_pause;
+	int loop_joint, target;
+	int moveAns, failure;
+	int trials;
+	String cambrianModel, SP_pathroot, SP_path, NJ_pathroot, NJ_path;
+	Frame SP_frame;
 	
 	@Override public void initialize() {
+		paramsMgr.init("CambrianParams.json");
+		//paramsMgr.saveData(p);
+		p = paramsMgr.fetchData(p);
+		
 		keys.configPadKeys();
-		remote.init(REMOTE_FILENAME);
-		remote.fetchRemoteData();
-		//initLoggerSocket("192.168.2.11", 4001);
+		remote.init(p.REMOTE_FILENAME);
 		
 		// INIT MOVE ---------------------------------------------
 		move.init("/_Cambrian/_Home",			// Home path
@@ -55,27 +55,31 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		move.setA7Speed(1); 					// Accelerate J7 if bottleneck
 		
 		// INIT MOVE ---------------------------------------------
-		rcp.init(pad, RECIPE_FILENAME, false);
+		rcp.init(pad, p.RECIPE_FILENAME, false);
 		rcp.fetchAllRecipes();
-		rcp.selectRecipePNC("F2");
-		rcp.selectJointID(rcp.getItem(0));
+		//rcp.selectRecipePNC("F2");
+		rcp.askPNC();
+		
+		SP_pathroot = "/_Cambrian/" + rcp.getActivePNC() + "/ScanPoints/";
+		NJ_pathroot = "/_Cambrian/" + rcp.getActivePNC() + "/NominalJoints/";
+			
+		rcp.selectJointID(rcp.getOItemID(0));
 
 		// INIT CAMBRIAN -----------------------------------------
-		//cambrianModel = new String("Elux_weldedpipes");
 		if(!cambrian.init("192.168.2.50", 4000)) stop();
-		cambrianModel = rcp.getModel();
+		cambrianModel = rcp.getCurrentCambrianModel();
 		cambrian.loadModel(cambrianModel, false);
 		//cambrian.getNewPrediction(cambrianModel);
 		
 		// INIT OEE & PRECISION LOGGING --------------------------
 		oee.init("FRIDGE", "JOINT",
-				TOTAL_JOINTS, JOINT_TRIALS, 
-				OEE_OBJ_FILENAME, 
-				OEE_STATS_FILENAME,
-				OEE_EVENTS_FILENAME, true); // DISABLE TRUE TO RESET OBJ
+				p.TOTAL_JOINTS, p.MAX_TRIALS, 
+				p.OEE_OBJ_FILENAME, 
+				p.OEE_STATS_FILENAME,
+				p.OEE_EVENTS_FILENAME, true); // DISABLE TRUE TO RESET OBJ
 		
-		precLog.init(PRECISION_FILENAME, true);
-		precLog.header("JOINT,X,Y,Z,DIST,A,B,C\n");
+		precLog.init(p.PRECISION_FILENAME, true);
+		precLog.header("JOINT,X,Y,Z,DIST,A,B,C,(RC),(Reason),(Date),(Time)\n");
 		
 		if(pad.question("Restart all OEE & precision data?", "YES", "NO") == 0)
 			resetAllOEE();
@@ -84,17 +88,17 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		sniffing_pause = 500;
 		loop_joint = 0;
 		logger = false;
-		sleep = 0;
+		idle = 0;
 		approachMode = 0;
 		if(!move.PTPhome(1, false)) stop();
 	}
 	
-	private void sniff(int target) {
+	void sniff(int target) {
 		if(logger) padLog("Leak test #" + target);
 		mf.blinkRGB("B", sniffing_pause);
 	}
 	
-	public void resetAllOEE() {
+	void resetAllOEE() {
 		oee.resetCycle();
 		oee.resetItems();
 		oee.saveOEEimage(false);
@@ -102,24 +106,37 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		padLog("All OEE have been zeroed.");
 	}
 
-	public void logPrecision(int item, Frame offset) {
+	void logPrecision(int item, Frame offset, int outcome) {
 		precLog.open();
-		//precLog.log(getDateAndTime(), false);
 		precLog.log(item, false);
 		precLog.log(rf2s(offset, true, true), true);
+		if(outcome != 1) {
+			precLog.log(outcome, true);
+			precLog.log(oee.reason(outcome), true);
+			precLog.log(getDateAndTime(), true);
+		}
 		precLog.eol();
 		precLog.close(false);
 	}
 	
-	public void selectModelAtEnd() {
-		//if (target == 2) cambrian.loadModel(cambrianModel = "Elux_weldedpipes", false);
-		//else if (target == 7) cambrian.loadModel(cambrianModel = "Elux_crimp6", false);
+	void selectModelAtEnd(int orderIndex) {
+		String prevModel = cambrianModel;
+		cambrianModel = rcp.getNextCambrianModel(orderIndex);
+		if(cambrianModel.compareTo(prevModel) != 0) 
+			cambrian.loadModel(cambrianModel, false);
 	}
 	
-	private boolean targetVisited(Frame target) {
+	void INR() {
+		SP_frame = randomizeFrame(move.toFrame(SP_path), p.RANDOM_DIST_MIN,
+														 p.RANDOM_DIST_MAX);
+		trials++;
+		mf.blinkRGB("RB", 50);
+	}
+	
+	boolean targetVisited(Frame target) {
 		for(int i=0; i<frameList.size(); i++) {
-			if (frameList.get(i).distanceTo(target) < FILTER_DIST_IAE) {
-				if (logger) padLog("Distance to joint " + JOINT_SEQUENCE[i] + 
+			if (frameList.get(i).distanceTo(target) < p.FILTER_DIST_IAE) {
+				if (logger) padLog("Distance to joint " + rcp.getOItemID(i) + 
 									"too small, already visited");
 				return true;
 			}
@@ -127,20 +144,20 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		return false;
 	}
 	
-	public boolean targetFilter(Frame offset) {
-		if (offset.distanceTo(offset.getParent()) > FILTER_DIST_INV) {
+	boolean targetFilter(Frame offset) {
+		if (offset.distanceTo(offset.getParent()) > p.FILTER_DIST_INV) {
 			if(logger) padLog("Distance between detection and nominal is " + 
 					d2s(offset.distanceTo(offset.getParent())));
 			return false;
-		} else if(r2d(offset.getAlphaRad()) > FILTER_ANG_INV) {
+		} else if(r2d(offset.getAlphaRad()) > p.FILTER_ANG_INV) {
 			if(logger) padLog("Alpha (A) between detection and nominal is " + 
 					d2s(r2d(offset.getAlphaRad())) + "°");
 			return false;
-		} else if(r2d(offset.getBetaRad()) > FILTER_ANG_INV) {
+		} else if(r2d(offset.getBetaRad()) > p.FILTER_ANG_INV) {
 			if(logger) padLog("Beta (B) between detection and nominal is " + 
 					d2s(r2d(offset.getBetaRad())) + "°");
 			return false;
-		} else if(r2d(offset.getGammaRad()) > FILTER_ANG_INV) {
+		} else if(r2d(offset.getGammaRad()) > p.FILTER_ANG_INV) {
 			if(logger) padLog("Gamma (C) between detection and nominal is " + 
 					d2s(r2d(offset.getAlphaRad())) + "°");
 			return false;
@@ -153,125 +170,119 @@ public class _CambrianApp extends RoboticsAPIApplication {
 			if (loop_joint == 0 && logger) padLog("Start testing sequence");
 			rcp.fetchAllRecipes();
 			oee.startCycle();
-			for(int i = 0; i < rcp.getItemsAmount(); i++) {
+			for(int i = 0; i < rcp.getActiveItemAmount(); i++) {
 				oee.startItem();
 				if (loop_joint == 0) {
-					rcp.selectJointID(rcp.getItem(i));
+					rcp.selectJointID(rcp.getOItemID(i));
 					target = rcp.getJointID();
 				} else {
 					target = loop_joint;
-					i = USED_JOINTS;
+					rcp.selectJointID(target);
+					//i = USED_JOINTS;
 				}
 				
-				int trial_counter = JOINT_TRIALS;
-				String SP_path = SP_PATHROOT + "P" + target;
-				String NJ_path = NJ_PATHROOT + "P" + target;
-				Frame SP_frame = move.toFrame(SP_path);
+				trials = 0;
+				SP_path = SP_pathroot + "P" + target;
+				NJ_path = NJ_pathroot + "P" + target;
+				SP_frame = move.toFrame(SP_path);
 				do {
-					unfinished = 0;
+					failure = 0;
 					oee.pause();
-					if(sleep == 1) sleep();
-					remote.checkIdle();
+					idle = remote.getIdle();
+					if(idle == 1) idle();
 					setLogger(remote.getLogger());
 					setSpeed(remote.getSpeed());
 					move.setGlobalAccel(remote.getAccel());
 					oee.resume();
 					
-					if (trial_counter == 0) {	// TOO MANY INTENTS ------------------------
+					if (trials == p.MAX_TRIALS) {	// TOO MANY INTENTS -----------------------
 						if(logger) padLog("Skip joint #" + target + ", too many intents.");
 						mf.blinkRGB("R", 1000);
 						oee.addTMI(target);
-						selectModelAtEnd();
 						break;
 					}
-					moveAns = move.PTP(SP_frame, 1, false); // MOVE TO ScanPoint -----------
-					unfinished += oee.checkMove(target, moveAns);
+					moveAns = move.PTP(SP_frame, 1, false); // MOVE TO ScanPoint ----------
+					failure += oee.checkMoveFailure(target, moveAns);
 					if(cambrian.getNewPrediction(cambrianModel)) {
 						Frame targetFrame = cambrian.getTargetFrame();
-						// TRANSFORM ANSWER ------------------------------------------------
-						targetFrame.transform(rcp.getDC().invert());
-						
-						// PRECISION TRACKING ----------------------------------------------
-						Frame nominalJoint = move.toFrame(NJ_path);
-						Frame relativeJoint = targetFrame.copyWithRedundancy(nominalJoint);
-						logPrecision(target, relativeJoint);
-						
+						// TRANSFORM ANSWER, GET OFFSET -----------------------------------
+						targetFrame.transform(rcp.getDO().invert());
+						Frame offset2NJ = targetFrame.copyWithRedundancy(
+															move.toFrame(NJ_path));
 						if(!targetVisited(targetFrame)) {
-							if(targetFilter(relativeJoint)) {
+							if(targetFilter(offset2NJ)) {
 								// VISIT JOINT -------------------------------------------------
 								if(approachMode != 0) {
-									Frame approachFrame = offsetFrame(targetFrame, 0,0,-APPROACH_DIST,0,0,0);
+									Frame approachFrame = offsetFrame(targetFrame,
+																0,0,-p.APPROACH_DIST,0,0,0);
 									moveAns = move.PTP(approachFrame, 1, (approachMode == 2));
-									unfinished += oee.checkMove(target, moveAns);
+									failure += oee.checkMoveFailure(target, moveAns);
 									if(approachMode == 2) {
-										moveAns = move.LIN(targetFrame, APPROACH_SPEED, false);
-										unfinished += oee.checkMove(target, moveAns);
+										moveAns = move.LIN(targetFrame, p.APPROACH_SPEED, false);
+										failure += oee.checkMoveFailure(target, moveAns);
 									}
 									sniff(target); // SNIFFING PROCESS -------------------------
 									if(approachMode == 2) {
-										moveAns = move.LIN(approachFrame, APPROACH_SPEED, true);
-										unfinished += oee.checkMove(target, moveAns);
+										moveAns = move.LIN(approachFrame, p.APPROACH_SPEED, true);
+										failure += oee.checkMoveFailure(target, moveAns);
 									}
-									moveAns = move.LINREL(0, 0, -EXIT_DIST * ((target == 
-											JOINT_SEQUENCE[USED_JOINTS - 1]) ? 2 : 1), 1, true);
-									unfinished += oee.checkMove(target, moveAns);
+									moveAns = move.LINREL(0, 0, -p.EXIT_DIST * (
+											(rcp.getActiveIndex() == rcp.getActiveItemAmount()) ? 2 : 1), 1, true);
+									failure += oee.checkMoveFailure(target, moveAns);
 								}
 								// CHECK SUCCESS -----------------------------------------------
-								if(unfinished == 0) {
+								if(failure == 0) {
 									frameList.add(targetFrame);
-									selectModelAtEnd();
+									logPrecision(target, offset2NJ, 1);
 									break;
 								} else {
-									if(logger) padLog("Joint #" + target + " unsuccessful, randomizing");
-									SP_frame = randomizeFrame(move.toFrame(SP_path), RANDOM_DIST_MIN, RANDOM_DIST_MAX);
-									trial_counter--;
+									if(logger) padLog("J" + target + " unsuccessful, randomizing");
+									logPrecision(target, offset2NJ, failure); // Could be >1 cause
+									INR();
 								}
 							} else {
 								if(logger) padLog("Detection not valid(filtered), randomizing");
-								SP_frame = randomizeFrame(move.toFrame(SP_path), RANDOM_DIST_MIN, RANDOM_DIST_MAX);
-								trial_counter--;
-								unfinished++;
 								oee.addINV(target);
-								mf.blinkRGB("RB", 50);
+								logPrecision(target, offset2NJ, 2);
+								INR();
 								
 							}
 						} else {
 							if(logger) padLog("Detection already visited, randomizing");
-							SP_frame = randomizeFrame(move.toFrame(SP_path), RANDOM_DIST_MIN, RANDOM_DIST_MAX);
-							trial_counter--;
-							unfinished++;
 							oee.addIAE(target);
-							mf.blinkRGB("RB", 50);
+							logPrecision(target, offset2NJ, 3);
+							INR();
 						}
 					} else {
 						if(logger) padLog("Joint #" + target + " not found, randomizing");
-						SP_frame = randomizeFrame(move.toFrame(SP_path), RANDOM_DIST_MIN, RANDOM_DIST_MAX);
-						trial_counter--;
-						unfinished++;
 						oee.addINF(target);
-						mf.blinkRGB("RB", 50);
+						INR();
 					}
-				} while (unfinished > 0);
+				} while (true);
 				oee.endItem(target);
+				selectModelAtEnd(i);
 			}
 			frameList.free();
 			if(loop_joint == 0) {
 				oee.endCycle();
 				oee.saveOEEimage(false);
 				//move.PTPhome(1, true);
-				if(sleep == 2) sleep();
+				if(idle == 2) idle();
 			}
 		}
 	}
 	
-	private void sleep() {
+	private void idle() {
 		move.PTPhome(1, true);
-		padLog("Robot is now in sleep mode,\n" +
-				" - To resume press again SLEEP key\n" +
+		padLog("Robot is now in idle mode,\n" +
+				" - To resume press again SLEEP or edit Remote.json\n" +
 				" - To deselect program, first go to T1, then resume");
 		do {
 			waitMillis(1000);
-		} while(sleep != 0);
+			idle = remote.getIdle();
+		} while(idle != 0);
+		if(idle != remote.getIdle()) remote.setIdle(idle);
+		padLog("Resuming operations...");
 	}
 	
 	void setLogger(boolean logger) {

@@ -31,7 +31,7 @@ public class bkgGRIPPER_KEYS extends RoboticsAPICyclicBackgroundTask {
 		
 	}
 
-	private void configPadKeysGLOBAL() {
+	void configPadKeysGLOBAL() {
 		IUserKeyListener padKeysListener = new IUserKeyListener() {
 			@Override public void onKeyEvent(IUserKey key, UserKeyEvent event) {
 				switch (key.getSlot()) {

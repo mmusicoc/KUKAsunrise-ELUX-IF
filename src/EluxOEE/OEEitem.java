@@ -17,12 +17,12 @@ public class OEEitem implements Serializable {
 	
 	// Intents Not Right	
 	private int INR;	// = IWC + IUR + IAE + INV + INF + INP
-	private int IWC;	//  0 - Intent With Collision
-	private int IUR;	// -1 - Intent Un-Reachable (path planner error)
-	private int IAE;	// -2 - Intent Already Executed (visited)
-	private int INV;	// -3 - Intent Non Valid (filtered)
-	private int INF;	// -4 - Intent Not Found
-	private int INP;	// -5 - Intent Not Precise
+	private int IWC;	// -1 - Intent With Collision
+	private int IUR;	// -2 - Intent Un-Reachable (path planner error)
+	private int IAE;	// -3 - Intent Already Executed (visited)
+	private int INV;	// -4 - Intent Non Valid (filtered)
+	private int INF;	// -5 - Intent Not Found
+	private int INP;	// -6 - Intent Not Precise
 	
 	boolean firstCycle;
 	private double lastCT;

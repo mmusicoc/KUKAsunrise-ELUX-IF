@@ -19,16 +19,17 @@ public class OEEeventLogger {
 	
 	// PROCESS FAILURE MODES ----------------------------------------------
 	
-	public String reasonCode(int reasonCode) {
+	public String reason(int reasonCode) {
 		switch(reasonCode) {
-			case  0: return "Collision";
-			case  1: return "Un-Reachable";
-			case  2: return "Already Executed";
-			case  3: return "Non Valid (filtered)";
-			case  4: return "Not Found";
-			case  5: return "Not Precise";
-			case  6: return "Too Many Intents";
-			case 10:return "Path non existent";
+			case   1: return "OK";	//"Successful";	
+			case  -1: return "IWC"; //"Collision";
+			case -10: return "IUR"; //"Un-Reachable";
+			case -100:return "Path non existent";
+			case   2: return "INV"; //"Non Valid (filtered)";
+			case   3: return "IAE"; //"Already Executed";
+			case   4: return "INF"; //"Not Found";
+			case   5: return "INP"; //"Not Precise";
+			case   6: return "TMI"; //"Too Many Intents";
 			default: return "Other";
 		}
 	}
@@ -40,8 +41,8 @@ public class OEEeventLogger {
 		
 		csv.log(getDateAndTime(), false);
 		csv.log(item, true);
-		csv.log(-code, true);
-		csv.log(reasonCode(code), true); 
+		csv.log(code, true);
+		csv.log(reason(code), true); 
 		csv.eol();
 			
 		csv.close(false);
