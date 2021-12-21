@@ -1,6 +1,6 @@
 package application.Cambrian;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 import EluxAPI.*;
 
 import javax.inject.Inject;
@@ -8,12 +8,12 @@ import javax.inject.Named;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
-public class CambrianCalib extends RoboticsAPIApplication {
+public class _CambrianCalib extends RoboticsAPIApplication {
 	@Inject	@Named("Cambrian") private Tool GripperCambrian;
 	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject private xAPI_Move move = elux.getMove();
 	@Inject private xAPI_Pad pad = elux.getPad();
-	@Inject private xAPI_Cambrian cambrian = new xAPI_Cambrian(elux);
+	@Inject private CambrianAPI cambrian = new CambrianAPI(elux);
 	
 	@Override public void initialize() {
 		move.setTool(GripperCambrian);
@@ -22,7 +22,9 @@ public class CambrianCalib extends RoboticsAPIApplication {
 		move.setJTconds(15.0);
 		move.setBlending(20, 5);
 		move.setHome("/_Cambrian/_Home");
+		if(pad.question("Are you sure you want to recalibrate?", "YES", "NO") == 0)
 		cambrian.init("192.168.2.50", 4000);
+		else dispose();
 	}
 
 	@Override public void run() {
@@ -39,11 +41,11 @@ public class CambrianCalib extends RoboticsAPIApplication {
 		move.PTPhome(1, false);
 		waitMillis(1000);
 		padLog("Starting Multi Pose Calibration ... ");
-		//cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
+		cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
 		for(int i = 1; i <= 14; i++) {
 			move.PTP(basePath + "/P" + i, 1, false);
 			padLog("Calib in P" + i);
-			//cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
+			cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
 			padLog("Finished calib P" + i);
 		}
 		

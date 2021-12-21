@@ -10,8 +10,7 @@ package EluxAPI;
 * int ckeckButtonInput() <p>
 */
 
-import static EluxAPI.Utils.padLog;
-import static EluxAPI.Utils.waitMillis;
+import static EluxUtils.Utils.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

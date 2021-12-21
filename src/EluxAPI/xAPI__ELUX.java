@@ -4,9 +4,9 @@ package EluxAPI;
 * <b> STANDARD API CLASS BY mario.musico@electrolux.com </b> <p>
 */
 
+import EluxOEE.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
@@ -28,7 +28,7 @@ public class xAPI__ELUX extends RoboticsAPIApplication {
 	@Inject private xAPI_Move move = new xAPI_Move(mf, pad);
 	@Inject private xAPI_Compliance comp = new xAPI_Compliance(mf, move);
 	@Inject private xAPI_Cobot cobot = new xAPI_Cobot(mf, plc, move, comp);
-	@Inject private xAPI_OEE oee = new xAPI_OEE();
+	@Inject private OEEmgr oee = new OEEmgr();
 
 	@Inject	public xAPI__ELUX() { }
 	
@@ -47,5 +47,5 @@ public class xAPI__ELUX extends RoboticsAPIApplication {
 	public xAPI_Move getMove() { return move; }
 	public xAPI_Compliance getCompliance() { return comp; }
 	public xAPI_Cobot getCobot() { return cobot; }
-	public xAPI_OEE getOEE() { return oee; }
+	public OEEmgr getOEE() { return oee; }
 }

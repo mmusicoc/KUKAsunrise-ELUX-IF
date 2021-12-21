@@ -1,6 +1,7 @@
 package application.ZMsumpFixation;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
+import static EluxUtils.UMath.*;
 import EluxAPI.*;
 
 import javax.inject.Inject;
@@ -9,19 +10,29 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class ZMsumpFixation extends RoboticsAPIApplication {
-	@Inject	@Named("ZM_Screwer") private Tool ZM_Screwer;
+	@Inject	@Named("ZMSumpFixation") private Tool tool;
 	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject private xAPI_MF	mf = elux.getMF();
 	@Inject private xAPI_Move move = elux.getMove();
 	
+	double avgCT = 0;
+	double CT = 0;
+	int cycleCount = 0;
+	
 	@Override public void initialize() {
-		move.setJTconds(15.0);
+		move.setJTconds(40);
 		move.setGlobalSpeed(1);
-		move.setBlending(10, 5);
-		move.setTool(ZM_Screwer);
-		move.setTCP("/Screwer_TCP");
+		move.setBlending(50, 10);
+		move.setTool(tool);
+		move.setTCP("/ScrewerTCP");
 		move.setHome("/ZMsumpFixation/home");
 		if(!move.PTPhome(1, true)) stop();
+		//move.log(true);
+	}
+	
+	private void screw() {
+		mf.setRGB("B");
+		waitMillis(1500);
 	}
 
 	@Override public void run() {
@@ -69,37 +80,15 @@ public class ZMsumpFixation extends RoboticsAPIApplication {
 			move.LIN("/ZMsumpFixation/via25", speedRetract, true);
 			move.PTP("/ZMsumpFixation/via26", speedTravel, false); // Return home
 			//padLog("HOME");
-			timestamp = (getTimeStamp() - timestamp) / 1000;
-			padLog(timestamp);
-			mf.blinkRGB("RG", 5000);
+			cycleCount++;
+			CT = (getTimeStamp() - timestamp) / 1000;
+			if (cycleCount > 1) avgCT = (avgCT * (cycleCount - 1) + CT) / cycleCount;
+			padLog("Cycles: " + cycleCount + ", Last CT: " + d2s(CT) + ", Avg CT: " + d2s(avgCT));
+			mf.blinkRGB("RG", 4500);
 		} while (true);
 	}
 	
-	private void screw() {
-		mf.setRGB("B");
-		waitMillis(2000);
-	}
-
-	/*private void takePicture() {
-		waitMillis(100);
-		do {
-			waitMillis(10);
-		} while (!plc.gripperIsIdle());
-		
-		plc.closeGripperAsync();
-		plc.openGripperAsync();
-		
-		do {
-			waitMillis(10);
-		} while (plc.gripperIsHolding());
-	}*/
-	
 	private void stop() {
 		padLog("Program stopped");
-		dispose();
-	}
-	
-	@Override public void dispose() { 
-		super.dispose(); 
 	}
 }

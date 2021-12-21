@@ -1,6 +1,6 @@
 package EluxAPI;
 
-import static EluxAPI.Utils.waitMillis;
+import static EluxUtils.Utils.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

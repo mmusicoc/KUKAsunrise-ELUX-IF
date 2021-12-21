@@ -1,6 +1,6 @@
-package utils;
+package application._Common;
 
-import static EluxAPI.Utils.*;
+import static EluxUtils.Utils.*;
 import EluxAPI.*;
 import javax.inject.Inject;
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
@@ -56,7 +56,8 @@ public class _Home extends RoboticsAPIApplication {
 								Math.toRadians(0),	// A5
 								Math.toRadians(90),	// A6
 								Math.toRadians(0))	// A6
-							.setJointVelocityRel(relSpeed)); break;
+							.setJointVelocityRel(relSpeed)); 
+				break;
 			case 3:
 				padLog("Moving to Teach RIGHT");
 				kiwa.move(ptp( 	Math.toRadians(115),// A1
