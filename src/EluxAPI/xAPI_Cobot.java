@@ -76,9 +76,9 @@ public class xAPI_Cobot extends RoboticsAPIApplication {
 		do {
 			mf.setRGB("G");
 			double prevMaxTorque = move.getMaxTorque();
-			move.setJTconds(maxTorque);
+			move.setMaxTorque(maxTorque);
 			pieceFound = (move.LINREL(x, y, z, relSpeed, false) == 1);
-			move.setJTconds(prevMaxTorque);
+			move.setMaxTorque(prevMaxTorque);
 			if (pieceFound) {
 				move.LIN(targetFrame, relSpeed, false);
 				mf.blinkRGB("GB", 400);
@@ -132,7 +132,7 @@ public class xAPI_Cobot extends RoboticsAPIApplication {
 		boolean found = false;
 		mf.blinkRGB("GB", 250);
 		double prevMaxTorque = move.getMaxTorque();
-		move.setJTconds(maxTorque);
+		move.setMaxTorque(maxTorque);
 		mf.setRGB("G");
 		if (move.LINREL(-tolerance, -tolerance, 0, relSpeed, false) == 1) mf.blinkRGB("RB", 200);
 		else { 	mf.blinkRGB("GB", 200); found = true; }
@@ -142,7 +142,7 @@ public class xAPI_Cobot extends RoboticsAPIApplication {
 			else { mf.blinkRGB("RB", 200); found = false; }
 			move.PTP(targetFrame, relSpeed, false);
 		}
-		move.setJTconds(prevMaxTorque);
+		move.setMaxTorque(prevMaxTorque);
 		return found;
 	}
 }

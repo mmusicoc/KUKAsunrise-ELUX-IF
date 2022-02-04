@@ -1,217 +1,198 @@
-[
-  {
-    "PNC": "F3",
-    "items": [
-      {
-        "jointID": 1,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": -114.68,
-          "Y": 582.02,
-          "Z": -444.79,
-          "A": 29.15,
-          "B": 25.8,
-          "C": -52.12
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 2,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": -94.12,
-          "Y": 573.44,
-          "Z": -431.42,
-          "A": 32.34,
-          "B": 28.37,
-          "C": -46.57
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 3,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": -73.57,
-          "Y": 540.8,
-          "Z": -361.27,
-          "A": 28.35,
-          "B": 16.18,
-          "C": -52.26
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 5,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": 92.14,
-          "Y": 506.12,
-          "Z": -233.74,
-          "A": 90.0,
-          "B": 52.92,
-          "C": -18.9
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 6,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": 123.57,
-          "Y": 507.67,
-          "Z": -235.54,
-          "A": 60.24,
-          "B": 61.13,
-          "C": -25.27
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 8,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": 124.26,
-          "Y": 485.01,
-          "Z": -194.33,
-          "A": 29.14,
-          "B": 27.37,
-          "C": -48.7
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 9,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": 137.02,
-          "Y": 480.76,
-          "Z": -179.36,
-          "A": 29.14,
-          "B": 27.37,
-          "C": -50.33
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 10,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": 93.89,
-          "Y": 426.67,
-          "Z": -126.48,
-          "A": 28.41,
-          "B": 26.59,
-          "C": -50.67
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 4,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": 81.26,
-          "Y": 466.86,
-          "Z": -257.53,
-          "A": 92.26,
-          "B": 44.5,
-          "C": -6.97
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      },
-      {
-        "jointID": 7,
-        "enabled": true,
-        "cambrianModel": "Elux_weldedpipes",
-        "NJ": {
-          "X": 136.37,
-          "Y": 475.64,
-          "Z": -231.49,
-          "A": 163.32,
-          "B": 39.29,
-          "C": 46.11
-        },
-        "DO": {
-          "X": 0.1,
-          "Y": 0.2,
-          "Z": 0.3,
-          "A": 0.4,
-          "B": 0.5,
-          "C": 0.6
-        }
-      }
-    ]
-  }
-]
+{
+	"rl": [
+		{
+			"PNC": "F2",
+			"itemOrder": [
+				1,
+				3,
+				4,
+				7
+			],
+			"items": [
+				{
+					"jointID": 1,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": -0.6,
+						"Y": 1.27,
+						"Z": 0.79,
+						"A": 0.14,
+						"B": 0.25,
+						"C": -2.71
+					}
+				},
+				{
+					"jointID": 3,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 1.78,
+						"Y": -0.79,
+						"Z": -2.21,
+						"A": -3.1,
+						"B": 5.93,
+						"C": 0.77
+					}
+				},
+				{
+					"jointID": 4,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 1.68,
+						"Y": 0.13,
+						"Z": -0.75,
+						"A": 0.81,
+						"B": 13.38,
+						"C": -1.41
+					}
+				},
+				{
+					"jointID": 7,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 2.17,
+						"Y": -0.75,
+						"Z": -2.25,
+						"A": 1.17,
+						"B": 0.63,
+						"C": -3.23
+					}
+				}
+			]
+		},
+		{
+			"PNC": "F3",
+			"itemOrder": [
+				1,
+				2,
+				3,
+				5,
+				6,
+				8,
+				9,
+				10
+			],
+			"items": [
+				{
+					"jointID": 1,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 2,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 3,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 4,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 5,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 6,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 7,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 8,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 9,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				},
+				{
+					"jointID": 10,
+					"cambrianModel": "Elux_weldedpipes",
+					"DO": {
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"A": 0,
+						"B": 0,
+						"C": 0
+					}
+				}
+			]
+		}
+	]
+}

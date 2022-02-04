@@ -1,5 +1,6 @@
 {
-  "idle": true,
+  "idle": 2,
+  "logger": true,
   "speed": 0.25,
-  "prog": "_CambrianApp"
+  "accel": 1.0
 }

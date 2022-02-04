@@ -22,7 +22,7 @@ public class PickItApp extends RoboticsAPIApplication {
 	boolean rot180 = false;
 	
 	@Override public void initialize() {
-		move.setJTconds(15.0);
+		move.setMaxTorque(15.0);
 		move.setGlobalSpeed(1);
 		move.setBlending(20, 5);
 		move.setTool(GripperPickit);

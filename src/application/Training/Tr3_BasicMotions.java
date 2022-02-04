@@ -15,7 +15,7 @@ public class Tr3_BasicMotions extends RoboticsAPIApplication {
 	
 	@Override public void initialize() {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
-		move.setJTconds(10.0);
+		move.setMaxTorque(10.0);
 		move.setGlobalSpeed(1);
 		move.setTool(flange);
 	}

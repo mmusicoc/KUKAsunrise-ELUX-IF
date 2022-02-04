@@ -1,4 +1,4 @@
-package application.DWvision;
+package application.QCvision;
 
 import static EluxUtils.Utils.*;
 import EluxAPI.*;
@@ -8,14 +8,14 @@ import javax.inject.Named;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
-public class DWvisionPOC extends RoboticsAPIApplication {
+public class DWwiringInspection extends RoboticsAPIApplication {
 	@Inject	@Named("GripperCognex") 	private Tool GripperCognex;
 	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject private xAPI_PLC plc = elux.getPLC();
 	@Inject private xAPI_Move move = elux.getMove();
 	
 	@Override public void initialize() {
-		move.setJTconds(15.0);
+		move.setMaxTorque(15.0);
 		move.setGlobalSpeed(1);
 		move.setBlending(20, 5);
 		move.setTool(GripperCognex);

@@ -21,7 +21,7 @@ public class Tr1_FSM extends RoboticsAPIApplication {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
 		state = States.state_A;
 		move.setGlobalSpeed(0.25);
-		move.setJTconds(10.0);
+		move.setMaxTorque(10.0);
 	}
 
 	@Override public void run() {

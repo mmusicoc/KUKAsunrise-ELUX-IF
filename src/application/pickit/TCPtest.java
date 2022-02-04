@@ -15,7 +15,7 @@ public class TCPtest extends RoboticsAPIApplication {
 	
 	@Override public void initialize() {
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
-		move.setJTconds(10.0);
+		move.setMaxTorque(10.0);
 		move.setGlobalSpeed(1);
 		move.setTool(GripperPickit);
 		move.setTCP("/Flange");

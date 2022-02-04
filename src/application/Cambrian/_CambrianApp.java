@@ -50,15 +50,15 @@ public class _CambrianApp extends RoboticsAPIApplication {
 					tool, "/TCP",				// Tool, TCP
 					remote.getSpeed(), 1.0,		// Relative speed and acceleration
 					20.0, 5.0,					// Blending
-					5.0, true,					// Collision detection (Nm), response
+					5.0, true,					// Collision detection (Nm), auto release
 					false);						// Logging
 		move.setA7Speed(1); 					// Accelerate J7 if bottleneck
 		
-		// INIT MOVE ---------------------------------------------
+		// INIT RECIPE -------------------------------------------
 		rcp.init(pad, p.RECIPE_FILENAME, false);
 		rcp.fetchAllRecipes();
-		//rcp.selectRecipePNC("F2");
-		rcp.askPNC();
+		rcp.selectRecipePNC("F3");
+		//rcp.askPNC();
 		
 		SP_pathroot = "/_Cambrian/" + rcp.getActivePNC() + "/ScanPoints/";
 		NJ_pathroot = "/_Cambrian/" + rcp.getActivePNC() + "/NominalJoints/";

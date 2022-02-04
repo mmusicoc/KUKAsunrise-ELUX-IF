@@ -16,7 +16,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 	@Inject private xAPI_Move move = elux.getMove();
 	
 	@Override public void initialize() {
-		move.setJTconds(15.0);
+		move.setMaxTorque(15.0);
 		move.setGlobalSpeed(1);
 		move.setBlending(20, 5);
 		move.setTool(GripperSpring);

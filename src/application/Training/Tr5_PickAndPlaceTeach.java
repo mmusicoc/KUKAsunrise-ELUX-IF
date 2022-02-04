@@ -56,7 +56,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		move.setTool(gripper);
 		move.setTCP("/GripperCenter");
 		move.setGlobalSpeed(0.25);
-		move.setJTconds(10.0);					
+		move.setMaxTorque(10.0);					
 	}
 
 	@Override public void run() {
@@ -232,7 +232,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTconds(maxTorque);
+							move.setMaxTorque(maxTorque);
 							break;
 					}
 				}

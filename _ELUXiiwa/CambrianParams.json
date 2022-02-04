@@ -1,0 +1,20 @@
+{
+  "REMOTE_FILENAME": "Remote.json",
+  "OEE_OBJ_FILENAME": "OEE_Object.txt",
+  "OEE_STATS_FILENAME": "OEE_Stats.csv",
+  "OEE_EVENTS_FILENAME": "OEE_Failure_Log.csv",
+  "PRECISION_FILENAME": "Cambrian_Precision_Log.csv",
+  "RECIPE_FILENAME": "CambrianRecipes.json",
+  "SP_PATHROOT": "/_Cambrian/F2scanPoints/",
+  "NJ_PATHROOT": "/_Cambrian/F2nominalJoints/",
+  "APPROACH_SPEED": 0.4,
+  "FILTER_DIST_IAE": 15,
+  "FILTER_DIST_INV": 150,
+  "FILTER_ANG_INV": 150,
+  "MAX_TRIALS": 10,
+  "RANDOM_DIST_MIN": 8.0,
+  "RANDOM_DIST_MAX": 16.0,
+  "APPROACH_DIST": 50,
+  "EXIT_DIST": 50,
+  "TOTAL_JOINTS": 10
+}

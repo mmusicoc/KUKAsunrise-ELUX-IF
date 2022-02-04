@@ -9,27 +9,29 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class _CambrianCalib extends RoboticsAPIApplication {
-	@Inject	@Named("Cambrian") private Tool GripperCambrian;
+	@Inject	@Named("Cambrian") private Tool tool;
 	@Inject private xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject private xAPI_Move move = elux.getMove();
 	@Inject private xAPI_Pad pad = elux.getPad();
 	@Inject private CambrianAPI cambrian = new CambrianAPI(elux);
 	
 	@Override public void initialize() {
-		move.setTool(GripperCambrian);
-		move.setTCP("/TCP");
-		move.setGlobalSpeed(1);
-		move.setJTconds(15.0);
-		move.setBlending(20, 5);
-		move.setHome("/_Cambrian/_Home");
-		if(pad.question("Are you sure you want to recalibrate?", "YES", "NO") == 0)
+		// INIT MOVE ---------------------------------------------
+		move.init("/_Cambrian/_Home",			// Home path
+					tool, "/TCP",				// Tool, TCP
+					1, 1.0,						// Relative speed and acceleration
+					20.0, 5.0,					// Blending
+					15.0, true,					// Collision detection (Nm), auto release
+					false);						// Logging
+				
 		cambrian.init("192.168.2.50", 4000);
-		else dispose();
 	}
 
 	@Override public void run() {
 		try {
-			calibrate("/_Cambrian/Calib");		// Robot mounted camera
+			if(pad.question("Are you sure you want to recalibrate?", "YES", "NO") == 0) {
+				calibrate("/_Cambrian/Calib");		// Robot mounted camera
+			} else dispose();	
 		} catch (InterruptedException e) {
 			padErr("Unable to perform requested callibration.");
 			e.printStackTrace();
@@ -44,7 +46,7 @@ public class _CambrianCalib extends RoboticsAPIApplication {
 		cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
 		for(int i = 1; i <= 14; i++) {
 			move.PTP(basePath + "/P" + i, 1, false);
-			padLog("Calib in P" + i);
+			//padLog("Calib in P" + i);
 			cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
 			padLog("Finished calib P" + i);
 		}

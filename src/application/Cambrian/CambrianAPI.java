@@ -30,7 +30,7 @@ public class CambrianAPI {
     
 	// INIT METHODS -------------------------------------------------------
 	public boolean init(String IP, int port) { 
-		this.socket = new TCPsocket_client(IP, port); 
+		this.socket = new TCPsocket_client(IP, port, '\n');
 		sendRequest("PING", "");
 		if (cambrian_success) { padLog("Connection with Cambrian established"); return true; }
 		else padLog("Unable to communicate with Cambrian, stopping application.");
@@ -109,7 +109,7 @@ public class CambrianAPI {
                 msg = msg.substring(msg.indexOf(">>") + 2);        
                 cambrian_reply = msg.substring(msg.indexOf("<<") + 2, msg.indexOf(">>"));
                 
-                //padLog("Cambrian success: " + cambrianSuccess);
+                //padLog("Cambrian success: " + cambrian_success);
                 if(ans == "") padLog("Cambrian message type: " + cambrian_msg_type);
                 //if(cambrianReply != "") padLog("Reply: " + cambrianReply);
                 return true;
@@ -154,4 +154,5 @@ class Client_Socket {
 			return data.toString();
 		} catch (IOException e) { System.out.println(e); return "ERR";}
 	}
-} */
+} 
+*/

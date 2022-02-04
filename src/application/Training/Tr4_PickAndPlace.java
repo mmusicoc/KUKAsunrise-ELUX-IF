@@ -48,7 +48,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 		state = States.home;
 		move.setHome("/_HOME/_2_Teach_CENTRAL");
 		move.setGlobalSpeed(0.25);
-		move.setJTconds(10.0);					
+		move.setMaxTorque(10.0);					
 	}
 
 	@Override public void run() {
@@ -197,7 +197,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTconds(maxTorque);
+							move.setMaxTorque(maxTorque);
 							break;
 					}
 				}

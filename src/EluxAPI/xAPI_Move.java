@@ -57,35 +57,37 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		this.mf = _mf;
 		this.pad = _pad;
 		
-		this.setGlobalSpeed(0.25);
-		bRadius = bAngle = 0;
-		
 		logger = false;
+		
+		this.setGlobalSpeed(0.25);
+		this.setGlobalAccel(0.25);
+		bRadius = bAngle = 0;
 		
 		//collisionDetection = true;
 		release = true;
 		releaseAuto = false;
 		forceEnd = false;
 		releaseDist = 10;
-		maxTorque = 5;
+		
+		this.setMaxTorque(5);
+		this.setReleaseAuto(false);
 	}
 	
 	public void init(String home,
 						Tool tool, String tcp,
 						double globalSpeed, double globalAccel,
 						double blendingRadius, double blendingAngle,
-						double JTconditions, boolean releaseAuto,
+						double maxTorque, boolean releaseAuto,
 						boolean log) {
+		this.setLogger(log);
 		this.setHome(home);
 		this.setTool(tool);
 		this.setTCP(tcp);
 		this.setGlobalSpeed(globalSpeed, true);
 		this.setGlobalAccel(globalAccel, false);
 		this.setBlending(blendingRadius, blendingAngle);
-		this.setJTconds(JTconditions);
-		this.setReleaseAuto(releaseAuto);
-		this.setLogger(log);
-		
+		this.setMaxTorque(maxTorque);
+		this.setReleaseAuto(releaseAuto);	
 	}
 
 	// GETTERS --------------------------------------------------------------------------		
@@ -114,8 +116,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 											getFlange()).copyWithRedundancy(); }
 	public Frame getTCPpos() {
 		Frame tcpPos = new Frame();
-		Frame flangePos = kiwa.getCurrentCartesianPosition(kiwa.
-				getFlange()).copyWithRedundancy();
+		Frame flangePos = getFlangePos();
 		tcpPos.setParent(flangePos, false);
 		tcpPos.setTransformationFromParent(Transformation.ofRad(
 				tcp.getX(), tcp.getY(), tcp.getZ(),
@@ -166,7 +167,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	//public void setCollisionDetection(boolean _cd) { collisionDetection = _cd; }
 	public void setForceEnd(boolean _forceEnd) { forceEnd = _forceEnd; }
 	
-	public void setJTconds(double maxTorque){
+	public void setMaxTorque(double maxTorque){
 		this.maxTorque = maxTorque;
 		JointTorqueCondition JTCond[] = new JointTorqueCondition[8];
 		JTCond[1] = new JointTorqueCondition(JointEnum.J1, -maxTorque, maxTorque);	
@@ -405,10 +406,10 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		boolean fullTwist;
 		this.LINREL(0, 0, 0, minAngle, 0, 0, relSpeed, false);
 		double prevMaxTorque = this.getMaxTorque();
-		this.setJTconds(maxTorque);
+		this.setMaxTorque(maxTorque);
 		fullTwist = (this.LINREL(0, 0, 0, maxAngle-minAngle, 0, 0, 
 									relSpeed, false) == 1 ? true : false);
-		this.setJTconds(prevMaxTorque);
+		this.setMaxTorque(prevMaxTorque);
 		if (fullTwist) mf.blinkRGB("GB", 500);
 		return fullTwist;
 	}

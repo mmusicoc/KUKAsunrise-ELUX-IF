@@ -21,7 +21,7 @@ public class Tr2_CollisionDetection extends RoboticsAPIApplication {
 	@Override public void initialize() {
 		move.setTool(gripper);
 		double maxTorque = pad.askTorque();
-		move.setJTconds(maxTorque);
+		move.setMaxTorque(maxTorque);
 		move.setGlobalSpeed(1);
 	}
 
