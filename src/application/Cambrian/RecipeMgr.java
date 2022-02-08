@@ -75,9 +75,9 @@ public class RecipeMgr extends EluxRecipe.RecipeMgr<Joint> {
 	public int getJointID() { return activeJoint.getID(); }
 	public String getCurrentCambrianModel() { return activeJoint.getModel(); }
 	public String getNextCambrianModel(int orderIndex) {
-		int size = getTotItemAmount();
+		int size = getActiveItemAmount();
 		if (orderIndex < 0 || orderIndex >= size) { 
-			padErr("JointID not valid"); return "ERR"; }
+			padErr("Joint Order Item not valid"); return "ERR"; }
 		else if (orderIndex == size - 1) 
 			 return activeRcp.items.get(findJointIndex(getOItemID(0))).getModel();
 		else return activeRcp.items.get(findJointIndex(getOItemID(orderIndex + 1))).getModel();

@@ -233,6 +233,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 								// CHECK SUCCESS -----------------------------------------------
 								if(failure == 0) {
 									frameList.add(targetFrame);
+									if(logger) padLog("J" + target + "successful");
 									logPrecision(target, offset2NJ, 1);
 									break;
 								} else {
