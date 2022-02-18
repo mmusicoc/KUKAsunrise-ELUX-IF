@@ -1,10 +1,13 @@
 package application._Common;
 
-import static EluxUtils.Utils.*;
+//import static EluxUtils.Utils.*;
 import EluxAPI.*;
 
 import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
+
+import application.Cambrian._CambrianApp;
+
 import com.kuka.generated.ioAccess.MediaFlangeIOGroup;
 import com.kuka.generated.ioAccess.Plc_inputIOGroup;
 import com.kuka.generated.ioAccess.Plc_outputIOGroup;
@@ -22,7 +25,7 @@ public class bkgGRIPPER_KEYS extends RoboticsAPICyclicBackgroundTask {
 	
 	@Override public void initialize() {
 		initializeCyclic(0, 500, TimeUnit.MILLISECONDS,	CycleBehavior.BestEffort);
-		//configPadKeysGLOBAL();
+		configPadKeysGLOBAL();
 		//padLog("App switcher started, access it pressing the key");
 	}
 
@@ -42,7 +45,12 @@ public class bkgGRIPPER_KEYS extends RoboticsAPICyclicBackgroundTask {
 						plc.closeGripper();
 						break;
 					case 2:
-						appSwitcher();
+					try {
+						getTaskManager().getTask(_CambrianApp.class).stopAllInstances();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 						break;
 					case 3:
 						break;
@@ -50,9 +58,9 @@ public class bkgGRIPPER_KEYS extends RoboticsAPICyclicBackgroundTask {
 			}
 		};
 		
-		pad.keyBarSetup(padKeysListener, "GLOBAL", "OPEN gripper", "CLOSE gripper", "Switch app", " ");
+		pad.keyBarSetup(padKeysListener, "GLOBAL", "OPEN gripper", "CLOSE gripper", "KILL CAMBRIAN", " ");
 	}
-	
+	/*
 	private void appSwitcher() {
 		int promptAns = pad.question("Which program do you want to run?", "Cancel", "Sleep", "Home", "Tr1", "Tr2", "Tr3", "Tr4", "Tr5");
 		padLog(promptAns);
@@ -78,4 +86,5 @@ public class bkgGRIPPER_KEYS extends RoboticsAPICyclicBackgroundTask {
 				break;
 		}
 	}
+	*/
 }

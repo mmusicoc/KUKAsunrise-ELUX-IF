@@ -1,5 +1,5 @@
 {
-  "idle": 2,
+  "idle": 0,
   "logger": true,
   "speed": 0.25,
   "accel": 1.0

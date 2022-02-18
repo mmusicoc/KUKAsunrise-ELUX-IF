@@ -73,6 +73,19 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		this.setReleaseAuto(false);
 	}
 	
+	/**
+	 * @param home String
+	 * @param tool Tool
+	 * @param tcp String
+	 * @param globalSpeed float 0<x<=1
+	 * @param globalAccel float 0<x<=1
+	 * @param blendingRadius float > 0 (mm)
+	 * @param blendingAngle float > 0 (degrees)
+	 * @param maxTorque float > 0 (Nm)
+	 * @param releaseAuto boolean
+	 * @param log boolean
+	 */
+	
 	public void init(String home,
 						Tool tool, String tcp,
 						double globalSpeed, double globalAccel,

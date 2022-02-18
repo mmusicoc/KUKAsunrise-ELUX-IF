@@ -1,6 +1,5 @@
 package EluxUtils;
 
-//import static EluxUtils.Utils.*;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -8,22 +7,18 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class TCPsocket_client {
-	//private String IP;
-	//private int port;
 	private Socket socket;
 	InputStreamReader reader;
     DataOutputStream out;
     char endchar;
 
-	public TCPsocket_client(String IP, int port, char endchar) { 
-		//this.IP = IP; 
-		//this.port = port; 
+	public TCPsocket_client(String IP, int port, int timeoutAns, char endchar) { 
 		this.endchar = endchar;
 		
 		try{
 			socket = new Socket();
 			socket.connect(new InetSocketAddress(IP,port), 1000);
-			socket.setSoTimeout(5*1000);
+			socket.setSoTimeout(timeoutAns);
 			
 			out = new DataOutputStream(socket.getOutputStream());
 			reader = new InputStreamReader(socket.getInputStream());

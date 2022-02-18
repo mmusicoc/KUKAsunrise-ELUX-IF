@@ -30,7 +30,7 @@ public class CambrianAPI {
     
 	// INIT METHODS -------------------------------------------------------
 	public boolean init(String IP, int port) { 
-		this.socket = new TCPsocket_client(IP, port, '\n');
+		this.socket = new TCPsocket_client(IP, port, 15000, '\n');
 		sendRequest("PING", "");
 		if (cambrian_success) { padLog("Connection with Cambrian established"); return true; }
 		else padLog("Unable to communicate with Cambrian, stopping application.");

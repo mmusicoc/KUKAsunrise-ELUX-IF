@@ -53,7 +53,7 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 	//	SP_PATHROOT = "/_Cambrian/F2scanPoints/";
 	//	NJ_PATHROOT = "/_Cambrian/F2nominalJoints/";
 		
-		rcp.selectRecipePNC(PNC);
+		rcp.selectRecipeRCP(PNC);
 		//newRecipe();
 		
 		DOtoCSV();

@@ -57,6 +57,11 @@ public class xAPI_MF {
 		MFio.setLEDGreen(g);
 		MFio.setLEDBlue(b);
 	}
+	
+	/**
+	 * @param color
+	 * String R,G,B,RG,RB,GB,RGB,OFF
+	 */
 
 	public void setRGB(String color) {
 		if (color.equalsIgnoreCase("R")) this.setRGB(true,false,false);

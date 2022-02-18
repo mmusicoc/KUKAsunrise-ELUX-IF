@@ -39,50 +39,50 @@ public class RecipeMgr<I> {
 	}
 	
 	// GETTERS ---------------------------------------------------------------
-	public int getPNCamount() { return db.rl.size(); }
+	public int getRCPamount() { return db.rl.size(); }
 	public int getTotItemAmount() { return activeRcp.items.size(); }
 	public int getActiveItemAmount() { return activeRcp.itemOrder.size(); }
-	public String getActivePNC() { return activeRcp.getPNC(); }
+	public String getActiveRCP() { return activeRcp.getRCP(); }
 	public int getActiveIndex() { return activeIndex; }
 	
-	public String[] getLastPNCs() {
-		int listSize = (getPNCamount() > 10) ? 10 : getPNCamount();
-		String[] PNClist = new String[listSize + 2];
+	public String[] getLastRCPs() {
+		int listSize = (getRCPamount() > 10) ? 10 : getRCPamount();
+		String[] RCPlist = new String[listSize + 2];
 		for(int i = 0; i < listSize; i++) {
-			PNClist[i + 2] = db.rl.get(i).getPNC();
+			RCPlist[i + 2] = db.rl.get(i).getRCP();
 		}
-		PNClist[0] = "CANC";
-		PNClist[1] = "TYPE";
-		return PNClist;
+		RCPlist[0] = "CANC";
+		RCPlist[1] = "TYPE";
+		return RCPlist;
 	}
 	
-	public String getRecipeToString(String PNC) {
-		Recipe<I> recipe = getRecipe(PNC);
+	public String getRecipeToString(String RCP) {
+		Recipe<I> recipe = getRecipe(RCP);
 		if (recipe == null) return "Nonexistent";
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String json = gson.toJson(recipe);
 		return json;
 	}
 	
-	public Recipe<I> getRecipe(String PNC) {
-		if(selectRecipePNC(PNC)) return activeRcp;
+	public Recipe<I> getRecipe(String RCP) {
+		if(selectRecipeRCP(RCP)) return activeRcp;
 		else return null;
 	}
 	
 	// RECIPE SELECTOR -------------------------------------------------------
-	public int askPNC() {
-		int ans = pad.question("Which PNC do you want to select?", getLastPNCs());
+	public int askRCP() {
+		int ans = pad.question("Which ANC do you want to select?", getLastRCPs());
 		switch(ans) {
 			case 0:
 				padLog("Operation cancelled");
 				return -1;
 			case 1:
-				String PNC = pad.askName("PNC", "", true, false);
-				if(!selectRecipePNC(PNC)) {
-					switch(pad.question("Do you want to create a new recipe for PNC=" +
-							PNC, "YES", "NO, CANCEL")) {
+				String RCP = pad.askName("ANC", "", true, false);
+				if(!selectRecipeRCP(RCP)) {
+					switch(pad.question("Do you want to create a new recipe for ANC=" +
+							RCP, "YES", "NO, CANCEL")) {
 						case 0:
-							newRecipe(PNC);
+							newRecipe(RCP);
 							return 0;
 						default:
 							padLog("Operation cancelled");
@@ -96,52 +96,52 @@ public class RecipeMgr<I> {
 		return 1;
 	}
 	
-	public boolean selectRecipePNC(String PNC) {
-		int index = findRecipeIndex(PNC);
+	public boolean selectRecipeRCP(String RCP) {
+		int index = findRecipeIndex(RCP);
 		if(index != -1) return selectRecipeIndex(index);
 		else {
-			padLog("Recipe for PNC=" + PNC + " not found, creating it...");
-			newRecipe(PNC);
+			padLog("Recipe for ANC=" + RCP + " not found, creating it...");
+			newRecipe(RCP);
 			return false;
 		}
 	}
 	
 	public boolean selectRecipeIndex(int index) {
-		if(index >= 0 && index < getPNCamount()) {
+		if(index >= 0 && index < getRCPamount()) {
 			activeRcp = db.rl.get(index);
-			if(logger) padLog("PNC=" + activeRcp.getPNC() + " has been selected");
+			if(logger) padLog("ANC=" + activeRcp.getRCP() + " has been selected");
 			//saveActiveRecipe(false);
 			return true;
 		} else padErr("Index out of bound");
 		return false;
 	}
 	
-	public int findRecipeIndex(String PNC) {
-		for(int i = 0; i < getPNCamount(); i++) {
-			if(db.rl.get(i).getPNC().equals(PNC)) return i;
+	public int findRecipeIndex(String RCP) {
+		for(int i = 0; i < getRCPamount(); i++) {
+			if(db.rl.get(i).getRCP().equals(RCP)) return i;
 		}
 		return -1;
 	}
 	
-	public void fetchAllRecipes() { db = json.fetchData(db); }
+	public void fetchAllRecipes() { db = json.fetchData(db); } // OVERRIDED
 	
 	// SETTERS ---------------------------------------------------------------
 	public void setLogger(boolean logger) { this.logger = logger; }
 	
-	public void newRecipe(String PNC) {
+	public void newRecipe(String RCP) {
 		activeRcp = new Recipe<I>();
-		activeRcp.setPNC(PNC);
+		activeRcp.setRCP(RCP);
 		//saveActiveRecipe(false);
 	}
 	
 	public void saveActiveRecipe(boolean logger) {
 		fetchAllRecipes();
-		int PNCindex = findRecipeIndex(activeRcp.getPNC());
-		if(PNCindex != -1) db.rl.remove(PNCindex);
+		int RCPindex = findRecipeIndex(activeRcp.getRCP());
+		if(RCPindex != -1) db.rl.remove(RCPindex);
 		db.rl.add(0, activeRcp);
 		if(json.saveData(db) & logger){
-			String notice = "Recipe for PNC=" + activeRcp.getPNC() + " has been ";
-			notice = notice + ((PNCindex == -1)?"added.":"updated.");
+			String notice = "Recipe for ANC=" + activeRcp.getRCP() + " has been ";
+			notice = notice + ((RCPindex == -1)?"added.":"updated.");
 			padLog(notice);
 		}
 	}

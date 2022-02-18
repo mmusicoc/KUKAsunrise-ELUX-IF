@@ -3,12 +3,12 @@ package EluxRecipe;
 import java.util.ArrayList;
 
 public class Recipe<I> {
-	private String PNC;
+	private String RCP;
 	public ArrayList<Integer> itemOrder = new ArrayList<Integer>();
 	public ArrayList<I> items = new ArrayList<I>();
 	
 	public Recipe() { }	// CONSTRUCTOR
 	
-	public String getPNC() { return this.PNC; }
-	public void setPNC(String _PNC) { this.PNC = _PNC; }
+	public String getRCP() { return this.RCP; }
+	public void setRCP(String _RCP) { this.RCP = _RCP; }
 }
