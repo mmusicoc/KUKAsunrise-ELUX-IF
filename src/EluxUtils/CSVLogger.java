@@ -11,15 +11,17 @@ import java.io.IOException;
 public class CSVLogger {
 	private String filename;
 	private boolean append;
+	private char sepChar;
 	private String header = new String("");
 	private FileWriter fw;
 	
 	
 	public CSVLogger() { } // CONSTRUCTOR ------------------------
 	
-	public void init(String filename, boolean append) {
+	public void init(String filename, boolean append, char sepChar) {
 		this.filename = filename;
 		this.append = append;
+		this.sepChar = sepChar;
 	}
 	
 	public void header(String _header) { this.header = new String(_header); }
@@ -84,9 +86,9 @@ public class CSVLogger {
 		}
 	}
 	
-	public boolean log(String msg, boolean commaBefore) {
+	public boolean log(String msg, boolean sepCharBefore) {
 		try {
-			if(commaBefore) fw.append(",");
+			if(sepCharBefore) fw.append(sepChar);
 			fw.append(msg);
 			return true;
 		} catch (IOException e) {
@@ -95,11 +97,11 @@ public class CSVLogger {
 		}
 	}
 	
-	public boolean log(int value, boolean commaBefore) {
-		return log(String.valueOf(value), commaBefore);
+	public boolean log(int value, boolean sepCharBefore) {
+		return log(String.valueOf(value), sepCharBefore);
 	}
 	
-	public boolean log(double value, boolean commaBefore) {
-		return log(d2s(value), commaBefore);
+	public boolean log(double value, boolean sepCharBefore) {
+		return log(d2s(value), sepCharBefore);
 	}
 }

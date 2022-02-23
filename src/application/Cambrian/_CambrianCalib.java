@@ -21,7 +21,7 @@ public class _CambrianCalib extends RoboticsAPIApplication {
 					tool, "/TCP",				// Tool, TCP
 					1, 1.0,						// Relative speed and acceleration
 					20.0, 5.0,					// Blending
-					15.0, true,					// Collision detection (Nm), auto release
+					15.0, 0,					// Collision detection (Nm), release mode
 					false);						// Logging
 				
 		cambrian.init("192.168.2.50", 4000);
@@ -37,6 +37,7 @@ public class _CambrianCalib extends RoboticsAPIApplication {
 			e.printStackTrace();
 		}
 		pad.info("Calibration finished.");
+		cambrian.end();
 	}
 	
 	public void calibrate(String basePath) throws InterruptedException {

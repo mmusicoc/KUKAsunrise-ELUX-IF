@@ -1,17 +1,15 @@
 {
 	"rl": [
 		{
-			"RCP": "F2",
+			"RCP": "Example",
 			"itemOrder": [
 				1,
-				3,
-				4,
-				7
+				2
 			],
 			"items": [
 				{
 					"jointID": 1,
-					"cambrianModel": "Elux_weldedpipes",
+					"jointType": "J",
 					"DO": {
 						"X": -0.6,
 						"Y": 1.27,
@@ -22,8 +20,8 @@
 					}
 				},
 				{
-					"jointID": 3,
-					"cambrianModel": "Elux_weldedpipes",
+					"jointID": 2,
+					"jointType": "C",
 					"DO": {
 						"X": 1.78,
 						"Y": -0.79,
@@ -31,30 +29,6 @@
 						"A": -3.1,
 						"B": 5.93,
 						"C": 0.77
-					}
-				},
-				{
-					"jointID": 4,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 1.68,
-						"Y": 0.13,
-						"Z": -0.75,
-						"A": 0.81,
-						"B": 13.38,
-						"C": -1.41
-					}
-				},
-				{
-					"jointID": 7,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 2.17,
-						"Y": -0.75,
-						"Z": -2.25,
-						"A": 1.17,
-						"B": 0.63,
-						"C": -3.23
 					}
 				}
 			]
@@ -74,123 +48,43 @@
 			"items": [
 				{
 					"jointID": 1,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 2,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 3,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 4,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 5,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 6,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 7,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 8,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 9,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 10,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				}
 			]
 		},
@@ -207,76 +101,232 @@
 			"items": [
 				{
 					"jointID": 1,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 2,
-					"cambrianModel": "Elux_crimp6",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "C"
 				},
 				{
 					"jointID": 3,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 4,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 5,
-					"cambrianModel": "Elux_weldedpipes",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "J"
 				},
 				{
 					"jointID": 6,
-					"cambrianModel": "Elux_crimp6",
-					"DO": {
-						"X": 0,
-						"Y": 0,
-						"Z": 0,
-						"A": 0,
-						"B": 0,
-						"C": 0
-					}
+					"jointType": "C"
 				}
+			]
+		},
+		{
+			"RCP": "F5",
+			"itemOrder": [
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10
+			],
+			"items": [
+				{
+					"jointID": 1,
+					"jointType": "J"
+				},
+				{
+					"jointID": 2,
+					"jointType": "J"
+				},
+				{
+					"jointID": 3,
+					"jointType": "J"
+				},
+				{
+					"jointID": 4,
+					"jointType": "J"
+				},
+				{
+					"jointID": 5,
+					"jointType": "J"
+				},
+				{
+					"jointID": 6,
+					"jointType": "J"
+				},
+				{
+					"jointID": 7,
+					"jointType": "J"
+				},
+				{
+					"jointID": 8,
+					"jointType": "J"
+				},
+				{
+					"jointID": 9,
+					"jointType": "C"
+				},
+				{
+					"jointID": 10,
+					"jointType": "C"
+				}
+			]
+		},
+		{
+			"RCP": "F6",
+			"itemOrder": [
+				1,
+				2,
+				4,
+				5,
+				7,
+				6,
+				3
+			],
+			"items": [
+				{
+					"jointID": 1,
+					"jointType": "J"
+				},
+				{
+					"jointID": 2,
+					"jointType": "J"
+				},
+				{
+					"jointID": 3,
+					"jointType": "C"
+				},
+				{
+					"jointID": 4,
+					"jointType": "J"
+				},
+				{
+					"jointID": 5,
+					"jointType": "J"
+				},
+				{
+					"jointID": 6,
+					"jointType": "C"
+				},
+				{
+					"jointID": 7,
+					"jointType": "J"
+				},
+				{
+					"jointID": 8,
+					"jointType": "J"
+				},
+				{
+					"jointID": 9,
+					"jointType": "J"
+				}
+			]
+		},
+		{
+			"RCP": "F7",
+			"itemOrder": [
+				1,
+				2,
+				3,
+				5,
+				6,
+				7,
+				8,
+				10,
+				9,
+				4
+			],
+			"items": [
+				{
+					"jointID": 1,
+					"jointType": "J"
+				},
+				{
+					"jointID": 2,
+					"jointType": "J"
+				},
+				{
+					"jointID": 3,
+					"jointType": "J"
+				},
+				{
+					"jointID": 4,
+					"jointType": "C"
+				},
+				{
+					"jointID": 5,
+					"jointType": "J"
+				},
+				{
+					"jointID": 6,
+					"jointType": "J"
+				},
+				{
+					"jointID": 7,
+					"jointType": "J"
+				},
+				{
+					"jointID": 8,
+					"jointType": "J"
+				},
+				{
+					"jointID": 9,
+					"jointType": "C"
+				}
+				,
+				{
+					"jointID": 10,
+					"jointType": "J"
+				}
+			]
+		},
+		{
+			"RCP": "F8",
+			"itemOrder": [
+				1,
+				3,
+				4,
+				5,
+				6,
+				2
+			],
+			"items": [
+				{
+					"jointID": 1,
+					"jointType": "J"
+				},
+				{
+					"jointID": 2,
+					"jointType": "C"
+				},
+				{
+					"jointID": 3,
+					"jointType": "J"
+				},
+				{
+					"jointID": 4,
+					"jointType": "J"
+				},
+				{
+					"jointID": 5,
+					"jointType": "J"
+				},
+				{
+					"jointID": 6,
+					"jointType": "C"
+				}			
+				
+				
 			]
 		}
 	]

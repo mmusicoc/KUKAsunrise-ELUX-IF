@@ -26,21 +26,20 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 	int[] JOINT_SEQUENCE = {1,2,3,5,6,7,8,9,10,4,7};
 	String SP_PATHROOT = "/_Cambrian/F3scanPoints/";
 	String NJ_PATHROOT = "/_Cambrian/F3nominalJoints/";
-	String cambrianModel = "Elux_weldedpipes";
 	
 	@Override public void initialize() {
 		move.init("/_Cambrian/_Home",		// Home path
 				tool, "/TCP",				// Tool, TCP
 				1.0, 1.0,					// Relative speed and acceleration
 				20.0, 5.0,					// Blending
-				15.0, true,					// Collision detection (Nm), response
+				15.0, 0,					// Collision detection (Nm), release mode
 				false);						// Logging
 		//move.PTPhome(1, false);
 		//cambrian.init("192.168.2.50", 4000);
 		rcp.init(pad, RECIPE_FILENAME, false);
 		rcp.fetchAllRecipes();
 		
-		csv.init("CambrianDC.csv", false);
+		//csv.init("CambrianDC.csv", false, ';');
 		//selectPNC();
 	}
 
@@ -106,7 +105,7 @@ public class _CambrianTeach extends RoboticsAPIApplication {
 	void newRecipe() {
 		for (int i = 1; i <= JOINT_SEQUENCE.length; i++) {
 			rcp.newJoint(JOINT_SEQUENCE[i - 1]);
-			rcp.setModel(cambrianModel);
+			rcp.setJointType('J');
 			//rcp.setTarget(move.toFrame(NJ_PATHROOT + "P" + JOINT_SEQUENCE[i - 1]));
 			//double[] detectionOffset = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
 			//rcp.setDetectionOffset(detectionOffset);

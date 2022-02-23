@@ -44,9 +44,10 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	private double bRadius, bAngle;
 	
 	// Collision control
-	boolean collisionDetection, release, releaseAuto, forceEnd;
 	private double releaseDist;
+	private double releaseSpeed;
 	private double maxTorque;
+	private int releaseMode;
 	private ICondition JTConds;
 	private IMotionContainer JTMotion;
 	private IFiredConditionInfo JTBreak;
@@ -63,14 +64,10 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		this.setGlobalAccel(0.25);
 		bRadius = bAngle = 0;
 		
-		//collisionDetection = true;
-		release = true;
-		releaseAuto = false;
-		forceEnd = false;
-		releaseDist = 10;
-		
 		this.setMaxTorque(5);
-		this.setReleaseAuto(false);
+		this.setReleaseMode(0);
+		releaseDist = 10;
+		releaseSpeed = 0.2;
 	}
 	
 	/**
@@ -82,7 +79,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	 * @param blendingRadius float > 0 (mm)
 	 * @param blendingAngle float > 0 (degrees)
 	 * @param maxTorque float > 0 (Nm)
-	 * @param releaseAuto boolean
+	 * @param releaseMode int 0: skip, 1: manual, 2: auto + skip, 3: auto + retry
 	 * @param log boolean
 	 */
 	
@@ -90,8 +87,9 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						Tool tool, String tcp,
 						double globalSpeed, double globalAccel,
 						double blendingRadius, double blendingAngle,
-						double maxTorque, boolean releaseAuto,
+						double maxTorque, int releaseMode,
 						boolean log) {
+		mf.setRGB("OFF");
 		this.setLogger(log);
 		this.setHome(home);
 		this.setTool(tool);
@@ -100,7 +98,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		this.setGlobalAccel(globalAccel, false);
 		this.setBlending(blendingRadius, blendingAngle);
 		this.setMaxTorque(maxTorque);
-		this.setReleaseAuto(releaseAuto);	
+		this.setReleaseMode(releaseMode);	
 	}
 
 	// GETTERS --------------------------------------------------------------------------		
@@ -175,10 +173,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	
 	// ERROR/COLLISION MANAGEMENT -----------------------------------------------
 	
-	public void setRelease(boolean _release) { release = _release; }
-	public void setReleaseAuto(boolean _releaseAuto) { releaseAuto = _releaseAuto; }
-	//public void setCollisionDetection(boolean _cd) { collisionDetection = _cd; }
-	public void setForceEnd(boolean _forceEnd) { forceEnd = _forceEnd; }
+	public void setReleaseMode(int releaseMode) { this.releaseMode = releaseMode; }
 	
 	public void setMaxTorque(double maxTorque){
 		this.maxTorque = maxTorque;
@@ -195,29 +190,38 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		if(logger) padLog("Max Axis Torque set to " + maxTorque + " Nm.");
 	}
 	
+	/**
+	 * @param releaseMode int 0: skip, 1: manual, 2: auto + skip, 3: auto + retry
+	 */
 	public boolean release() {
 		double rd = releaseDist;
-		if(releaseAuto) { LINREL(0, 0, -rd, 0.5, true); return false; }
-		int ans = 1;
-		while (ans != 0) {
-			ans = pad.question("Indicate desired movement of " + rd + 
-					"mm in TOOL directions",
-					"SKIP MOVEMENT","+X","+Y","+Z","+DIST",
-					"RETRY TARGET  ","-X","-Y","-Z", "-DIST");
-			switch(ans) {
-				case 0: return false;
-				case 1: LINREL(rd,0,0,1,false); break;
-				case 2: LINREL(0,rd,0,1,false); break;
-				case 3: LINREL(0,0,rd,1,false); break;
-				case 4: rd += 10; break;
-				case 5: return true;
-				case 6: LINREL(-rd,0,0,1,false); break;
-				case 7: LINREL(0,-rd,0,1,false); break;
-				case 8: LINREL(0,0,-rd,1,false); break;
-				case 9: rd -=10; if(rd == -10) rd = 0; break;
-			}
+		double rs = releaseSpeed;
+		switch (releaseMode) {
+			case 0: return false;
+			case 1:
+				int ans = 1;
+				while (ans != 0) {
+					ans = pad.question("Indicate desired movement of " + rd + 
+							"mm in TOOL directions",
+							"SKIP MOVEMENT","+X","+Y","+Z","+DIST",
+							"RETRY TARGET  ","-X","-Y","-Z", "-DIST");
+					switch(ans) {
+						case 0: return false;
+						case 1: LINREL(rd,0,0,rs,false); break;
+						case 2: LINREL(0,rd,0,rs,false); break;
+						case 3: LINREL(0,0,rd,rs,false); break;
+						case 4: rd += 10; break;
+						case 5: return true;
+						case 6: LINREL(-rd,0,0,rs,false); break;
+						case 7: LINREL(0,-rd,0,rs,false); break;
+						case 8: LINREL(0,0,-rd,rs,false); break;
+						case 9: rd -=10; if(rd < 10) rd = 10; break;
+					}
+				}
+			case 2:	LINREL(0, 0, -rd, rs, true); return false;
+			case 3:	LINREL(0, 0, -rd, rs, true); return true;
+			default: return false;
 		}
-		return false;
 	}
 	
 	public int collision() {
@@ -238,6 +242,10 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		return -100;
 	}
 	
+	public void setMoveColorMF() {
+		//mf.setRGB("G");
+	}
+	
 	// #################################################################################
 	// MOTION COMMANDS
 	// #################################################################################
@@ -249,7 +257,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	public int PTP(Frame target, double relSpeed, boolean approx) {
 		try { 
 			int success = 1;
-			mf.setRGB("G");
+			setMoveColorMF();
 			if(approx) tcp.moveAsync(ptp(target)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
 					.setJointAccelerationRel(accel)
@@ -263,7 +271,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 				JTBreak = JTMotion.getFiredBreakConditionInfo();
 				if(JTBreak != null) {
 					success = collision();
-					if (release) if (release()) PTP(target, relSpeed, approx);
+					if (release()) return PTP(target, relSpeed, approx);
 				}
 			}
 			return success;
@@ -287,7 +295,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	public int PTP(double[] a, double relSpeed, boolean approx) {
 		try { 
 			int success = 1;
-			mf.setRGB("G");
+			setMoveColorMF();
 			if(approx) tcp.moveAsync(ptp(d2r(a[0]),d2r(a[1]),d2r(a[2]),d2r(a[3]),
 										 d2r(a[4]),d2r(a[5]),d2r(a[6]))
 					.setJointVelocityRel(scaleSpeed(relSpeed))
@@ -303,7 +311,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 				JTBreak = JTMotion.getFiredBreakConditionInfo();
 				if(JTBreak != null) {
 					success = collision();
-					if (release) if (release()) PTP(a, relSpeed, approx);
+					if (release()) return PTP(a, relSpeed, approx);
 				}
 			}
 			return success;
@@ -317,7 +325,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	public int LIN(Frame target, double relSpeed, boolean approx) {
 		try {
 			int success = 1;
-			mf.setRGB("G");
+			setMoveColorMF();
 			if(approx) tcp.moveAsync(ptp(target)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
 					.setJointAccelerationRel(accel)
@@ -331,7 +339,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 				JTBreak = JTMotion.getFiredBreakConditionInfo();
 				if(JTBreak != null) {
 					success = collision();
-					if (release) if (release()) LIN(target, relSpeed, approx);
+					if (release()) return LIN(target, relSpeed, approx);
 				}
 			}
 			return success;
@@ -355,7 +363,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 						double relSpeed, boolean approx) {
 		try {
 			int success = 1;
-			mf.setRGB("G");
+			setMoveColorMF();
 			if(approx) tcp.moveAsync(linRel(Transformation.ofDeg(x, y, z, Rz, Ry, Rx))
 					.setJointVelocityRel(scaleSpeed(relSpeed))
 					.setJointAccelerationRel(accel)
@@ -369,8 +377,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 				JTBreak = JTMotion.getFiredBreakConditionInfo();
 				if(JTBreak != null) {
 					success = collision();
-					if (release) if (release()) 
-							LINREL(x, y, z, Rz, Ry, Rx, relSpeed, approx);
+					if (release()) return LINREL(x, y, z, Rz, Ry, Rx, relSpeed, approx);
 				}
 			}
 			return success;
@@ -385,7 +392,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	public int CIRC(Frame target1, Frame target2, double relSpeed, boolean approx) {
 		try { 
 			int success = 1;
-			mf.setRGB("G");
+			setMoveColorMF();
 			if(approx) tcp.moveAsync(circ(target1, target2)
 					.setJointVelocityRel(scaleSpeed(relSpeed))
 					.setJointAccelerationRel(accel)
@@ -399,8 +406,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 				JTBreak = JTMotion.getFiredBreakConditionInfo();
 				if(JTBreak != null) {
 					success = collision();
-					if (release) if (release()) 
-							CIRC(target1, target2, relSpeed, approx);
+					if (release()) return CIRC(target1, target2, relSpeed, approx);
 				}
 			}
 			return success;

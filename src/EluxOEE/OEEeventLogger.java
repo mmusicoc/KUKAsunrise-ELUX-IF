@@ -13,8 +13,8 @@ public class OEEeventLogger {
 		this.itemName = _itemName;
 		
 		this.csv = new CSVLogger();
-		this.csv.init(_oee_events_filename, true);
-		this.csv.header("DATE,TIME," + itemName + ",CODE,EVENT\n");
+		this.csv.init(_oee_events_filename, true, ';');
+		this.csv.header("DATE;TIME;" + itemName + ";CODE;EVENT\n");
 	}
 	
 	// PROCESS FAILURE MODES ----------------------------------------------

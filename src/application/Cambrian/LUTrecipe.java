@@ -2,9 +2,9 @@ package application.Cambrian;
 
 //import static EluxUtils.Utils.*;
 
-public class RecipeLUT {
+public class LUTrecipe {
 	
-	public RecipeLUT() { 	// CONSTRUCTOR
+	public LUTrecipe() { 	// CONSTRUCTOR
 	}
 	
 	// 92550331220
@@ -14,15 +14,13 @@ public class RecipeLUT {
 		//padLog(PNCend);
 		String recipe = "";
 		switch(PNC) {
-			case 1:
-			case 2:
-			case 3:
-				recipe = "F2";	break;
-			case 4:
-			case 925033122:
-				recipe = "F4"; break;
-				
-				
+			case 1: recipe = "F1"; break;
+			case 925503312:	recipe = "F4"; break;
+			case 925975000: recipe = "F5"; break;
+			case 925561304: recipe = "F6"; break;
+			case 925501312: recipe = "F7"; break;
+			case 925503306: recipe = "F8"; break;
+			
 			default:
 				recipe = "ERR"; break;
 		}

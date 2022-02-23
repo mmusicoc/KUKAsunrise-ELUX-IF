@@ -6,15 +6,15 @@ import EluxUtils.SimpleFrame;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class Joint {
+public class JointRecipe {
 	private int jointID;
-	private String cambrianModel;
+	private String jointType;
 	private SimpleFrame NJ;			// Nominal Joint position
 	private SimpleFrame DO; 		// Detection Avg Offset to Nominal Joint
 	private SimpleFrame SPO; 		// ScanPoint relative to Nominal Joint
 	private double threshold[];					// X+,X-,Y+,Y-,Z+,Z-
 	
-	public Joint() { 	// CONSTRUCTOR
+	public JointRecipe() { 	// CONSTRUCTOR
 		NJ = new SimpleFrame();
 		DO = new SimpleFrame();
 		//SPO = new SimpleFrame();
@@ -22,7 +22,7 @@ public class Joint {
 	
 	// GETTERS ---------------------------------------------------------------
 	public int getID() { return this.jointID; }
-	public String getModel() { return this.cambrianModel; }
+	public char getJointType() { return this.jointType.charAt(0); }
 	public SimpleFrame getNominalTarget() { return this.NJ; }
 	public Transformation getDO() { 
 		return Transformation.ofDeg(DO.X, DO.Y, DO.Z, 
@@ -45,8 +45,8 @@ public class Joint {
 	}
 	
 	// SETTERS --------------------------------------------------------------
-	public void setID(int _id) { this.jointID = _id; }
-	public void setModel(String _model) { this.cambrianModel = _model; }
+	public void setID(int id) { this.jointID = id; }
+	public void setJointType(char jointType) { this.jointType = jointType + ""; }
 	public void setNominalTarget(double x, double y, double z, 
 								 double a, double b, double c) { 
 		NJ.build(x, y, z, a, b, c); }

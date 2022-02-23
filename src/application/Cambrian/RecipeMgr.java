@@ -16,8 +16,8 @@ import com.google.gson.stream.JsonReader;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
-public class RecipeMgr extends EluxRecipe.RecipeMgr<Joint> {
-	private Joint activeJoint;
+public class RecipeMgr extends EluxRecipe.RecipeMgr<JointRecipe> {
+	private JointRecipe activeJoint;
 	
 	public RecipeMgr() { super(); } // CONSTRUCTOR
 	
@@ -62,8 +62,8 @@ public class RecipeMgr extends EluxRecipe.RecipeMgr<Joint> {
 		try {
 			JsonReader reader = new JsonReader(
 					new FileReader(FILE_ROOTPATH + filename));
-			db = new RecipeDB<Joint>();
-			Type objType = new TypeToken<RecipeDB<Joint>>(){}.getType();
+			db = new RecipeDB<JointRecipe>();
+			Type objType = new TypeToken<RecipeDB<JointRecipe>>(){}.getType();
 			db = gson.fromJson(reader, objType);
 		} catch (FileNotFoundException e) {
 			padErr("File " + filename + " not found");
@@ -73,14 +73,14 @@ public class RecipeMgr extends EluxRecipe.RecipeMgr<Joint> {
 	// GETTERS ---------------------------------------------------------------
 	
 	public int getJointID() { return activeJoint.getID(); }
-	public String getCurrentCambrianModel() { return activeJoint.getModel(); }
-	public String getNextCambrianModel(int orderIndex) {
+	public char getCurrentJointType() { return activeJoint.getJointType(); }
+	public char getNextJointType(int orderIndex) {
 		int size = getActiveItemAmount();
 		if (orderIndex < 0 || orderIndex >= size) { 
-			padErr("Joint Order Item not valid"); return "ERR"; }
+			padErr("Joint Order Item not valid"); return '_'; }
 		else if (orderIndex == size - 1) 
-			 return activeRcp.items.get(findJointIndex(getOItemID(0))).getModel();
-		else return activeRcp.items.get(findJointIndex(getOItemID(orderIndex + 1))).getModel();
+			 return activeRcp.items.get(findJointIndex(getOItemID(0))).getJointType();
+		else return activeRcp.items.get(findJointIndex(getOItemID(orderIndex + 1))).getJointType();
 	}
 	
 	public Frame getTarget() {
@@ -132,12 +132,12 @@ public class RecipeMgr extends EluxRecipe.RecipeMgr<Joint> {
 	}
 	
 	public void newJoint(int jointID) {
-		activeJoint = new Joint();
+		activeJoint = new JointRecipe();
 		activeJoint.setID(jointID);
 		//saveActiveJoint();
 	}
 	
-	public void setModel(String model) { activeJoint.setModel(model); }
+	public void setJointType(char jointType) { activeJoint.setJointType(jointType); }
 	/*
 	public void setTarget(Frame target) {
 		activeJoint.setNominalTarget(

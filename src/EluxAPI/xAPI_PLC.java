@@ -97,31 +97,30 @@ public class xAPI_PLC {
 	}
 	
 	// Physical IO
-	/*
+	
 	public boolean getDIF10() { return _PLCin.getDIF10(); }
 	public boolean getDIF11() { return _PLCin.getDIF11(); }
 	public boolean getDIF12() { return _PLCin.getDIF12(); }
 	public boolean getDIF13() { return _PLCin.getDIF13(); }
 	
-	public boolean getDO04() { return _PLCout.getDO04(); }
-	public boolean getDO05() { return _PLCout.getDO05(); }
-	
-	public boolean setDO04(boolean value) { _PLCout.setDO04(value); return _PLCout.getDO04(); }
-	public boolean setDO05(boolean value) { _PLCout.setDO05(value); return _PLCout.getDO05(); }
+	public boolean getDO06() { return _PLCout.getDO06(); }
+	public boolean getDO07() { return _PLCout.getDO07(); }
 	
 	@SuppressWarnings("finally")
-	public boolean trigDO06(int delay) { 
+	public boolean trigDO04(int delay) { 
 		try {
-			_PLCout.setDO06(true); waitMillis(delay);
-			_PLCout.setDO06(false); return true; 
+			_PLCout.setDO04(true); waitMillis(delay);
+			_PLCout.setDO04(false); return true; 
 		} finally { return false; }
 	}
 	@SuppressWarnings("finally")
-	public boolean trigDO07(int delay) { 
+	public boolean trigDO05(int delay) { 
 		try {
-			_PLCout.setDO07(true); waitMillis(delay);
-			_PLCout.setDO07(false); return true; 
+			_PLCout.setDO05(true); waitMillis(delay);
+			_PLCout.setDO05(false); return true; 
 		} finally { return false; }
 	}
-	*/
+	
+	public boolean setDO06(boolean value) { _PLCout.setDO06(value); return _PLCout.getDO06(); }
+	public boolean setDO07(boolean value) { _PLCout.setDO07(value); return _PLCout.getDO07(); }
 }

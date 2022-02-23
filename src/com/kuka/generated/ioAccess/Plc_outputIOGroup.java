@@ -44,6 +44,10 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 		addDigitalOutput("Mission_Result", IOTypes.UNSIGNED_INTEGER, 8);
 		addDigitalOutput("Pinza_Apri", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Pinza_Chiudi", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO04", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO05", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO06", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO07", IOTypes.BOOLEAN, 1);
 	}
 
 	/**
@@ -650,6 +654,170 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 	public void setPinza_Chiudi(java.lang.Boolean value)
 	{
 		setDigitalOutput("Pinza_Chiudi", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO04</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO04'
+	 */
+	public boolean getDO04()
+	{
+		return getBooleanIOValue("DO04", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO04</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO04'
+	 */
+	public void setDO04(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO04", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO05</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO05'
+	 */
+	public boolean getDO05()
+	{
+		return getBooleanIOValue("DO05", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO05</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO05'
+	 */
+	public void setDO05(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO05", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO06</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO06'
+	 */
+	public boolean getDO06()
+	{
+		return getBooleanIOValue("DO06", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO06</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO06'
+	 */
+	public void setDO06(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO06", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO07</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO07'
+	 */
+	public boolean getDO07()
+	{
+		return getBooleanIOValue("DO07", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO07</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO07'
+	 */
+	public void setDO07(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO07", value);
 	}
 
 }

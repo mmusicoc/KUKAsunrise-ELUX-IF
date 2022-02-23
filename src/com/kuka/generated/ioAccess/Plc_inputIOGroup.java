@@ -46,6 +46,10 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 		addInput("Pinza_PartLost", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_Positionig", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_Releasing", IOTypes.BOOLEAN, 1);
+		addInput("DIF10", IOTypes.BOOLEAN, 1);
+		addInput("DIF11", IOTypes.BOOLEAN, 1);
+		addInput("DIF12", IOTypes.BOOLEAN, 1);
+		addInput("DIF13", IOTypes.BOOLEAN, 1);
 	}
 
 	/**
@@ -386,6 +390,86 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	public boolean getPinza_Releasing()
 	{
 		return getBooleanIOValue("Pinza_Releasing", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF10</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF10'
+	 */
+	public boolean getDIF10()
+	{
+		return getBooleanIOValue("DIF10", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF11</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF11'
+	 */
+	public boolean getDIF11()
+	{
+		return getBooleanIOValue("DIF11", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF12</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF12'
+	 */
+	public boolean getDIF12()
+	{
+		return getBooleanIOValue("DIF12", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF13</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF13'
+	 */
+	public boolean getDIF13()
+	{
+		return getBooleanIOValue("DIF13", false);
 	}
 
 }

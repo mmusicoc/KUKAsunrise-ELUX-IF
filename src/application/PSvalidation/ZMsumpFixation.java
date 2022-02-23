@@ -27,7 +27,7 @@ public class ZMsumpFixation extends RoboticsAPIApplication {
 				tool, "/ScrewerTCP",			// Tool, TCP
 				1.0, 1.0,					// Relative speed and acceleration
 				10.0, 5.0,					// Blending
-				40.0, true,					// Collision detection (Nm), response
+				40.0, 0,					// Collision detection (Nm), release
 				false);						// Loggingmove.setJTconds(40);
 		if(!move.PTPhome(1, true)) stop();
 	}

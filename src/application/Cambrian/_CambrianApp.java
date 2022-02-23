@@ -18,8 +18,10 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	xAPI__ELUX elux = new xAPI__ELUX();
 	@Inject xAPI_MF	mf = elux.getMF();
 	@Inject xAPI_Pad pad = elux.getPad();
+	@Inject xAPI_PLC plc = elux.getPLC();
 	@Inject xAPI_Move move = elux.getMove();
 	@Inject CambrianAPI cambrian = new CambrianAPI(elux);
+	
 	Params p = new Params();
 	JSONmgr<Params> paramsMgr = new JSONmgr<Params>();
 	RecipeMgr rcp = new RecipeMgr();
@@ -27,16 +29,18 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	OEEmgr oee = elux.getOEE();
 	RemoteMgr remote = new RemoteMgr();
 	CSVLogger precLog = new CSVLogger();
-	RecipeLUT rcpLUT = new RecipeLUT();
+	LUTrecipe LUTrcp = new LUTrecipe();
+	LUTcambrianModel LUTcm = new LUTcambrianModel();
 	
 	FrameList frameList = new FrameList();
+	boolean testMode, firstRun;
 	boolean logger;
 	int approachMode, idle, sniffing_pause;
 	int loop_joint, target;
 	int moveAns, failure;
 	int trials;
-	String cambrianModel, SP_pathroot, SP_path, NJ_pathroot, NJ_path;
-	Frame SP_frame, NJ_frame;
+	String cambrianModel, RB_path, SP_pathroot, SP_path, NJ_pathroot, NJ_path;
+	Frame SP_frame, NJ_frame, OB_frame;
 	
 	@Override public void initialize() {
 		paramsMgr.init("CambrianParams.json");
@@ -49,29 +53,30 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		
 		// INIT MOVE ---------------------------------------------
 		move.init("/_Cambrian/_HomeLB",			// Home path
-					tool, "/TCP",				// Tool, TCP
+					tool, "/LeakClamp",			// Tool, TCP
 					remote.getSpeed(), 1.0,		// Relative speed and acceleration
 					20.0, 5.0,					// Blending
-					5.0, true,					// Collision detection (Nm), auto release
+					5.0, 0,						// Collision detection (Nm), release mode
 					false);						// Logging
 		move.setA7Speed(1); 					// Accelerate J7 if bottleneck
 		
 		// INIT RECIPE -------------------------------------------
 		rcp.init(pad, p.RECIPE_FILENAME, false);
 		rcp.fetchAllRecipes();
-		rcp.selectRecipeRCP(rcpLUT.getRecipe(925503312));
+		rcp.selectRecipeRCP(LUTrcp.getRecipe(925503306)); //PNC NUMBER
 		//rcp.selectRecipeRCP("F4");
 		//rcp.askPNC();
 		
-		SP_pathroot = "/_Cambrian/" + rcp.getActiveRCP() + "/ScanPoints/";
-		NJ_pathroot = "/_Cambrian/" + rcp.getActiveRCP() + "/NominalJoints/";
+		RB_path = "/_Cambrian/Recipes/" + rcp.getActiveRCP() + "/_RefBolt";
+		SP_pathroot = "/_Cambrian/Recipes/" + rcp.getActiveRCP() + "/ScanPoints/";
+		NJ_pathroot = "/_Cambrian/Recipes/" + rcp.getActiveRCP() + "/NominalJoints/";
 			
 		rcp.selectJointID(rcp.getOItemID(0));
 
 		// INIT CAMBRIAN -----------------------------------------
 		if(!cambrian.init("192.168.2.50", 4000)) stop();
-		cambrianModel = "Elux_fridge_ref_bolt";
-		cambrian.loadModel(cambrianModel, logger);
+		cambrianModel = LUTcm.getCambrianModel('B');
+		cambrian.loadModel(cambrianModel);
 		//cambrian.getNewPrediction(cambrianModel);
 		
 		// INIT OEE & PRECISION LOGGING --------------------------
@@ -81,10 +86,20 @@ public class _CambrianApp extends RoboticsAPIApplication {
 				p.OEE_STATS_FILENAME,
 				p.OEE_EVENTS_FILENAME, true); // DISABLE TRUE TO RESET OBJ
 		
-		precLog.init(p.PRECISION_FILENAME, true);
-		precLog.header("JOINT,X,Y,Z,DIST,A,B,C,(RC),(Reason),(Date),(Time)\n");
+		precLog.init(p.PRECISION_FILENAME, true, ';');
+		precLog.header("JOINT;X;Y;Z;DIST;A;B;C;(RC);(Reason);(Date);(Time)\n");
 		
-		//if(pad.question("Restart all OEE & precision data?", "YES", "NO") == 0)
+		/*if(pad.question("Teach RefBolt?", "YES", "NO") == 0)
+		{
+			_CambrianTeachRefBolt boltApp = new _CambrianTeachRefBolt();
+			boltApp.initialize();
+			boltApp.setRecipe(rcp.getActiveRCP());
+			boltApp.run();
+			getApplicationControl().halt();
+		}
+		*/
+		
+		if(pad.question("Restart all OEE & precision data?", "YES", "NO") == 0)
 			resetAllOEE();
 		
 		// INIT PROCESS ------------------------------------------
@@ -92,10 +107,19 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		loop_joint = 0;
 		idle = 0;
 		approachMode = 0;
+		testMode = true;
+		firstRun = true;
 		if(!move.PTPhome(1, false)) stop();
+		plc.setDO07(true);		// Switch on light
 	}
 	
-	void sniff(int target) {
+	@Override public void run() {		// MAIN CYCLIC PROGRAM
+		while (true) {
+			scanFridge();
+		}
+	}
+	
+	void sniff(int target) {			// PROCESS
 		if(logger) padLog("Leak test #" + target);
 		mf.blinkRGB("B", sniffing_pause);
 	}
@@ -123,9 +147,9 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	
 	void selectModelAtEnd(int orderIndex) {
 		String prevModel = cambrianModel;
-		cambrianModel = rcp.getNextCambrianModel(orderIndex);
+		cambrianModel = LUTcm.getCambrianModel(rcp.getNextJointType(orderIndex));
 		if(cambrianModel.compareTo(prevModel) != 0) 
-			cambrian.loadModel(cambrianModel, false);
+			cambrian.loadModel(cambrianModel);
 	}
 	
 	void INR() {
@@ -193,6 +217,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 				// TRANSFORM ANSWER, GET OFFSET -----------------------------------
 				targetFrame.transform(rcp.getDO().invert());
 				Frame offset2NJ = targetFrame.copyWithRedundancy(NJ_frame);
+				Frame offset2OB = targetFrame.copyWithRedundancy(OB_frame);
 				if(!targetVisited(targetFrame)) {
 					if(targetFilter(offset2NJ)) {
 						// VISIT JOINT -------------------------------------------------
@@ -218,17 +243,18 @@ public class _CambrianApp extends RoboticsAPIApplication {
 						if(failure == 0) {
 							frameList.add(targetFrame);
 							if(logger) padLog("J" + target + " successful");
-							logPrecision(target, offset2NJ, 1);
+							mf.blinkRGB("G", 250);
+							logPrecision(target, offset2OB, 1);		// Update OB/NJ
 							break;
 						} else {
 							if(logger) padLog("J" + target + " unsuccessful, randomizing");
-							logPrecision(target, offset2NJ, failure); // Could be >1 cause
+							logPrecision(target, offset2OB, failure); // Could be >1 cause, Update OB/NJ
 							INR();
 						}
 					} else {
 						if(logger) padLog("Detection not valid(filtered), randomizing");
 						oee.addINV(target);
-						logPrecision(target, offset2NJ, 2);
+						logPrecision(target, offset2OB, 2);		// Update OB/NJ
 						INR();
 						
 					}
@@ -245,62 +271,63 @@ public class _CambrianApp extends RoboticsAPIApplication {
 			}
 		} while (true);
 	}
-
-	@Override public void run() {
-		while (true) {
-			if (loop_joint == 0 && logger) padLog("Start testing sequence");
-			//rcp.fetchAllRecipes();
-			oee.startCycle();
-			cambrianModel = "Elux_fridge_ref_bolt";
-			cambrian.loadModel(cambrianModel, logger);
-			move.PTP("/_Cambrian/" + rcp.getActiveRCP() + "/ScanPoints/RBSP", 1, false);
-			if(logger) padLog("Scanning for bolt...");
-			if(cambrian.getNewPrediction(cambrianModel)) {
-				Frame observedBolt = cambrian.getTargetFrame();
-				Frame offset2NB = observedBolt.copyWithRedundancy(
-						move.toFrame("/_Cambrian/" + rcp.getActiveRCP() + "/_RefBolt"));
-				offset2NB.setAlphaRad(0).setBetaRad(0).setGammaRad(0);
-				if(logger) padLog("Offset from nominal RefBolt is " + rf2s(offset2NB, false, false));
-				
-				rcp.selectJointID(rcp.getOItemID(0));
-				cambrianModel = rcp.getCurrentCambrianModel();
-				cambrian.loadModel(cambrianModel, logger);
-				
-				for(int i = 0; i < rcp.getActiveItemAmount(); i++) {
-					oee.startItem();
-					if (loop_joint == 0) {
-						rcp.selectJointID(rcp.getOItemID(i));
-						target = rcp.getJointID();
-					} else {
-						target = loop_joint;
-						rcp.selectJointID(target);
-						//i = USED_JOINTS;
-					}
-					
-					trials = 0;
-					SP_path = SP_pathroot + "P" + target;
-					NJ_path = NJ_pathroot + "P" + target;
-					SP_frame = move.toFrame(SP_path).transform(offset2NB.getTransformationFromParent());
-					NJ_frame = move.toFrame(NJ_path).transform(offset2NB.getTransformationFromParent());
-					
-					scanJoint();
-					
-					oee.endItem(target);
-					selectModelAtEnd(i);
-				}
-			} else padErr("Fridge too distant from nominal position, reference bolt not found");
+	
+	public void scanFridge() {
+		if (loop_joint == 0 && logger) padLog("Start testing sequence");
+		//rcp.fetchAllRecipes();
+		oee.startCycle();
+		cambrianModel = LUTcm.getCambrianModel('B');
+		cambrian.loadModel(cambrianModel);
+		if(!testMode || firstRun) move.PTP("/_Cambrian/_RBSP", 1, false);
+		if((!testMode || firstRun) && logger) padLog("Scanning for bolt...");
+		if((testMode && !firstRun) ? true : cambrian.getNewPrediction(cambrianModel)) {
+			if(!testMode || firstRun) OB_frame = cambrian.getTargetFrame();
+			firstRun = false;
+			Frame offset2NB = OB_frame.copyWithRedundancy(
+					move.toFrame(RB_path));
+			offset2NB.setAlphaRad(0).setBetaRad(0).setGammaRad(0);
+			if(logger) padLog("Offset from nominal RefBolt is " + rf2s(offset2NB, false, false));
+			logPrecision(0, offset2NB, 1);
 			
-			frameList.free();
-			if(loop_joint == 0) {
-				oee.endCycle();
-				oee.saveOEEimage(false);
-				//move.PTPhome(1, true);
-				if(idle == 2) idle();
+			rcp.selectJointID(rcp.getOItemID(0));
+			cambrianModel = LUTcm.getCambrianModel(rcp.getCurrentJointType());
+			cambrian.loadModel(cambrianModel);
+			
+			for(int i = 0; i < rcp.getActiveItemAmount(); i++) {
+				oee.startItem();
+				if (loop_joint == 0) {
+					rcp.selectJointID(rcp.getOItemID(i));
+					target = rcp.getJointID();
+				} else {
+					target = loop_joint;
+					rcp.selectJointID(target);
+					//i = USED_JOINTS;
+				}
+				
+				trials = 0;
+				SP_path = SP_pathroot + "P" + target;
+				NJ_path = NJ_pathroot + "P" + target;
+				SP_frame = move.toFrame(SP_path).transform(offset2NB.getTransformationFromParent());
+				NJ_frame = move.toFrame(NJ_path).transform(offset2NB.getTransformationFromParent());
+				
+				scanJoint();		// SCAN JOINT
+				
+				oee.endItem(target);
+				selectModelAtEnd(i);
 			}
+		} else padErr("Fridge too distant from nominal position, reference bolt not found");
+		
+		frameList.free();
+		if(loop_joint == 0) {
+			oee.endCycle();
+			oee.saveOEEimage(false);
+			//move.PTPhome(1, true);
+			if(idle == 2) idle();
 		}
 	}
 	
 	private void idle() {
+		plc.setDO07(false);		// Switch off light
 		move.PTPhome(1, true);
 		padLog("Robot is now in idle mode,\n" +
 				" - To resume press again SLEEP or edit Remote.json\n" +
@@ -310,6 +337,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 			idle = remote.getIdle();
 		} while(idle != 0);
 		if(idle != remote.getIdle()) remote.setIdle(idle);
+		plc.setDO07(true);		// Switch on light
 		padLog("Resuming operations...");
 	}
 	
@@ -320,6 +348,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 			move.setLogger(logger);
 			rcp.setLogger(logger);
 			remote.setLogger(logger);
+			cambrian.setLogger(logger);
 		}
 	}
 	
@@ -332,9 +361,8 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	}
 	
 	private void stop() {
-		padErr("Program stopped");
-		waitMillis(2000);
+		pad.info("PROGRAM STOPPED, continue to abort...");
 		getApplicationControl().halt();
-		dispose();
+		//dispose();
 	}
 }

@@ -26,7 +26,7 @@ public class BIOvenWiringInspection extends RoboticsAPIApplication {
 				tool, "/OvenWI",			// Tool, TCP
 				1.0, 0.4,					// Relative speed and acceleration
 				10.0, 5.0,					// Blending
-				40.0, true,					// Collision detection (Nm), auto release
+				40.0, 0,					// Collision detection (Nm), release mode
 				false);						// Logging
 		
 		if(!move.PTPhome(1, true)) stop();
