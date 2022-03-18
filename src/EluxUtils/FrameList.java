@@ -1,6 +1,6 @@
 package EluxUtils;
 
-import static EluxUtils.Utils.padLog;
+import static EluxUtils.Utils.*;
 
 import java.util.ArrayList;
 
@@ -20,20 +20,20 @@ public class FrameList {
 	// Setter methods
 	public void add(Frame newFrame, boolean log) { 
 		frameList.add(newFrame); 
-		if(log) padLog("Added Frame #" + this.size() + " : " + this.getLast().toString());
+		if(log) logmsg("Added Frame #" + this.size() + " : " + this.getLast().toString());
 	}
 	public void add(Frame newFrame) { this.add(newFrame, false); }
 	public void inject(int index, Frame newFrame) { frameList.add(index, newFrame); }
 	public void set(int index, Frame newFrame) { frameList.set(index, newFrame); }
 	public void remove(int index) { 
 		if (frameList.isEmpty()) {
-			padLog("Frames list is empty.");
+			logErr("Frames list is empty.");
 		} else {
-			padLog("Deleted Frame #" + index + " : " + this.get(index - 1).toString());
-			frameList.remove(index - 1);
+			//logmsg("Deleted Frame #" + (index+1) + " : " + this.get(index).toString());
+			frameList.remove(index);
 		}
 		frameList.trimToSize();
 	}
-	public void removeLast() { this.remove(this.size()); }
+	public void removeLast() { this.remove(this.size() - 1); }
 	public void free() { frameList.clear(); }
 }

@@ -1,6 +1,10 @@
 package application._Common;
 
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.*;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import com.kuka.common.ThreadUtil;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.controllerModel.Controller;
@@ -12,6 +16,7 @@ import com.kuka.roboticsAPI.controllerModel.sunrise.positionMastering.PositionMa
 import com.kuka.roboticsAPI.deviceModel.JointPosition;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.deviceModel.OperationMode;
+import com.kuka.roboticsAPI.geometricModel.Tool;
 import com.kuka.roboticsAPI.motionModel.PTP;
 
 /**
@@ -21,10 +26,12 @@ import com.kuka.roboticsAPI.motionModel.PTP;
  */
  
 public class _JointsReferencing extends RoboticsAPIApplication {
+	
+	@Inject	@Named("Cambrian") private Tool tool;
     private Controller kukaController;
     private LBR lbr_iiwa;
 
-    private final static double sideOffset = Math.toRadians(5);       // offset in radians for side motion
+    private final static double sideOffset = Math.toRadians(3);       // offset in radians for side motion
     private static double relSpeed = 0.25;                      // relative velocity
     private final static int axisId[] = {0, 1, 2, 3, 4, 5, 6};        // axes to be referenced
     private final static int GMS_REFERENCING_COMMAND = 2;             // safety command for GMS referencing
@@ -34,6 +41,7 @@ public class _JointsReferencing extends RoboticsAPIApplication {
     public void initialize() {
         kukaController = (Controller) getContext().getControllers().toArray()[0];
         lbr_iiwa = (LBR) kukaController.getDevices().toArray()[0];
+        tool.attachTo(lbr_iiwa.getFlange());
     }
 
     public void run() {

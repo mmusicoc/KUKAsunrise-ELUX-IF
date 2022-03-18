@@ -34,6 +34,8 @@ public class UMath {
 		else return pose.toStringTrafo();
 	}
 	
+	public static String f2p(Frame pose) { return pose.getPath(); }
+	
 	public static int abs(int num) { return (num < 0) ? -num : num; }
 	public static double abs(double num) { return (num < 0) ? -num : num; }
 	

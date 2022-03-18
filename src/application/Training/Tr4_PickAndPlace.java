@@ -119,7 +119,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 		Frame preFrame = target.copy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		move.PTP(preFrame, 1, false);
-		if(log1) padLog("Picking process");
+		if(log1) logmsg("Picking process");
 		move.LIN(target, approachSpeed, false);
 		cobot.probe(0, 0, 15, 0.1, 2);
 		closeGripperCheck(false);
@@ -127,23 +127,23 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 	}
 	
 	private void pickZ(String targetPath) {
-		if(log1) padLog("Place part macro at " + targetPath);
-		this.pickZ(move.toFrame(targetPath));
+		if(log1) logmsg("Place part macro at " + targetPath);
+		this.pickZ(move.p2f(targetPath));
 	}
 	
 	private void placeZ(Frame target) {
 		Frame preFrame = target.copy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		move.PTP(preFrame, 1, false);
-		if(log1) padLog("Placing process");
+		if(log1) logmsg("Placing process");
 		move.LIN(target, approachSpeed, false);
 		openGripperCheck(false);
 		move.LIN(preFrame, approachSpeed, false);
 	}
 	
 	private void placeZ(String targetPath) {
-		if(log1) padLog("Place part macro at " + targetPath);
-		this.placeZ(move.toFrame(targetPath));
+		if(log1) logmsg("Place part macro at " + targetPath);
+		this.placeZ(move.p2f(targetPath));
 	}
 	
 	private void closeGripperCheck(boolean isPosHold) {
@@ -152,13 +152,13 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 			waitMillis(50);
 		}
 		if (plc.gripperIsHolding()){
-			if(log1) padLog("Workpiece gripped");
+			if(log1) logmsg("Workpiece gripped");
 			workpieceGripped = true;
 			if (isPosHold) comp.posHoldCancel();
 		//	workpiece.attachTo(gripper.getDefaultMotionFrame()); 
 			if (isPosHold) comp.posHoldStart();
 		} else {
-			padLog("Workpiece NOT gripped");
+			logmsg("Workpiece NOT gripped");
 		}
 	}
 	
@@ -168,7 +168,7 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 		if (workpieceGripped) {
 			workpieceGripped = false;
 			if (isPosHold) comp.posHoldCancel();
-			if(log1) padLog("Workpiece released");
+			if(log1) logmsg("Workpiece released");
 		//	workpiece.detach(); 
 			if (isPosHold) comp.posHoldStart();
 		}
@@ -183,14 +183,14 @@ public class Tr4_PickAndPlace extends RoboticsAPIApplication {
 							if (state == States.loop) {
 								state = States.home;
 								break;
-							} else padLog("Already going to teach mode.");
+							} else logmsg("Already going to teach mode.");
 							break;
 						case 1: 						// KEY - DELETE PREVIOUS
 							if (state == States.teach) {
 								if (frameList.getLast().hasAdditionalParameter("PICK")) plc.openGripper();	
 								else if (frameList.getLast().hasAdditionalParameter("PLACE")) plc.closeGripper();	
 								frameList.removeLast();
-							} else padLog("Key not available in this mode.");
+							} else logmsg("Key not available in this mode.");
 							break;
 						case 2:  						// KEY - SET SPEED
 							move.setGlobalSpeed(pad.askSpeed());

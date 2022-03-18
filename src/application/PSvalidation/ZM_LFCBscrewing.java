@@ -43,10 +43,10 @@ public class ZM_LFCBscrewing extends RoboticsAPIApplication {
 	
 	private void endCycle(double prevTimeStamp) {
 		cycleCount++;
-		CT = (getTimeStamp() - prevTimeStamp) / 1000;
+		CT = (getCurrentTime() - prevTimeStamp) / 1000;
 		if (cycleCount > 1) avgCT = (avgCT * (cycleCount - 1) + CT) / cycleCount;
 		else avgCT = CT;
-		padLog("Cycles: " + cycleCount + ", Last CT: " + d2s(CT) + ", Avg CT: " + d2s(avgCT));
+		logmsg("Cycles: " + cycleCount + ", Last CT: " + d2s(CT) + ", Avg CT: " + d2s(avgCT));
 		mf.blinkRGB("RG", 4500);
 	}
 
@@ -55,7 +55,7 @@ public class ZM_LFCBscrewing extends RoboticsAPIApplication {
 		double speedApproach = 0.35;
 		double speedRetract = 0.6;
 		do {
-			double startTimeStamp = getTimeStamp();
+			double startTimeStamp = getCurrentTime();
 			move.PTP(pr + "via1L", speedTravel, false);
 			//padLog("Scan hole 1");
 			scan();
@@ -81,6 +81,6 @@ public class ZM_LFCBscrewing extends RoboticsAPIApplication {
 	}
 	
 	private void stop() {
-		padLog("Program stopped");
+		logmsg("Program stopped");
 	}
 }

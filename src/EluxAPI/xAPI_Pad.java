@@ -76,7 +76,7 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 			}
 		} while (ans > 0);
 		mf.resetRGB();
-		padLog(variable + " has been set to " + value);
+		logmsg(variable + " has been set to " + value);
 		return value;
 	}
 	
@@ -105,7 +105,7 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 			}
 		} while (ans > 0);
 		mf.resetRGB();
-		padLog(variable + " has been set to " + value);
+		logmsg(variable + " has been set to " + value);
 		return value;
 	}
 	
@@ -208,7 +208,7 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 			}
 		} while (!end);
 		mf.resetRGB();
-		if(log)padLog(variable + " has been set to " + name);
+		if(log)logmsg(variable + " has been set to " + name);
 		return name;
 	}
 	
@@ -267,7 +267,7 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 		mf.saveRGB();
 		mf.setRGB("B");
 		int promptAns = 0;
-		if (ans.length > 12) padErr("Cannot contain more than 12 choice buttons.");
+		if (ans.length > 12) logErr("Cannot contain more than 12 choice buttons.");
 		else promptAns = getApplicationUI().displayModalDialog(ApplicationDialogType
 				.QUESTION, question, ans);
 		mf.resetRGB();

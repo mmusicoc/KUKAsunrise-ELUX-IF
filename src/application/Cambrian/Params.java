@@ -1,12 +1,6 @@
 package application.Cambrian;
 
 public class Params {
-	String REMOTE_FILENAME;
-	String OEE_OBJ_FILENAME;
-	String OEE_STATS_FILENAME;
-	String OEE_EVENTS_FILENAME;
-	String PRECISION_FILENAME;
-	String RECIPE_FILENAME;
 	double APPROACH_SPEED;
 	int MAX_TRIALS;
 	int FILTER_IAE_DIST; 	// mm to consider already visited (+-)

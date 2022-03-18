@@ -39,10 +39,10 @@ public class ZMsumpFixation extends RoboticsAPIApplication {
 	
 	private void endCycle(double prevTimeStamp) {
 		cycleCount++;
-		CT = (getTimeStamp() - prevTimeStamp) / 1000;
+		CT = (getCurrentTime() - prevTimeStamp) / 1000;
 		if (cycleCount > 1) avgCT = (avgCT * (cycleCount - 1) + CT) / cycleCount;
 		else avgCT = CT;
-		padLog("Cycles: " + cycleCount + ", Last CT: " + d2s(CT) + ", Avg CT: " + d2s(avgCT));
+		logmsg("Cycles: " + cycleCount + ", Last CT: " + d2s(CT) + ", Avg CT: " + d2s(avgCT));
 		mf.blinkRGB("RG", 4500);
 	}
 
@@ -51,7 +51,7 @@ public class ZMsumpFixation extends RoboticsAPIApplication {
 		double speedApproach = 0.5;
 		double speedRetract = 0.7;
 		do {
-			double startTimeStamp = getTimeStamp();
+			double startTimeStamp = getCurrentTime();
 			move.PTP(pr + "via14", speedTravel, true);
 			move.LIN(pr + "via13", speedApproach, false);
 			//padLog("1st Screwing");
@@ -96,6 +96,6 @@ public class ZMsumpFixation extends RoboticsAPIApplication {
 	}
 	
 	private void stop() {
-		padLog("Program stopped");
+		logmsg("Program stopped");
 	}
 }

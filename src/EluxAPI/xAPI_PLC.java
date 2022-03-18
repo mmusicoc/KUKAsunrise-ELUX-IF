@@ -96,6 +96,25 @@ public class xAPI_PLC {
 		} while (loop);
 	}
 	
+	// MISSION
+	
+	
+	public boolean loadRecipe() { return _PLCin.getProc_LoadRecipe(); }
+	public boolean missionStart() { return _PLCin.getMission_Start(); }
+	public boolean missionEnd() { return _PLCin.getMission_End(); }
+	
+	public void fbkRecipeLoaded() { _PLCout.setProc_RecipeLoaded(true); }
+	
+	public void fbkMissionRunning() {
+		_PLCout.setMission_Running(true);
+		_PLCout.setMission_ExitDone(false);
+	}
+	public void fbkMissionEnded() {
+		_PLCout.setMission_ExitDone(true);
+		_PLCout.setMission_Running(false);
+		_PLCout.setProc_RecipeLoaded(false);
+	}
+	
 	// Physical IO
 	
 	public boolean getDIF10() { return _PLCin.getDIF10(); }
@@ -123,4 +142,17 @@ public class xAPI_PLC {
 	
 	public boolean setDO06(boolean value) { _PLCout.setDO06(value); return _PLCout.getDO06(); }
 	public boolean setDO07(boolean value) { _PLCout.setDO07(value); return _PLCout.getDO07(); }
+
+	// RECIPE DATA
+	
+	public int getPNC() {
+		Long PNC = _PLCin.getProc_PNC();
+		return PNC.intValue();
+	}
+	
+	public int getSN() {
+		Long PNC = _PLCin.getProc_SN();
+		return PNC.intValue();
+	}
+
 }

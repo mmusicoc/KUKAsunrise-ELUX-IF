@@ -29,7 +29,7 @@ public class PickItCalib extends RoboticsAPIApplication {
 			if (ans == 0) 	calibrate("/_PickIt/Calib/Robot");		// Robot mounted camera
 			else 			calibrate("/_PickIt/Calib/Static");		// Static mounted camera
 		} catch (InterruptedException e) {
-			padErr("Unable to perform requested callibration.");
+			logErr("Unable to perform requested callibration.");
 			e.printStackTrace();
 		}
 	}
@@ -42,24 +42,24 @@ public class PickItCalib extends RoboticsAPIApplication {
 		move.setGlobalSpeed(1);
 		move.PTP(basePath, 1, false);
 		waitMillis(1000);
-		padLog("Starting Multi Pose Calibration ... ");
+		logmsg("Starting Multi Pose Calibration ... ");
 		move.PTP(basePath + "/P1", 1, false);
-		padLog("Calib in P1");
+		logmsg("Calib in P1");
 		pickit.doCalibration();
 		move.PTP(basePath + "/P2", 1, false);
-		padLog("Calib in P2");
+		logmsg("Calib in P2");
 		pickit.doCalibration();		
 		move.PTP(basePath + "/P3", 1, false);
-		padLog("Calib in P3");
+		logmsg("Calib in P3");
 		pickit.doCalibration();
 		move.PTP(basePath + "/P4", 1, false);
-		padLog("Calib in P4");
+		logmsg("Calib in P4");
 		pickit.doCalibration();
 		move.PTP(basePath + "/P5", 1, false);
-		padLog("Calib in P5");
+		logmsg("Calib in P5");
 		pickit.doCalibration();
 		move.PTP(basePath, 1, false);
-        padLog("Finished callibration");
+        logmsg("Finished callibration");
 	}
 	
 	@Override public void dispose() { 

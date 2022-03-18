@@ -22,8 +22,11 @@ public class TestIO extends RoboticsAPIApplication {
 
 	@Override public void run() {
 		while(true) {
-			if (scanInputs()) mf.blinkRGB("G", 1000);
+			//if (scanInputs()) mf.blinkRGB("G", 1000);
 			waitMillis(10);
+			logmsg("PNC: " + plc.getPNC());
+			logmsg("SN: " + plc.getSN());
+			break;
 		}
 	}
 	
@@ -32,13 +35,13 @@ public class TestIO extends RoboticsAPIApplication {
 		boolean change = false;
 		
 		aux = plc.getDIF10();
-		if(aux != DI[0]) { padLog("DI 1.0 is now " + aux); DI[0] = aux; change = true; }
+		if(aux != DI[0]) { logmsg("DI 1.0 is now " + aux); DI[0] = aux; change = true; }
 		aux = plc.getDIF11();
-		if(aux != DI[1]) { padLog("DI 1.1 is now " + aux); DI[1] = aux; change = true; }
+		if(aux != DI[1]) { logmsg("DI 1.1 is now " + aux); DI[1] = aux; change = true; }
 		aux = plc.getDIF12();
-		if(aux != DI[2]) { padLog("DI 1.2 is now " + aux); DI[2] = aux; change = true; }
+		if(aux != DI[2]) { logmsg("DI 1.2 is now " + aux); DI[2] = aux; change = true; }
 		aux = plc.getDIF13();
-		if(aux != DI[3]) { padLog("DI 1.3 is now " + aux); DI[3] = aux; change = true; }
+		if(aux != DI[3]) { logmsg("DI 1.3 is now " + aux); DI[3] = aux; change = true; }
 		
 		return change;
 	}
@@ -50,19 +53,19 @@ public class TestIO extends RoboticsAPIApplication {
 					switch (key.getSlot()) {
 						case 0:  						// KEY - TRIGGER 0.4
 							plc.trigDO04(10);
-							padLog("Triggered Output 0.4 for 10ms");
+							logmsg("Triggered Output 0.4 for 10ms");
 							break;
 						case 1:  						// KEY - TRIGGER 0.5
 							plc.trigDO05(10);
-							padLog("Triggered Output 0.5 for 10ms");
+							logmsg("Triggered Output 0.5 for 10ms");
 							break;
 						case 2:  						// KEY - TOGGLE 0.6
 							plc.setDO06(!plc.getDO06());
-							padLog("Toggled Output 0.6 to " + plc.getDO06());
+							logmsg("Toggled Output 0.6 to " + plc.getDO06());
 							break;
 						case 3:  						// KEY - TOGGLE 0.7
 							plc.setDO07(!plc.getDO07());
-							padLog("Toggled Output 0.7 to " + plc.getDO07());
+							logmsg("Toggled Output 0.7 to " + plc.getDO07());
 							break;
 					}
 				}

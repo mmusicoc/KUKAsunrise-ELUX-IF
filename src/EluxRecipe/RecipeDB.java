@@ -3,9 +3,9 @@ package EluxRecipe;
 import java.util.ArrayList;
 
 public class RecipeDB<I> {
-	ArrayList<Recipe<I>> rl;
+	ArrayList<Recipe<I>> recipeList;
 	
 	public RecipeDB() { 
-		rl = new ArrayList<Recipe<I>>();
+		recipeList = new ArrayList<Recipe<I>>();
 	}	// CONSTRUCTOR
 }

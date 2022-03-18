@@ -2,6 +2,7 @@ package application.Cambrian;
 
 import static EluxUtils.Utils.*;
 import EluxAPI.*;
+import EluxLogger.ProLogger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -24,7 +25,7 @@ public class _CambrianCalib extends RoboticsAPIApplication {
 					15.0, 0,					// Collision detection (Nm), release mode
 					false);						// Logging
 				
-		cambrian.init("192.168.2.50", 4000);
+		cambrian.init(new ProLogger());
 	}
 
 	@Override public void run() {
@@ -33,7 +34,7 @@ public class _CambrianCalib extends RoboticsAPIApplication {
 				calibrate("/_Cambrian/Calib");		// Robot mounted camera
 			} else dispose();	
 		} catch (InterruptedException e) {
-			padErr("Unable to perform requested callibration.");
+			logErr("Unable to perform requested callibration.");
 			e.printStackTrace();
 		}
 		pad.info("Calibration finished.");
@@ -41,18 +42,18 @@ public class _CambrianCalib extends RoboticsAPIApplication {
 	}
 	
 	public void calibrate(String basePath) throws InterruptedException {
-		move.PTPhome(1, false);
+		//move.PTPhome(1, false);
 		waitMillis(1000);
-		padLog("Starting Multi Pose Calibration ... ");
+		logmsg("Starting Multi Pose Calibration ... ");
 		cambrian.startCalibration(); // <<<<<<<<<<<<<<<<<<<<<<
 		for(int i = 1; i <= 14; i++) {
 			move.PTP(basePath + "/P" + i, 1, false);
 			//padLog("Calib in P" + i);
 			cambrian.captureCalibration(); // <<<<<<<<<<<<<<<<<<<<<
-			padLog("Finished calib P" + i);
+			logmsg("Finished calib P" + i);
 		}
 		
-        padLog("Finished callibration");
+        logmsg("Finished callibration");
 	}
 	
 	@Override public void dispose() { 

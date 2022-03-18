@@ -24,10 +24,10 @@ public class JSONmgr<O> {
 		Gson gson = new Gson();
 		try {
 			JsonReader reader = new JsonReader(
-					new FileReader(FILE_ROOTPATH + filename));
+					new FileReader(FILES_FOLDER + filename));
 			return gson.fromJson(reader, data.getClass());
 		} catch (FileNotFoundException e) {
-			padErr("File " + filename + " not found");
+			logErr("File " + filename + " not found");
 			return null;
 		} 
 	}
@@ -35,28 +35,28 @@ public class JSONmgr<O> {
 	public boolean saveData(O data) {
 		try {
 			FileWriter fw = new FileWriter(
-					new File(FILE_ROOTPATH + filename), false);
+					new File(FILES_FOLDER + filename), false);
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			gson.toJson(data, fw);
 			fw.flush();
 			fw.close();
 			return true;
 		} catch (FileNotFoundException e) {
-			padErr("File " + filename + " not found");
+			logErr("File " + filename + " not found");
 			return false;
 		} catch (IOException e) {
 			//e.printStackTrace();
-			padErr("Error writing to " + filename);
+			logErr("Error writing to " + filename);
 			return false;
 		}
 	}
 	
 	public void printData(O data) {
-		if(data == null) padErr("Nonexistent");
+		if(data == null) logErr("Nonexistent");
 		else {
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			String json = gson.toJson(data);
-			padLog(json);
+			logmsg(json);
 		}
 	}
 }

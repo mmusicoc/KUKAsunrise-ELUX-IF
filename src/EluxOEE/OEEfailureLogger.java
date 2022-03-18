@@ -1,20 +1,19 @@
 package EluxOEE;
 
 import static EluxUtils.Utils.*;
-import EluxUtils.CSVLogger;
+import EluxLogger.CSVLogger;
 
-public class OEEeventLogger {
+public class OEEfailureLogger {
 	private String itemName;
 	private CSVLogger csv;
 	
-	public OEEeventLogger() { } // CONSTRUCTOR ------------------------
+	public OEEfailureLogger() { } // CONSTRUCTOR ------------------------
 	
 	public void init(String _itemName, String _oee_events_filename) {
 		this.itemName = _itemName;
 		
-		this.csv = new CSVLogger();
-		this.csv.init(_oee_events_filename, true, ';');
-		this.csv.header("DATE;TIME;" + itemName + ";CODE;EVENT\n");
+		this.csv = new CSVLogger(_oee_events_filename, true, ';');
+		this.csv.setHeader("DATE;TIME;" + itemName + ";CODE;EVENT\n");
 	}
 	
 	// PROCESS FAILURE MODES ----------------------------------------------
@@ -36,10 +35,11 @@ public class OEEeventLogger {
 	
 	// EVENT LOGGER TO CSV ---------------------------------------------------
 	
-	public void logEvent(int item, int code) {
-		csv.open();
+	public void logFailure(int item, int code) {
+		csv.open(false);
 		
-		csv.log(getDateAndTime(), false);
+		csv.log(getDate(), false);
+		csv.log(getTime(':'), true);
 		csv.log(item, true);
 		csv.log(code, true);
 		csv.log(reason(code), true); 

@@ -1,6 +1,6 @@
 package EluxOEE;
 
-import EluxUtils.CSVLogger;
+import EluxLogger.CSVLogger;
 
 public class OEEstatsCSV {
 	private String itemName;
@@ -20,14 +20,13 @@ public class OEEstatsCSV {
 		this.itemAmount = _itemAmount;
 		this.d = _d;
 		
-		this.csv = new CSVLogger();
-		this.csv.init(_oee_stats_filename, false, ';');
+		this.csv = new CSVLogger(_oee_stats_filename, false, ';');
 	}
 	
 	// PRINT STATS TO SUMMARY CSV ------------------------------------------
 	
-	public void saveOEEstats(boolean log) {
-		csv.open();
+	public void saveOEEstats(boolean logger) {
+		csv.open(false);
 		
 		// PRINT HEADER -----------------------------------------
 		csv.log("METRIC;CYCLE;" + itemInitial + " TOT", false);
@@ -119,6 +118,6 @@ public class OEEstatsCSV {
 			csv.log(d.items[i].getAvgCT() / 1000.0, true);
 		csv.eol();
 		
-		csv.close(log);
+		csv.close(logger);
 	}
 }

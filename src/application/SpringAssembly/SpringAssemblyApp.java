@@ -32,7 +32,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 
 	@Override public void run() {
 		do {
-			padLog("Start picking sequence");
+			logmsg("Start picking sequence");
 			boolean success;
 			do {
 				success = pick();
@@ -52,7 +52,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 		plc.closeGripper();
 		move.LIN("/_Spring/PickJig/Approach", 0.6, true);
 		success = plc.gripperIsHolding();
-		if (!success) padLog("Pick failed");
+		if (!success) logmsg("Pick failed");
 		return success;
 	}
 	
@@ -81,7 +81,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 	}
 	
 	private void stop() {
-		padLog("Program stopped");
+		logmsg("Program stopped");
 		dispose();
 	}
 	

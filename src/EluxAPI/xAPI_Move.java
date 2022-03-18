@@ -9,6 +9,7 @@ package EluxAPI;
 
 import static EluxUtils.Utils.*;
 import static EluxUtils.UMath.*;
+//import EluxLogger.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -117,7 +118,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		return scaledAccel;
 	}
 	
-	public Frame toFrame(String framePath) { 
+	public Frame p2f(String framePath) { 
 		try { return getApplicationData().getFrame(framePath).copyWithRedundancy(); }
 		catch(Exception e) { nonexistent(framePath); return null; }
 	}
@@ -142,25 +143,25 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		kiwaController = (Controller) getContext().getControllers().toArray()[0];
 		kiwa = (LBR) kiwaController.getDevices().toArray()[0];
 		homeFramePath = targetPath;
-		kiwa.setHomePosition(toFrame(targetPath));
+		kiwa.setHomePosition(p2f(targetPath));
 	}
 	public void setTool(Tool _tool) { tool = _tool; tool.attachTo(kiwa.getFlange()); }
 	public void setTCP(String _tcp) {
 		tcp = tool.getFrame(_tcp);
-		if(logger) padLog("TCP set to " + tool.getName() + ", frame " + tcp.getName());
+		if(logger) logmsg("TCP set to " + tool.getName() + ", frame " + tcp.getName());
 	}
 	
 	public void setGlobalSpeed(double speed) { this.setGlobalSpeed(speed, false); }
 	public void setGlobalSpeed(double speed, boolean log) { 
 		for (int i = 0; i < 7; i++) this.speed[i] = speed;
-		if(log) padLog("Now speed is " + String.format("%,.0f", speed * 100) + "%");
+		if(log) logmsg("Now speed is " + String.format("%,.0f", speed * 100) + "%");
 	}
 	public void setA7Speed(double speed) { this.speed[6] = speed; }
 	
 	public void setGlobalAccel(double accel) { this.setGlobalAccel(accel, false); }
 	public void setGlobalAccel(double accel, boolean log) { 
 		for (int i = 0; i < 7; i++) this.accel[i] = accel;
-		if(log) padLog("Now accel is " + String.format("%,.0f", accel * 100) + "%");
+		if(log) logmsg("Now accel is " + String.format("%,.0f", accel * 100) + "%");
 	}
 	public void setA7Accel(double accel) { this.accel[6] = accel; }
 	
@@ -187,7 +188,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		JTCond[7] = new JointTorqueCondition(JointEnum.J7, -maxTorque, maxTorque);
 		this.JTConds = JTCond[1].or(JTCond[2]).or(JTCond[3])
 				.or(JTCond[4]).or(JTCond[5]).or(JTCond[6]).or(JTCond[7]);
-		if(logger) padLog("Max Axis Torque set to " + maxTorque + " Nm.");
+		if(logger) logmsg("Max Axis Torque set to " + maxTorque + " Nm.");
 	}
 	
 	/**
@@ -225,25 +226,25 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	}
 	
 	public int collision() {
-		if(logger) padLog("Collision detected at\n" + getFlangePos().toStringInWorld());
+		if(logger) logmsg("Collision detected at\n" + getFlangePos().toStringInWorld());
 		mf.blinkRGB("RB", 500);
 		return -1;
 	}
 	
 	public int unreachable() {
-		padErr("Unable to perform movement to\n" + getFlangeTarget().toStringInWorld());
+		logErr("Unable to perform movement to\n" + getFlangeTarget().toStringInWorld());
 		mf.blinkRGB("RG", 500);
 		return -10;
 	}
 	
 	public int nonexistent(String targetPath) {
-		padErr("Target \"" + targetPath + "\" does not exist.");
+		logErr("Target \"" + targetPath + "\" does not exist.");
 		mf.blinkRGB("R", 500);
 		return -100;
 	}
 	
 	public void setMoveColorMF() {
-		//mf.setRGB("G");
+		mf.setRGB("OFF");
 	}
 	
 	// #################################################################################
@@ -256,6 +257,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	
 	public int PTP(Frame target, double relSpeed, boolean approx) {
 		try { 
+			if(logger) logmsg("Moving to " + target.getPath());
 			int success = 1;
 			setMoveColorMF();
 			if(approx) tcp.moveAsync(ptp(target)
@@ -280,8 +282,8 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	
 	public int PTP(String targetPath, double relSpeed, boolean approx) {
 		try {
-			if(logger) padLog("Moving to " + targetPath);
-			return PTP(toFrame(targetPath), relSpeed, approx); }
+			if(logger) logmsg("Moving to " + targetPath);
+			return PTP(p2f(targetPath), relSpeed, approx); }
 		catch(Exception e) { return nonexistent(targetPath); }
 	}
 	
@@ -347,7 +349,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	}
 	
 	public int LIN(String targetPath, double relSpeed, boolean approx) {
-		try { return LIN(toFrame(targetPath), relSpeed, approx); }
+		try { return LIN(p2f(targetPath), relSpeed, approx); }
 		catch(Exception e) { return nonexistent(targetPath); }
 	}
 	
@@ -414,7 +416,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 	}
 	
 	public int CIRC(String target1, String target2, double relSpeed, boolean approx) {
-		try { return CIRC(toFrame(target1), toFrame(target2), relSpeed, approx); }
+		try { return CIRC(p2f(target1), p2f(target2), relSpeed, approx); }
 		catch(Exception e) { return nonexistent(target1 + " or " + target2); }
 	}
 	

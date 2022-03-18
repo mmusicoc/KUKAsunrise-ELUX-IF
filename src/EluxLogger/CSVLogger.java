@@ -1,4 +1,4 @@
-package EluxUtils;
+package EluxLogger;
 
 import static EluxUtils.Utils.*;
 import static EluxUtils.UMath.*;
@@ -16,30 +16,35 @@ public class CSVLogger {
 	private FileWriter fw;
 	
 	
-	public CSVLogger() { } // CONSTRUCTOR ------------------------
-	
-	public void init(String filename, boolean append, char sepChar) {
+	public CSVLogger(String filename, boolean append, char sepChar) { // CONSTRUCTOR ------------------------
 		this.filename = filename;
 		this.append = append;
 		this.sepChar = sepChar;
 	}
 	
-	public void header(String _header) { this.header = new String(_header); }
+	public void setHeader(String _header) { this.header = new String(_header); }
 	
-	public boolean open() {
+	public boolean open(boolean log) {
 		try{
-			if(append) fw = new FileWriter(FILE_ROOTPATH + filename, true);
-			else fw = new FileWriter(new File(FILE_ROOTPATH + filename), false);
+			if(append) fw = new FileWriter(FILES_FOLDER + filename, true);
+			else fw = new FileWriter(new File(FILES_FOLDER + filename), false);
 			if(isFileEmpty(filename) || !append) {
-				if(append) padLog(filename + " is empty, creating new one.");
+				if(append && log) logmsg(filename + " is empty, creating new one.");
 				fw.append(header);
 			}
 			return true;
 		} catch (FileNotFoundException e) {
-			padErr("File " + filename + " not found");
-			return false;
+			try {
+				File newFile = new File(FILES_FOLDER + filename);
+				newFile.createNewFile();
+				return open(log);
+			} catch (IOException e1) {
+				logErr("Unable to create new file \"" + FILES_FOLDER + filename + "\"");
+				e1.printStackTrace();
+				return false;
+			}
 		} catch (IOException e) {
-			padErr("Error opening " + filename);
+			logErr("Error opening " + filename);
 			return false;
 		}
 	}
@@ -48,14 +53,13 @@ public class CSVLogger {
 		try {
 			fw.flush();
 			fw.close();
-			if(log) padLog("Data stored to " + System.getProperty("user.dir") + 
-								"\\" + FILE_ROOTPATH + filename);
+			if(log) logmsg("CSV stored to " + ROOT_PATH + FILES_FOLDER + filename);
 			return true;
 		} catch (FileNotFoundException e) {
-			padErr("File " + filename + " not found");
+			logErr("File " + filename + " not found");
 			return false;
 		} catch (IOException e) {
-			padErr("Error closing " + filename); 
+			logErr("Error closing " + filename); 
 			return false;
 		}
 		
@@ -63,15 +67,15 @@ public class CSVLogger {
 	
 	public boolean reset() {
 		try {
-			open();
-			fw = new FileWriter(new File(FILE_ROOTPATH + filename), false);
-			close(false);
+			this.open(false);
+			fw = new FileWriter(new File(FILES_FOLDER + filename), false);
+			this.close(false);
 			return true;
 		} catch (FileNotFoundException e) {
-			padErr("File " + filename + " not found");
+			logErr("File " + filename + " not found");
 			return false;
 		} catch (IOException e) {
-			padErr("Error closing " + filename); 
+			logErr("Error closing " + filename); 
 			return false;
 		}
 	}
@@ -81,7 +85,7 @@ public class CSVLogger {
 			fw.append("\n");
 			return true;
 		} catch (IOException e) {
-			padErr("Error writing to " + filename); 
+			logErr("Error writing to " + filename); 
 			return false;
 		}
 	}
@@ -92,7 +96,7 @@ public class CSVLogger {
 			fw.append(msg);
 			return true;
 		} catch (IOException e) {
-			padErr("Error writing to " + filename);
+			logErr("Error writing to " + filename);
 			return false;
 		}
 	}
@@ -103,5 +107,9 @@ public class CSVLogger {
 	
 	public boolean log(double value, boolean sepCharBefore) {
 		return log(d2s(value), sepCharBefore);
+	}
+	
+	public boolean log(char value, boolean sepCharBefore) {
+		return log(value + "", sepCharBefore);
 	}
 }

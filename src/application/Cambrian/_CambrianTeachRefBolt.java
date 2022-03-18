@@ -3,6 +3,7 @@ package application.Cambrian;
 import static EluxUtils.Utils.*;
 import static EluxUtils.UMath.*;
 import EluxAPI.*;
+import EluxLogger.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,38 +22,34 @@ public class _CambrianTeachRefBolt extends RoboticsAPIApplication {
 	@Inject private CambrianAPI cambrian = new CambrianAPI(elux);
 
 	String cambrianModel = "Elux_fridge_ref_bolt";
-	String RCP = "F8";
+	String RCP = "F7";
 	
 	@Override public void initialize() {
-		move.init("/_Cambrian/_Home",		// Home path
+		move.init("/_Cambrian/_HomeLB",		// Home path
 				tool, "/TCP",				// Tool, TCP
 				1.0, 1.0,					// Relative speed and acceleration
 				20.0, 5.0,					// Blending
 				15.0, 0,					// Collision detection (Nm), release mode
 				false);						// Logging
 		move.PTPhome(1, false);
-		cambrian.init("192.168.2.50", 4000);
+		cambrian.init(new ProLogger());
 	}
 
 	@Override public void run() {
 		move.PTP("/_Cambrian/_RBSP", 1, false);
-		if(cambrian.getNewPrediction(cambrianModel)) {			
-			updateFrame("/_Cambrian/Recipes/" + RCP + "/_RefBolt", cambrian.getTargetFrame());
+		if(cambrian.doScan(cambrianModel) > 0) {			
+			updateFrame("/_Cambrian/Recipes/" + RCP + "/_RefBolt", cambrian.getPredictFrames().getFirst());
 			pad.info("Bolt location frame has been updated");
 		}
 		else pad.info("Cambrian didnd't provide a prediction!");
 		cambrian.end();
-		padLog("Ending app, put on T1 and deselect app");
+		logmsg("Ending app, put on T1 and deselect app");
 		//getApplicationControl().halt();
 	}
 	
-	public void setRecipe(String RCP) {
-		this.RCP = RCP;
-	}
-	
 	public void updateFrame(String path, Frame newFrame) {
-		Frame rebasedFrame = newFrame.copyWithRedundancy(move.toFrame(path).getParent());
-		padLog("The bolt is located at: " + rf2s(rebasedFrame, false, false));
+		Frame rebasedFrame = newFrame.copyWithRedundancy(move.p2f(path).getParent());
+		logmsg("The bolt is located at: " + rf2s(rebasedFrame, false, false));
 		final IPersistenceEngine engine = this.getContext().getEngine(IPersistenceEngine.class);
 		final XmlApplicationDataSource framesData = (XmlApplicationDataSource) engine.getDefaultDataSource();
 		framesData.open();
@@ -60,7 +57,6 @@ public class _CambrianTeachRefBolt extends RoboticsAPIApplication {
 											rebasedFrame.getTransformationFromParent());
 		framesData.save();
 		framesData.saveFile();
-		padLog("Updated app data");
-		
+		logmsg("Updated app data");
 	}
 }

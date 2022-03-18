@@ -3,26 +3,25 @@ package application.Cambrian;
 import static EluxUtils.Utils.*;
 import static EluxUtils.UMath.*;
 import EluxAPI.*;
+import EluxLogger.Event;
+import EluxLogger.ProLogger;
 import EluxUtils.*;
-/*
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.net.Socket;
-*/
+
 import javax.inject.Inject;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class CambrianAPI {
 	private xAPI__ELUX elux;
+	private ProLogger log;
     private TCPsocket_client socket;
     
     private boolean logger;
     private boolean cambrian_success;
     private int cambrian_msg_type;
-    private String cambrian_reply;
+    private String cambrian_data;
     
+    FrameList predictionsList;
     private Frame target_frame;
     private int pick_type;
     
@@ -30,18 +29,19 @@ public class CambrianAPI {
 	@Inject public CambrianAPI(xAPI__ELUX _elux) { this.elux = _elux; }
     
 	// SETTER METHODS -------------------------------------------------------
-	public boolean init(String IP, int port) { 
-		socket = new TCPsocket_client(IP, port, 15000, '\n');
+	public boolean init(ProLogger logger) { 
+		this.log = logger;
+		socket = new TCPsocket_client("192.168.2.50", 4444, 15000, '\n');
 		if (socket.open()) {
 			sendRequest("PING", "");
-			if (cambrian_success) { padLog("Connection with Cambrian established"); return true; }
-			else padErr("Unable to communicate with Cambrian, stopping application.");
-		} else padErr("Unable to open TCP socket, stopping application");
+			if (cambrian_success) { logmsg("Connection with Cambrian established"); return true; }
+			else logErr("Unable to communicate with Cambrian, stopping application.");
+		} else logErr("Unable to open TCP socket, stopping application");
 		return false;
 	}
 	
 	public boolean end() { 
-		padLog("Closing socket...");
+		logmsg("Closing socket...");
 		return socket.close();
 	}
 	
@@ -51,21 +51,52 @@ public class CambrianAPI {
 	public void captureCalibration(){ sendRequest("CAPTURE CALIBRATION IMAGE", ""); }
 	public void loadModel(String model_name){ 
 		sendRequest("LOAD MODEL", model_name); 
-		if(logger) padLog("Loading model " + model_name + "..."); }
+		if(logger) logmsg("Cambrian loading model " + model_name + "..."); }
+	
+	public int doScan(String modelName) {
+		int totalPredictions = 0;
+		double initTime = getCurrentTime();
+		predictionsList = new FrameList();
+		if (getNewPrediction(modelName)) {
+			predictionsList.add(this.target_frame);
+			totalPredictions++;
+			while(getNextPrediction(modelName)) {
+				Frame newPrediction = this.target_frame;
+				totalPredictions++;
+				boolean ghost = false;
+				for(int i = 0; i < predictionsList.size(); i++) {
+					if(predictionsList.get(i).distanceTo(newPrediction) < 8) {	// FILTER GHOST PREDICTIONS
+						if(logger) logmsg("Prediction with higher confidence #" + i +
+											" already found in same scan");
+						ghost = true;
+					}
+				}
+				if(!ghost) predictionsList.add(newPrediction);
+			}
+		}
+		
+		log.msg(Event.Vision, "Cambrian response time = " + (getCurrentTime() - initTime) + " ms. Found" +
+				predictionsList.size() + "//" + totalPredictions + " unique predictions", 0, true);
+		return predictionsList.size();		
+	}
     
 	// GETTER METHODS -----------------------------------------------------   
-	public Frame getTargetFrame() { return target_frame; }
+	
+	public int getPredictAmount() { return predictionsList.size(); }
+	
+	public FrameList getPredictFrames() { return predictionsList; }
+	
 	public int getPickType() { return pick_type; }
-	public boolean getNewPrediction(String model_name) {
-		return getPrediction("GET PREDICTION", model_name); }
-	public boolean getNextPrediction(String model_name) {
+	
+	private boolean getNewPrediction(String modelName) {
+		return getPrediction("GET PREDICTION", modelName); }
+	private boolean getNextPrediction(String modelName) {
 		return getPrediction("GET NEXT PREDICTION", ""); }
 
 	private boolean getPrediction(String prediction_type, String model_name) {
-		double initTime = getTimeStamp();
 		if(sendRequest(prediction_type, model_name)) {
 			try {
-				String[] results = cambrian_reply.split(",");
+				String[] results = cambrian_data.split(",");
 				if(Integer.parseInt(results[0]) == 1) {
 					Double x, y, z, a, b, c;
 					x    = Double.parseDouble(results[1]);
@@ -82,15 +113,17 @@ public class CambrianAPI {
 					target_frame.setParent(flange_pos, false);
 					target_frame.setTransformationFromParent(Transformation.ofDeg
                     		(x, y, z, a, b, c));
-					if(logger) padLog("Cambrian ANS time = " + 
-                    					(getTimeStamp() - initTime) + "ms");
                     return true;
-                }                
+                }  
+				else {
+					if(logger && (predictionsList.size() == 0)) 
+						logmsg("Cambrian model not found: " + cambrian_data);
+				}
             } catch (Exception e) {
             	e.printStackTrace();
-            	padErr("Failed to parse prediction result");
+            	logErr("Failed to parse prediction result");
             }
-        } else padErr("Unable to send command");
+        } else logErr("Unable to send command");
         return false;
     }
 	
@@ -112,21 +145,22 @@ public class CambrianAPI {
 			if((ans = socket.read()) != "") {
 				try {
 					String msg = ans;
+					//if(logger) logmsg(ans);
 					String success = msg.substring(msg.indexOf("<<") + 2, msg.indexOf(">>"));
 					cambrian_success = (success.compareTo("OK") == 0 ? true : false);
 					msg = msg.substring(msg.indexOf(">>") + 2);
 					cambrian_msg_type = Integer.parseInt(msg.substring(
 							msg.indexOf("<<") + 2, msg.indexOf(">>")));
 					msg = msg.substring(msg.indexOf(">>") + 2);        
-					cambrian_reply = msg.substring(msg.indexOf("<<") + 2, msg.indexOf(">>"));
-					if(ans == "") padLog(cambrian_msg_type); // Useless, to avoid warning
+					cambrian_data = msg.substring(msg.indexOf("<<") + 2, msg.indexOf(">>"));
+					if(ans == "") logmsg(cambrian_msg_type); // Useless, to avoid warning
 					return true;
 				} catch (Exception e) { 
 					e.printStackTrace();
-	            	padErr("Failed to parse data"); 
+	            	logErr("Failed to parse data"); 
 				}
-			} else padErr("Received no data from Cambrian");
-		} else padErr("Unable to send request to Cambrian");
+			} else logErr("Received no data from Cambrian");
+		} else logErr("Unable to send request to Cambrian");
 		return false;
 	}
 }

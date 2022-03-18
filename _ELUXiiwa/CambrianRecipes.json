@@ -1,5 +1,5 @@
 {
-	"rl": [
+	"recipeList": [
 		{
 			"RCP": "Example",
 			"itemOrder": [
@@ -16,19 +16,19 @@
 						"Z": 0.79,
 						"A": 0.14,
 						"B": 0.25,
-						"C": -2.71
+						"U": -2.71
 					}
 				},
 				{
 					"jointID": 2,
-					"jointType": "C",
+					"jointType": "U",
 					"DO": {
 						"X": 1.78,
 						"Y": -0.79,
 						"Z": -2.21,
 						"A": -3.1,
 						"B": 5.93,
-						"C": 0.77
+						"U": 0.77
 					}
 				}
 			]
@@ -105,7 +105,7 @@
 				},
 				{
 					"jointID": 2,
-					"jointType": "C"
+					"jointType": "U"
 				},
 				{
 					"jointID": 3,
@@ -121,7 +121,7 @@
 				},
 				{
 					"jointID": 6,
-					"jointType": "C"
+					"jointType": "U"
 				}
 			]
 		},
@@ -174,11 +174,11 @@
 				},
 				{
 					"jointID": 9,
-					"jointType": "C"
+					"jointType": "U"
 				},
 				{
 					"jointID": 10,
-					"jointType": "C"
+					"jointType": "U"
 				}
 			]
 		},
@@ -204,7 +204,7 @@
 				},
 				{
 					"jointID": 3,
-					"jointType": "C"
+					"jointType": "U"
 				},
 				{
 					"jointID": 4,
@@ -216,7 +216,7 @@
 				},
 				{
 					"jointID": 6,
-					"jointType": "C"
+					"jointType": "U"
 				},
 				{
 					"jointID": 7,
@@ -236,54 +236,50 @@
 			"RCP": "F7",
 			"itemOrder": [
 				1,
-				2,
 				3,
+				4,
 				5,
-				6,
 				7,
-				8,
-				10,
 				9,
-				4
+				10
 			],
 			"items": [
 				{
 					"jointID": 1,
-					"jointType": "J"
+					"jointType": "W",
+					"multiJoint" : 2
 				},
 				{
-					"jointID": 2,
-					"jointType": "J"
+					"jointID": 2
 				},
 				{
 					"jointID": 3,
-					"jointType": "J"
+					"jointType": "W"
 				},
 				{
 					"jointID": 4,
-					"jointType": "C"
+					"jointType": "U"
 				},
 				{
 					"jointID": 5,
-					"jointType": "J"
+					"jointType": "W",
+					"multiJoint": 6
 				},
 				{
-					"jointID": 6,
-					"jointType": "J"
+					"jointID": 6
 				},
 				{
 					"jointID": 7,
-					"jointType": "J"
+					"jointType": "C",
+					"multiJoint": 8
 				},
 				{
-					"jointID": 8,
-					"jointType": "J"
+					"jointID": 8
 				},
 				{
 					"jointID": 9,
-					"jointType": "C"
-				}
-				,
+					"jointType": "U"
+				},
 				{
 					"jointID": 10,
 					"jointType": "J"
@@ -307,7 +303,7 @@
 				},
 				{
 					"jointID": 2,
-					"jointType": "C"
+					"jointType": "U"
 				},
 				{
 					"jointID": 3,
@@ -323,7 +319,7 @@
 				},
 				{
 					"jointID": 6,
-					"jointType": "C"
+					"jointType": "U"
 				}			
 				
 				

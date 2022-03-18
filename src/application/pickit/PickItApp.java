@@ -39,25 +39,25 @@ public class PickItApp extends RoboticsAPIApplication {
 	}
 
 	@Override public void run() {
-		padLog("Start picking sequence");
+		logmsg("Start picking sequence");
 		int box = 0;
 		int pick = 0;
 		scan(false);
 		while (pickit.isRunning()) {
 			box = pickit.getBox();
 			if (box > 0) {
-				padLog("Found " + box + " objects, picking model " + pickit.getObjType() 
+				logmsg("Found " + box + " objects, picking model " + pickit.getObjType() 
 						+ ", pickPoint "+ pickit.getPickID());
 				pick = pick(pickit.getPickFrame());
 				if (pick == 0) {
-					padLog("Object found unreachable by robot, polling next one");
+					logmsg("Object found unreachable by robot, polling next one");
 					if(pickit.getRemainingObj() > 0) pickit.doSendNextObj();
 					else scan(false);
 				} else if (pick == -1) {
-					padLog("Gripper collided with unexpected object");
+					logmsg("Gripper collided with unexpected object");
 					scan(false);
 				} else if (pick == -2) {
-					padLog("Object couldn't be exctracted from box");
+					logmsg("Object couldn't be exctracted from box");
 					scan(false);
 				} else {
 					failCounter = 0;
@@ -142,7 +142,7 @@ public class PickItApp extends RoboticsAPIApplication {
 			plc.openGripper();
 			move.LIN("/_PickIt/Pole/V_Zoffset",0.8, true);
 		} else {
-			padLog("None");
+			logmsg("None");
 		}
 	}
 	
@@ -157,7 +157,7 @@ public class PickItApp extends RoboticsAPIApplication {
 	}
 	
 	private void stop() {
-		padLog("Program stopped");
+		logmsg("Program stopped");
 		dispose();
 	}
 	
