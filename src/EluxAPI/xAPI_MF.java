@@ -57,6 +57,11 @@ public class xAPI_MF {
 		MFio.setLEDGreen(g);
 		MFio.setLEDBlue(b);
 	}
+	
+	/**
+	 * @param color
+	 * String R,G,B,RG,RB,GB,RGB,OFF
+	 */
 
 	public void setRGB(String color) {
 		if (color.equalsIgnoreCase("R")) this.setRGB(true,false,false);
@@ -67,7 +72,7 @@ public class xAPI_MF {
 		else if (color.equalsIgnoreCase("GB")) this.setRGB(false,true,true);
 		else if (color.equalsIgnoreCase("RGB")) this.setRGB(true,true,true);
 		else if (color.equalsIgnoreCase("OFF")) this.setRGB(false,false,false);
-		else padLog("MediaFlange color not valid");
+		else logmsg("MediaFlange color not valid");
 	}
 	
 	public void blinkRGB(String color, int millis) {
@@ -88,7 +93,7 @@ public class xAPI_MF {
 		this.saveRGB();
 		if((prevRGB[0] == true) && (prevRGB[1] == false) && (prevRGB[2] == false)) ;
 		else this.setRGB("GB");
-		padLog("Press USER GREEN BUTTON to continue");
+		logmsg("Press USER GREEN BUTTON to continue");
 		while ((timer < timeout) | (timeout == -1)) {
 			if (this.getUserButton()) break;
 			waitMillis(50);

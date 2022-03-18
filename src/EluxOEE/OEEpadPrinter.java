@@ -24,7 +24,7 @@ public class OEEpadPrinter {
 	public void printStatsCycle() {
 		double rate;
 		String cycleID = cycleName.toLowerCase() + "s";
-		String stats = new String("STATISTICS FOR " + cycleName + "S -----------");
+		String stats = new String("STATISTICS FOR " + cycleName + "S -----------------");
 		stats = (stats + "\nTOTAL " + cycleID + ": " + cycle.getTotal());
 		stats = (stats + "\nGOOD " + cycleID + ": " + cycle.getGood());
 		cycleID = cycleID.substring(0,1).toUpperCase() + cycleID.substring(1);
@@ -42,7 +42,7 @@ public class OEEpadPrinter {
 				cycle.getAvgCT() / 1000));
 		
 		stats = (stats + "\n---------------------------------------------------");
-		padLog(stats);
+		logmsg(stats);
 	}
 	
 	public void printStatsItem(int item) {
@@ -86,6 +86,6 @@ public class OEEpadPrinter {
 				items[item].getAvgCT() / 1000));
 		
 		stats = (stats + "\n---------------------------------------------------");
-		padLog(stats);
+		logmsg(stats);
 	}
 }

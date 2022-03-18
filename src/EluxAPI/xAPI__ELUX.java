@@ -5,6 +5,8 @@ package EluxAPI;
 */
 
 import EluxOEE.*;
+import EluxLogger.*;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
@@ -29,6 +31,8 @@ public class xAPI__ELUX extends RoboticsAPIApplication {
 	@Inject private xAPI_Compliance comp = new xAPI_Compliance(mf, move);
 	@Inject private xAPI_Cobot cobot = new xAPI_Cobot(mf, plc, move, comp);
 	@Inject private OEEmgr oee = new OEEmgr();
+	@Inject private ProLogger log = new ProLogger();
+	
 
 	@Inject	public xAPI__ELUX() { }
 	
@@ -48,4 +52,5 @@ public class xAPI__ELUX extends RoboticsAPIApplication {
 	public xAPI_Compliance getCompliance() { return comp; }
 	public xAPI_Cobot getCobot() { return cobot; }
 	public OEEmgr getOEE() { return oee; }
+	public ProLogger getLog() { return log; }
 }

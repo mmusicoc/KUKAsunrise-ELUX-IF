@@ -48,7 +48,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		state = States.home;
 		move.setHome("/_PinAssembly/PrePick");
 		move.setGlobalSpeed(0.25);
-		move.setJTconds(10.0);
+		move.setMaxTorque(10.0);
 	}
 
 	@Override public void run() {
@@ -72,7 +72,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	}
 	
 	private void loopRoutine(){
-		if (log1) padLog("Loop routine.");
+		if (log1) logmsg("Loop routine.");
 		pickPinZ("/_PinAssembly/PrePick/Pick1");
 		move.PTP("/_PinAssembly/PrePlace", relSpeed, false);
 		placePinY("/_PinAssembly/PrePlace/Place1");
@@ -95,14 +95,14 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		move.PTP(preFrame, relSpeed, false);
-		if(log1) padLog("Picking process");
+		if(log1) logmsg("Picking process");
 		move.LIN(targetFrame, approachSpeed, false);
 		cobot.checkPinPick(5, probeSpeed);
 		move.LIN(preFrame, approachSpeed, false);
 	}
 	
 	private void pickPinZ(String targetFramePath) {
-		if (log1) padLog("Pick pin macro at " + targetFramePath);
+		if (log1) logmsg("Pick pin macro at " + targetFramePath);
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		this.pickPinZ(targetFrame.copyWithRedundancy());
 	}
@@ -113,7 +113,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 		preFrame.setZ(preFrame.getZ() - approachOffset);
 		do  {
 			move.PTP(preFrame, relSpeed, false);
-			if (log1) padLog("Placing process");
+			if (log1) logmsg("Placing process");
 			move.LIN(targetFrame, approachSpeed, false);
 			cobot.checkPinPlace(5, probeSpeed);
 			inserted = move.twistJ7withCheck(45, 30, 0.15, 0.7);
@@ -123,7 +123,7 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 	}
 	
 	private void placePinY(String targetFramePath) {
-		if (log1) padLog("Place pin macro at " + targetFramePath);
+		if (log1) logmsg("Place pin macro at " + targetFramePath);
 		ObjectFrame targetFrame = getApplicationData().getFrame(targetFramePath);
 		this.placePinY(targetFrame.copyWithRedundancy());
 	}
@@ -136,21 +136,21 @@ public class Tr6_PinAssembly extends RoboticsAPIApplication {
 						case 0:  						// KEY - TEACH MODE
 							if (state == States.loop) {
 								state = States.home;
-							} else padLog("Already going to teach mode.");
+							} else logmsg("Already going to teach mode.");
 							break;
 						case 1: 						// KEY - DELETE PREVIOUS
 							if (state == States.teach) {
 								if (frameList.getLast().hasAdditionalParameter("PICK")) plc.openGripper();	
 								else if (frameList.getLast().hasAdditionalParameter("PLACE")) plc.closeGripper();	
 								frameList.removeLast();
-							} else padLog("Key not available in this mode.");
+							} else logmsg("Key not available in this mode.");
 							break;
 						case 2:  						// KEY - SET SPEED
 							move.setGlobalSpeed(pad.askSpeed());
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTconds(maxTorque);
+							move.setMaxTorque(maxTorque);
 							break;
 					}
 				}

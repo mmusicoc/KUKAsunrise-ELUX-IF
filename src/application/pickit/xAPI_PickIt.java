@@ -68,11 +68,11 @@ public class xAPI_PickIt{
 			if (!waitPickitAnswer()) return -1;
 			return getRemainingObj() + 1;
 		} else if (_status == _OBJ_FOUND_NONE){
-			padLog("Pick-It was unable to find any reachable objects");
+			logmsg("Pick-It was unable to find any reachable objects");
 			waitMillis(1000);
 			return -2;
 		} else if (_status == _ROI_EMPTY){
-			padLog("Pick-It found the box empty");
+			logmsg("Pick-It found the box empty");
 			waitMillis(1000);
 			return -3;
 		} else return 0;
@@ -85,7 +85,7 @@ public class xAPI_PickIt{
 				waitMillis(10);
 				timeCounter += 10;
 				if (timeCounter >= _timeout) {
-					padErr("Timeout is overdue, PickIt didn't answer");
+					logErr("Timeout is overdue, PickIt didn't answer");
 					return false;
 				}
 			}
@@ -135,13 +135,13 @@ public class xAPI_PickIt{
 		_command = _CONFIGURE;
 		while (_status != _CONFIG_OK) {
 			if (_status == _CONFIG_FAILED) {
-				padErr("Pick-it did NOT configure correctly.");
+				logErr("Pick-it did NOT configure correctly.");
 				return false;
 			}
 			waitMillis(10);
 
 		}
-		padLog("PickIt configured with Setup ID = " + setup_id + " and Product ID = " + product_id);
+		logmsg("PickIt configured with Setup ID = " + setup_id + " and Product ID = " + product_id);
 		return true;
 	}
 	
@@ -156,7 +156,7 @@ public class xAPI_PickIt{
 			receive_data_thread.start();
 			send_data_thread.start();
 		} catch (Exception e) {
-			padErr(e.toString());
+			logErr(e.toString());
 			return false;
 		}
 		return true;
@@ -170,7 +170,7 @@ public class xAPI_PickIt{
 			from_pickit.close();
 			_socket.close();
 		} catch (Exception e) {
-			padErr("Exception during closing pickit comm");
+			logErr("Exception during closing pickit comm");
 		}
 		_status = _STOPPED;
 	}
@@ -187,11 +187,11 @@ public class xAPI_PickIt{
 		int[] data = new int[intBuf.remaining()];
 		intBuf.get(data);
 		if (data[14] != _ROBOT_TYPE) {
-			padErr("Pick-it is not configured to communicate with KUKA LBR.");
+			logErr("Pick-it is not configured to communicate with KUKA LBR.");
 			return false;
 		}
 		if (data[15] != _INTERFACE_VERSION) {
-			padErr("The Pickit-it interface version does not match the version of this program.");
+			logErr("The Pickit-it interface version does not match the version of this program.");
 			return false;
 		}
 		_status = data[13];
@@ -224,24 +224,24 @@ public class xAPI_PickIt{
 	}
 	
 	public void printData(int[] data){
-		padLog("Data: *****");
-		padLog("B00: " + (double)data[0]/_FACTOR * 1000);	// X
-		padLog("B01: " + (double)data[1]/_FACTOR * 1000);	// Y
-		padLog("B02: " + (double)data[2]/_FACTOR * 1000);	// Z
-		padLog("B03: " + (double)data[3]/_FACTOR);			// A
-		padLog("B04: " + (double)data[4]/_FACTOR);			// B
-		padLog("B05: " + (double)data[5]/_FACTOR);			// C
-		padLog("B06: " + data[6]);							// Nothing, must be 0
-		padLog("B07: " + data[7]);							// Object age (ms) / PickrefID
-		padLog("B08: " + data[8]);							// Object type (if status = 20) / PickID (if status = 70)
-		padLog("B09: " + data[9]);							// Object dimension (X)
-		padLog("B10: " + data[10]);							// Object dimension (Y)
-		padLog("B11: " + data[11]);							// Object dimension (Z)
-		padLog("B12: " + data[12]);							// Remaining objects (-1)
-		padLog("B13: " + data[13]);							// Status = 20 if object found
-		padLog("B14: " + data[14]);							// Robot type = 5 if KUKA LBR iiwa
-		padLog("B15: " + data[15]);							// Version number = 11
-		padLog("End of data. *****");
+		logmsg("Data: *****");
+		logmsg("B00: " + (double)data[0]/_FACTOR * 1000);	// X
+		logmsg("B01: " + (double)data[1]/_FACTOR * 1000);	// Y
+		logmsg("B02: " + (double)data[2]/_FACTOR * 1000);	// Z
+		logmsg("B03: " + (double)data[3]/_FACTOR);			// A
+		logmsg("B04: " + (double)data[4]/_FACTOR);			// B
+		logmsg("B05: " + (double)data[5]/_FACTOR);			// C
+		logmsg("B06: " + data[6]);							// Nothing, must be 0
+		logmsg("B07: " + data[7]);							// Object age (ms) / PickrefID
+		logmsg("B08: " + data[8]);							// Object type (if status = 20) / PickID (if status = 70)
+		logmsg("B09: " + data[9]);							// Object dimension (X)
+		logmsg("B10: " + data[10]);							// Object dimension (Y)
+		logmsg("B11: " + data[11]);							// Object dimension (Z)
+		logmsg("B12: " + data[12]);							// Remaining objects (-1)
+		logmsg("B13: " + data[13]);							// Status = 20 if object found
+		logmsg("B14: " + data[14]);							// Robot type = 5 if KUKA LBR iiwa
+		logmsg("B15: " + data[15]);							// Version number = 11
+		logmsg("End of data. *****");
 	}
 
 	private boolean sendData() {
@@ -268,14 +268,14 @@ public class xAPI_PickIt{
 	private class receiveDataThread extends Thread {
 		private volatile boolean running = true;
 		public void terminate() {
-			padLog("Terminating receiveDataThread");
+			logmsg("Terminating receiveDataThread");
 			running = false;
 		}
 		@Override public void run() {
 			while(running) {
 				try { receiveData(); Thread.sleep(10); } 
 				catch (InterruptedException e) {
-					padLog("Interrupted receiveDataThread");
+					logmsg("Interrupted receiveDataThread");
 					running = false;
 				}
 			}
@@ -285,19 +285,19 @@ public class xAPI_PickIt{
 	private class sendDataThread extends Thread {
 		private volatile boolean running = true;
 		public void terminate() {
-			padLog("Terminating sendDataThread");
+			logmsg("Terminating sendDataThread");
 	    	running = false;
 		}
 		@Override public void run() {
 			while(running) {
 				try {
 					if (!sendData()) {
-						padErr("Failed to write, stopping sendDataThread");
+						logErr("Failed to write, stopping sendDataThread");
 						running = false;
 					}
 					Thread.sleep(10);
 				} catch (InterruptedException e) { 
-					padLog("Interrupted sendDataThread");
+					logmsg("Interrupted sendDataThread");
 					running = false; 
 				}
 			}

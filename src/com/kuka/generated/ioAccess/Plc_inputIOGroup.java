@@ -34,7 +34,7 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 		addInput("App_Reset", IOTypes.BOOLEAN, 1);
 		addInput("App_Start", IOTypes.BOOLEAN, 1);
 		addInput("Life_bit", IOTypes.BOOLEAN, 1);
-		addInput("Mission_ExitAllow", IOTypes.BOOLEAN, 1);
+		addInput("Mission_End", IOTypes.BOOLEAN, 1);
 		addInput("Mission_Index", IOTypes.UNSIGNED_INTEGER, 16);
 		addInput("Mission_PosAllow", IOTypes.BOOLEAN, 1);
 		addInput("Mission_Start", IOTypes.BOOLEAN, 1);
@@ -46,6 +46,13 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 		addInput("Pinza_PartLost", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_Positionig", IOTypes.BOOLEAN, 1);
 		addInput("Pinza_Releasing", IOTypes.BOOLEAN, 1);
+		addInput("DIF10", IOTypes.BOOLEAN, 1);
+		addInput("DIF11", IOTypes.BOOLEAN, 1);
+		addInput("DIF12", IOTypes.BOOLEAN, 1);
+		addInput("DIF13", IOTypes.BOOLEAN, 1);
+		addInput("Proc_PNC", IOTypes.UNSIGNED_INTEGER, 32);
+		addInput("Proc_SN", IOTypes.UNSIGNED_INTEGER, 32);
+		addInput("Proc_LoadRecipe", IOTypes.BOOLEAN, 1);
 	}
 
 	/**
@@ -149,7 +156,7 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital input '<i>Mission_ExitAllow</i>'</b>.<br>
+	 * Gets the value of the <b>digital input '<i>Mission_End</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -161,11 +168,11 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital input 'Mission_ExitAllow'
+	 * @return current value of the digital input 'Mission_End'
 	 */
-	public boolean getMission_ExitAllow()
+	public boolean getMission_End()
 	{
-		return getBooleanIOValue("Mission_ExitAllow", false);
+		return getBooleanIOValue("Mission_End", false);
 	}
 
 	/**
@@ -386,6 +393,146 @@ public class Plc_inputIOGroup extends AbstractIOGroup
 	public boolean getPinza_Releasing()
 	{
 		return getBooleanIOValue("Pinza_Releasing", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF10</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF10'
+	 */
+	public boolean getDIF10()
+	{
+		return getBooleanIOValue("DIF10", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF11</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF11'
+	 */
+	public boolean getDIF11()
+	{
+		return getBooleanIOValue("DIF11", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF12</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF12'
+	 */
+	public boolean getDIF12()
+	{
+		return getBooleanIOValue("DIF12", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>DIF13</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'DIF13'
+	 */
+	public boolean getDIF13()
+	{
+		return getBooleanIOValue("DIF13", false);
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>Proc_PNC</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [0; 4294967295]
+	 *
+	 * @return current value of the digital input 'Proc_PNC'
+	 */
+	public java.lang.Long getProc_PNC()
+	{
+		return getNumberIOValue("Proc_PNC", false).longValue();
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>Proc_SN</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [0; 4294967295]
+	 *
+	 * @return current value of the digital input 'Proc_SN'
+	 */
+	public java.lang.Long getProc_SN()
+	{
+		return getNumberIOValue("Proc_SN", false).longValue();
+	}
+
+	/**
+	 * Gets the value of the <b>digital input '<i>Proc_LoadRecipe</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital input
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital input 'Proc_LoadRecipe'
+	 */
+	public boolean getProc_LoadRecipe()
+	{
+		return getBooleanIOValue("Proc_LoadRecipe", false);
 	}
 
 }

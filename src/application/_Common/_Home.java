@@ -28,7 +28,7 @@ public class _Home extends RoboticsAPIApplication {
 		mf.setRGB("G");
 		switch (promptAns) {
 			case 0:
-				padLog("Moving to Shutoff REST");
+				logmsg("Moving to Shutoff REST");
 				kiwa.move(ptp( 	Math.toRadians(90),	// A1
 								Math.toRadians(-36),// A2
 								Math.toRadians(0),	// A3
@@ -38,7 +38,7 @@ public class _Home extends RoboticsAPIApplication {
 								Math.toRadians(0))	// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 1:
-				padLog("Moving to Teach LEFT");
+				logmsg("Moving to Teach LEFT");
 				kiwa.move(ptp( 	Math.toRadians(65),	// A1
 								Math.toRadians(45),	// A2
 								Math.toRadians(0),	// A3
@@ -48,7 +48,7 @@ public class _Home extends RoboticsAPIApplication {
 								Math.toRadians(-25))// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 2:
-				padLog("Moving to Teach CENTRAL");
+				logmsg("Moving to Teach CENTRAL");
 				kiwa.move(ptp( 	Math.toRadians(90),	// A1
 								Math.toRadians(45),	// A2
 								Math.toRadians(0),	// A3
@@ -59,7 +59,7 @@ public class _Home extends RoboticsAPIApplication {
 							.setJointVelocityRel(relSpeed)); 
 				break;
 			case 3:
-				padLog("Moving to Teach RIGHT");
+				logmsg("Moving to Teach RIGHT");
 				kiwa.move(ptp( 	Math.toRadians(115),// A1
 								Math.toRadians(45),	// A2
 								Math.toRadians(0),	// A3
@@ -69,7 +69,7 @@ public class _Home extends RoboticsAPIApplication {
 								Math.toRadians(25))	// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 4:
-				padLog("Moving to VERTICAL");
+				logmsg("Moving to VERTICAL");
 				kiwa.move(ptp( 	Math.toRadians(0),	// A1
 								Math.toRadians(0),	// A2
 								Math.toRadians(0),	// A3
@@ -79,7 +79,7 @@ public class _Home extends RoboticsAPIApplication {
 								Math.toRadians(0))	// A6
 							.setJointVelocityRel(relSpeed)); break;
 			case 5:
-				padLog("Moving to HORIZONTAL");
+				logmsg("Moving to HORIZONTAL");
 				kiwa.move(ptp( 	Math.toRadians(90),	// A1
 								Math.toRadians(90),	// A2
 								Math.toRadians(0),	// A3
@@ -91,7 +91,7 @@ public class _Home extends RoboticsAPIApplication {
 		}
 		
 		mf.setRGB("OFF");
-		padLog("Finished program.");
+		logmsg("Finished program.");
 		return;
 	}
 }

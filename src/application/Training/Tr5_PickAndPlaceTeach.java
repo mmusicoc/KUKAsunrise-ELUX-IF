@@ -56,7 +56,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		move.setTool(gripper);
 		move.setTCP("/GripperCenter");
 		move.setGlobalSpeed(0.25);
-		move.setJTconds(10.0);					
+		move.setMaxTorque(10.0);					
 	}
 
 	@Override public void run() {
@@ -84,7 +84,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	private void teachRoutine(){			// HANDGUIDING PHASE
 		int btnInput;
 		mf.waitUserButton();
-		padLog("Start handguiding teaching.");
+		logmsg("Start handguiding teaching.");
 		mf.setRGB("B");
 		comp.posHoldStart();
 		
@@ -96,7 +96,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 				switch (btnInput) {
 					case 10: 							// Exit hand guiding phase
 						if (frameList.size() >= 2) break teachLoop;
-						else padLog("Record at least 2 positions to start running.");
+						else logmsg("Record at least 2 positions to start running.");
 						break;
 					case 01: 					// Record current position
 						frameList.add(newFrame, log1);
@@ -106,14 +106,14 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 						mf.blinkRGB("GB", 500);
 						closeGripperCheck(true);
 						frameList.add(newFrame, log1);
-						padLog("Pick here");
+						logmsg("Pick here");
 						break;
 					case 03:					// Record current position & PLACE
 						newFrame.setAdditionalParameter("PLACE", 1); 
 						mf.blinkRGB("RB", 500);
 						openGripperCheck(true);
 						frameList.add(newFrame, log1);
-						padLog("Place here");
+						logmsg("Place here");
 						break;
 					case 11:
 						mf.blinkRGB("RGB", 500);
@@ -122,13 +122,13 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 						move.LINREL(0, 0, 0.01, 0.5, false);
 						comp.posHoldStart();
 					default:
-						padLog("Command not valid, try again");
+						logmsg("Command not valid, try again");
 						continue teachLoop;
 				}
 			}
 			waitMillis(5);
 		} 
-		padLog("Exiting handguiding teaching mode...");
+		logmsg("Exiting handguiding teaching mode...");
 		comp.posHoldCancel();
 		move.LINREL(0, 0, 0.01, 0.5, false);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
@@ -138,21 +138,21 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 	private void loopRoutine(){
 		Frame targetFrame;
 		endLoopRoutine = false;
-		if (log1) padLog("Loop backwards.");
+		if (log1) logmsg("Loop backwards.");
 		for (int i = frameList.size()-1; i >= 0; i--) { 		// loop for going the opposite direction
 			if (endLoopRoutine) { endLoopRoutine = false; return; }
 			targetFrame = frameList.get(i);
-			if (log2) padLog("Going to Frame "+ i +".");
+			if (log2) logmsg("Going to Frame "+ i +".");
 			if (targetFrame.hasAdditionalParameter("PICK")) placeZ(targetFrame);		// Going backwards, inverse actions
 			else if (targetFrame.hasAdditionalParameter("PLACE")) pickZ(targetFrame);
 			else move.PTP(targetFrame, 1, false);
 		}
 		
-		if (log1) padLog("Loop forward");
+		if (log1) logmsg("Loop forward");
 		for (int i = 0; i < frameList.size(); i++) {
 			if (endLoopRoutine) { endLoopRoutine = false; return; }
 			targetFrame = frameList.get(i);
-			if (log2) padLog("Going to Frame "+ i +".");
+			if (log2) logmsg("Going to Frame "+ i +".");
 			if (targetFrame.hasAdditionalParameter("PICK")) pickZ(targetFrame);			// Going forward
 			else if (targetFrame.hasAdditionalParameter("PLACE")) placeZ(targetFrame);
 			else move.PTP(targetFrame, 1, false);
@@ -163,7 +163,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
 		move.PTP(preFrame, 1, false);
-		if(log1) padLog("Picking process");
+		if(log1) logmsg("Picking process");
 		move.LIN(targetFrame, approachSpeed, false);
 		cobot.probe(0, 0, 25, 0.1, 3);
 		closeGripperCheck(false);
@@ -174,7 +174,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
 		move.PTP(preFrame, 1, false);
-		if(log1) padLog("Placing process");
+		if(log1) logmsg("Placing process");
 		move.LIN(targetFrame, approachSpeed, false);
 		openGripperCheck(false);
 		move.LIN(preFrame, approachSpeed, false);
@@ -186,13 +186,13 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 			waitMillis(50);
 		}
 		if (plc.gripperIsHolding()){
-			if(log1) padLog("Workpiece gripped");
+			if(log1) logmsg("Workpiece gripped");
 			workpieceGripped = true;
 			if (isPosHold) comp.posHoldCancel();
 		//	workpiece.attachTo(gripper.getDefaultMotionFrame()); 
 			if (isPosHold) comp.posHoldStart();
 		} else {
-			padLog("Workpiece NOT gripped");
+			logmsg("Workpiece NOT gripped");
 		}
 	}
 	
@@ -202,7 +202,7 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 		if (workpieceGripped) {
 			workpieceGripped = false;
 			if (isPosHold) comp.posHoldCancel();
-			if(log1) padLog("Workpiece released");
+			if(log1) logmsg("Workpiece released");
 		//	workpiece.detach(); 
 			if (isPosHold) comp.posHoldStart();
 		}
@@ -218,21 +218,21 @@ public class Tr5_PickAndPlaceTeach extends RoboticsAPIApplication {
 								state = States.home;
 								endLoopRoutine = true;
 								break;
-							} else padLog("Already going to teach mode.");
+							} else logmsg("Already going to teach mode.");
 							break;
 						case 1: 						// KEY - DELETE PREVIOUS
 							if (state == States.teach) {
 								if (frameList.getLast().hasAdditionalParameter("PICK")) plc.openGripper();	
 								else if (frameList.getLast().hasAdditionalParameter("PLACE")) plc.closeGripper();	
 								frameList.removeLast();
-							} else padLog("Key not available in this mode.");
+							} else logmsg("Key not available in this mode.");
 							break;
 						case 2:  						// KEY - SET SPEED
 							move.setGlobalSpeed(pad.askSpeed());
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTconds(maxTorque);
+							move.setMaxTorque(maxTorque);
 							break;
 					}
 				}

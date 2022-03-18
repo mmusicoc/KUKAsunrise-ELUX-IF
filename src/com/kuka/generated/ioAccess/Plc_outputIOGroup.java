@@ -38,12 +38,17 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 		addDigitalOutput("App_ResetDone", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Robot_InHome", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_IndexFBK", IOTypes.UNSIGNED_INTEGER, 16);
-		addDigitalOutput("Mission_Run", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("Mission_Running", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_AtPos", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_ExitDone", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Mission_Result", IOTypes.UNSIGNED_INTEGER, 8);
 		addDigitalOutput("Pinza_Apri", IOTypes.BOOLEAN, 1);
 		addDigitalOutput("Pinza_Chiudi", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO04", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO05", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO06", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("DO07", IOTypes.BOOLEAN, 1);
+		addDigitalOutput("Proc_RecipeLoaded", IOTypes.BOOLEAN, 1);
 	}
 
 	/**
@@ -407,7 +412,7 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 	}
 
 	/**
-	 * Gets the value of the <b>digital output '<i>Mission_Run</i>'</b>.<br>
+	 * Gets the value of the <b>digital output '<i>Mission_Running</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -419,15 +424,15 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 	 * <b>Range of the I/O value:</b><br>
 	 * [false; true]
 	 *
-	 * @return current value of the digital output 'Mission_Run'
+	 * @return current value of the digital output 'Mission_Running'
 	 */
-	public boolean getMission_Run()
+	public boolean getMission_Running()
 	{
-		return getBooleanIOValue("Mission_Run", true);
+		return getBooleanIOValue("Mission_Running", true);
 	}
 
 	/**
-	 * Sets the value of the <b>digital output '<i>Mission_Run</i>'</b>.<br>
+	 * Sets the value of the <b>digital output '<i>Mission_Running</i>'</b>.<br>
 	 * <i>This method is automatically generated. Please, do not modify!</i>
 	 * <p>
 	 * <b>I/O direction and type:</b><br>
@@ -440,11 +445,11 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 	 * [false; true]
 	 *
 	 * @param value
-	 *            the value, which has to be written to the digital output 'Mission_Run'
+	 *            the value, which has to be written to the digital output 'Mission_Running'
 	 */
-	public void setMission_Run(java.lang.Boolean value)
+	public void setMission_Running(java.lang.Boolean value)
 	{
-		setDigitalOutput("Mission_Run", value);
+		setDigitalOutput("Mission_Running", value);
 	}
 
 	/**
@@ -650,6 +655,211 @@ public class Plc_outputIOGroup extends AbstractIOGroup
 	public void setPinza_Chiudi(java.lang.Boolean value)
 	{
 		setDigitalOutput("Pinza_Chiudi", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO04</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO04'
+	 */
+	public boolean getDO04()
+	{
+		return getBooleanIOValue("DO04", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO04</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO04'
+	 */
+	public void setDO04(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO04", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO05</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO05'
+	 */
+	public boolean getDO05()
+	{
+		return getBooleanIOValue("DO05", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO05</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO05'
+	 */
+	public void setDO05(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO05", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO06</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO06'
+	 */
+	public boolean getDO06()
+	{
+		return getBooleanIOValue("DO06", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO06</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO06'
+	 */
+	public void setDO06(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO06", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>DO07</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'DO07'
+	 */
+	public boolean getDO07()
+	{
+		return getBooleanIOValue("DO07", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>DO07</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'DO07'
+	 */
+	public void setDO07(java.lang.Boolean value)
+	{
+		setDigitalOutput("DO07", value);
+	}
+
+	/**
+	 * Gets the value of the <b>digital output '<i>Proc_RecipeLoaded</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @return current value of the digital output 'Proc_RecipeLoaded'
+	 */
+	public boolean getProc_RecipeLoaded()
+	{
+		return getBooleanIOValue("Proc_RecipeLoaded", true);
+	}
+
+	/**
+	 * Sets the value of the <b>digital output '<i>Proc_RecipeLoaded</i>'</b>.<br>
+	 * <i>This method is automatically generated. Please, do not modify!</i>
+	 * <p>
+	 * <b>I/O direction and type:</b><br>
+	 * digital output
+	 * <p>
+	 * <b>User description of the I/O:</b><br>
+	 * ./.
+	 * <p>
+	 * <b>Range of the I/O value:</b><br>
+	 * [false; true]
+	 *
+	 * @param value
+	 *            the value, which has to be written to the digital output 'Proc_RecipeLoaded'
+	 */
+	public void setProc_RecipeLoaded(java.lang.Boolean value)
+	{
+		setDigitalOutput("Proc_RecipeLoaded", value);
 	}
 
 }

@@ -16,7 +16,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 	@Inject private xAPI_Move move = elux.getMove();
 	
 	@Override public void initialize() {
-		move.setJTconds(15.0);
+		move.setMaxTorque(15.0);
 		move.setGlobalSpeed(1);
 		move.setBlending(20, 5);
 		move.setTool(GripperSpring);
@@ -32,7 +32,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 
 	@Override public void run() {
 		do {
-			padLog("Start picking sequence");
+			logmsg("Start picking sequence");
 			boolean success;
 			do {
 				success = pick();
@@ -52,7 +52,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 		plc.closeGripper();
 		move.LIN("/_Spring/PickJig/Approach", 0.6, true);
 		success = plc.gripperIsHolding();
-		if (!success) padLog("Pick failed");
+		if (!success) logmsg("Pick failed");
 		return success;
 	}
 	
@@ -81,7 +81,7 @@ public class SpringAssemblyApp extends RoboticsAPIApplication {
 	}
 	
 	private void stop() {
-		padLog("Program stopped");
+		logmsg("Program stopped");
 		dispose();
 	}
 	

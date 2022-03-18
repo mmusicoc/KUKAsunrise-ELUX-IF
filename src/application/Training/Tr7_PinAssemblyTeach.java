@@ -57,7 +57,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		state = States.home;
 		move.setHome("/_PinAssembly/PrePick");
 		move.setGlobalSpeed(0.25);
-		move.setJTconds(10.0);
+		move.setMaxTorque(10.0);
 	}
 
 	@Override public void run() {
@@ -83,7 +83,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 	
 	private void teachRoutine(){			// HANDGUIDING PHASE
 		int btnInput;
-		padLog("Start handguiding teaching mode."); 
+		logmsg("Start handguiding teaching mode."); 
 		mf.waitUserButton();
 		comp.posHoldStart();
 		
@@ -95,7 +95,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 				switch (btnInput) {
 					case 10: 							// Exit hand guiding phase
 						if (frameList.size() >= 2) break teachLoop;
-						else padLog("Record at least 2 positions to start running.");
+						else logmsg("Record at least 2 positions to start running.");
 						break;
 					case 01: 					// Record current position
 						frameList.add(newFrame, log1);
@@ -104,13 +104,13 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 						newFrame.setAdditionalParameter("PICK", 1);
 						mf.blinkRGB("GB", 500);
 						frameList.add(newFrame, log1);
-						padLog("Pick here");
+						logmsg("Pick here");
 						break;
 					case 03:
 						newFrame.setAdditionalParameter("PLACE", 1);
 						mf.blinkRGB("RB", 500);
 						frameList.add(newFrame, log1);
-						padLog("Place here");
+						logmsg("Place here");
 						break;
 					case 11:
 						mf.blinkRGB("RGB", 500);
@@ -119,13 +119,13 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 						move.LINREL(0, 0, 0.01, 0.5, false);
 						comp.posHoldStart();
 					default:
-						padLog("Command not valid, try again");
+						logmsg("Command not valid, try again");
 						continue teachLoop;
 				}
 			}
 			waitMillis(5);
 		}
-		padLog("Exiting handguiding teaching mode...");
+		logmsg("Exiting handguiding teaching mode...");
 		comp.posHoldCancel();
 		move.LINREL(0, 0, 0.01, 0.5, false);
 		pad.info("Move away from the robot. It will start to replicate the tought sequence in loop.");
@@ -135,11 +135,11 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 	private void loopRoutine(){
 		Frame targetFrame;
 		endLoopRoutine = false;
-		if (log1) padLog("Loop routine.");
+		if (log1) logmsg("Loop routine.");
 		for (int i = 0; i < frameList.size(); i++) { 							// last saved frame is  Counter-1
 			if (endLoopRoutine) { endLoopRoutine = false; return; }
 			targetFrame = frameList.get(i);
-			if (log2) padLog("Going to Frame "+ i +".");
+			if (log2) logmsg("Going to Frame "+ i +".");
 			if (targetFrame.hasAdditionalParameter("PICK")) pickPinZ(targetFrame);
 			else if (targetFrame.hasAdditionalParameter("PLACE")) placePinY(targetFrame);
 			else move.PTP(targetFrame, 1, false);
@@ -150,7 +150,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		Frame preFrame = targetFrame.copyWithRedundancy();
 		preFrame.setZ(preFrame.getZ() + approachOffset);
 		move.PTP(preFrame, 1, false);
-		padLog("Picking process");
+		logmsg("Picking process");
 		move.LIN(targetFrame, approachSpeed, false);
 		cobot.checkPinPick(5, probeSpeed);
 		move.LIN(preFrame, approachSpeed, false);
@@ -162,7 +162,7 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 		preFrame.setY(preFrame.getY() + approachOffset);
 		do  {
 			move.PTP(preFrame, 1, false);
-			padLog("Picking process");
+			logmsg("Picking process");
 			move.LIN(targetFrame, approachSpeed, false);
 			cobot.checkPinPlace(5, probeSpeed);
 			inserted = move.twistJ7withCheck(45, 30, 0.15, 0.7);
@@ -180,21 +180,21 @@ public class Tr7_PinAssemblyTeach extends RoboticsAPIApplication {
 							if (state == States.loop) {
 								state = States.home;
 								endLoopRoutine = true;
-							} else padLog("Already going to teach mode.");
+							} else logmsg("Already going to teach mode.");
 							break;
 						case 1: 						// KEY - DELETE PREVIOUS
 							if (state == States.teach) {
 								if (frameList.getLast().hasAdditionalParameter("PICK")) plc.openGripper();	
 								else if (frameList.getLast().hasAdditionalParameter("PLACE")) plc.closeGripper();	
 								frameList.removeLast();
-							} else padLog("Key not available in this mode.");
+							} else logmsg("Key not available in this mode.");
 							break;
 						case 2:  						// KEY - SET SPEED
 							move.setGlobalSpeed(pad.askSpeed());
 							break;
 						case 3:							// KEY - SET TORQUE
 							double maxTorque = pad.askTorque();
-							move.setJTconds(maxTorque);
+							move.setMaxTorque(maxTorque);
 							break;
 					}
 				}
