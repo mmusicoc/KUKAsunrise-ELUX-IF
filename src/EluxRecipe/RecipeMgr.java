@@ -16,7 +16,6 @@ public class RecipeMgr<I> {
 	protected int activeIndex;
 	protected xAPI_Pad pad;
 	protected ProLogger log;
-	//protected boolean logger;
 	
 	public RecipeMgr() { }	// CONSTRUCTOR
 	
@@ -71,6 +70,8 @@ public class RecipeMgr<I> {
 		else return null;
 	}
 	
+	public boolean findRecipe(String RCP) { return findRecipeIndex(RCP) != -1; }
+	
 	// RECIPE SELECTOR -------------------------------------------------------
 		
 	public boolean selectRecipeRCP(String RCP) {
@@ -104,14 +105,14 @@ public class RecipeMgr<I> {
 	public void fetchAllRecipes() { db = json.fetchData(db); } // OVERRIDED
 	
 	public int askRCP() {
-		int ans = pad.question("Which ANC do you want to select?", getLastRCPs());
+		int ans = pad.question("Which recipe do you want to select?", getLastRCPs());
 		switch(ans) {
 			case 0:
 				logmsg("Operation cancelled");
 				return -1;
 			case 1:
-				String RCP = pad.askName("ANC", "", true, false);
-				if(!selectRecipeRCP(RCP)) {
+				String RCP = pad.askName("Recipe name", "", true, false);
+				if(!findRecipe(RCP)) {
 					switch(pad.question("Do you want to create a new recipe for ANC=" +
 							RCP, "YES", "NO, CANCEL")) {
 						case 0:
@@ -122,6 +123,7 @@ public class RecipeMgr<I> {
 							return -1;
 					}
 				}
+				else selectRecipeRCP(RCP);
 				break;
 			default:
 				if(!selectRecipeIndex(ans - 2)) return -1;
@@ -147,5 +149,17 @@ public class RecipeMgr<I> {
 			notice = notice + ((RCPindex == -1)?"added.":"updated.");
 			logmsg(notice);
 		}
+	}
+	
+	public boolean copyRecipe(String templateRCP, String newRCP) {
+		fetchAllRecipes();
+		Recipe<I> copy = getRecipe(templateRCP);
+		db.recipeList.add(0, copy);
+		if(json.saveData(db)){
+			String notice = "Json Recipe " + templateRCP + " has been copied to " + newRCP;
+			log.msg(Event.Rcp, notice, 0, false);
+			return true;
+		}
+		return false;
 	}
 }

@@ -70,8 +70,7 @@ public class UserKeys {
 							break;
 						case 3:  						// KEY - OTHER
 							switch(app.pad.question("Select option", "CANC", "Choose joint",
-												"Speed", "Sniff pause","Approach mode", 
-												(app.logger?"Disable":"Enable") + " Logger")) {
+												"Speed", (app.logger?"Disable":"Enable") + " Logger")) {
 								case 0: break;
 								case 1: 
 									int prev_loop = app.loop_joint;
@@ -90,16 +89,6 @@ public class UserKeys {
 											String.format("%,.0f", newSpeed * 100) + "%");
 									break;
 								case 3:
-									if(app.pad.question("Sniffing Pause", "True - 3s", "Test - 0.5s") == 0)
-										app.sniffing_pause = 3000;
-									else app.sniffing_pause = 500;
-									logmsg("Sniffing pause is now " + app.sniffing_pause + "ms.");
-									break;
-								case 4:
-									app.approachMode = app.pad.question("Select operation mode",
-											"Just scan", "Scan + Approach", "Scan + approach + test");
-									break;
-								case 5:
 									app.setLogger(!app.logger);
 									break;
 							}

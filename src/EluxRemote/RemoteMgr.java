@@ -21,8 +21,6 @@ public class RemoteMgr {
 	public double getSpeed() { fetch(); return data.speed; }
 	public double getAccel() { fetch(); return data.accel; }
 	public String getProg() { fetch(); return data.prog; }
-	public boolean getSandBox() { fetch(); return data.sandBoxMode; }
-	public boolean getScanBoltOnce() { fetch(); return data.scanBoltOnce; }
 	
 	public void fetch() { data = json.fetchData(data); }
 	

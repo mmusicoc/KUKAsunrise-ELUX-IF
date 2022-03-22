@@ -122,6 +122,12 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		try { return getApplicationData().getFrame(framePath).copyWithRedundancy(); }
 		catch(Exception e) { nonexistent(framePath); return null; }
 	}
+	
+	public ObjectFrame p2of(String framePath) { 
+		try { return getApplicationData().getFrame(framePath); }
+		catch(Exception e) { nonexistent(framePath); return null; }
+	}
+	
 	public Frame getFlangePos() { return kiwa.getCurrentCartesianPosition(kiwa.
 											getFlange()).copyWithRedundancy(); }
 	public Frame getFlangeTarget() { return kiwa.getCommandedCartesianPosition(kiwa.

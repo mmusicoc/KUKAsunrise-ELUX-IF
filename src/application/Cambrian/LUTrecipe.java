@@ -17,9 +17,12 @@ public class LUTrecipe {
 			case 925975000: recipe = "F5"; break;
 			case 925561304: recipe = "F6"; break;
 			case 925501302:
+			case 925501308:
 			case 925501312: 
 			case 925501321:
-			case 925501322: recipe = "F7"; break;
+			case 925501322:
+			case 925501323: 
+			case 925556003: recipe = "F7"; break;
 			case 925503306: recipe = "F8"; break;
 			
 			default:

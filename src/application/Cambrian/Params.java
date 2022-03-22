@@ -13,5 +13,10 @@ public class Params {
 	int EXIT_DIST;			// In mm, in addition to approach dist
 	int TOTAL_JOINTS;
 	
+	int approachMode;
+	int sniffPause;
+	boolean sandBoxMode;
+	boolean scanBoltOnce;
+	
 	public Params() { } // CONSTRUCTOR
 }

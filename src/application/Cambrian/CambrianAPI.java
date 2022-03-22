@@ -76,7 +76,7 @@ public class CambrianAPI {
 		}
 		
 		log.msg(Event.Vision, "Cambrian response time = " + (getCurrentTime() - initTime) + " ms. Found" +
-				predictionsList.size() + "//" + totalPredictions + " unique predictions", 0, true);
+				predictionsList.size() + "/" + totalPredictions + " unique predictions", 0, true);
 		return predictionsList.size();		
 	}
     
@@ -117,7 +117,7 @@ public class CambrianAPI {
                 }  
 				else {
 					if(logger && (predictionsList.size() == 0)) 
-						logmsg("Cambrian model not found: " + cambrian_data);
+						log.msg(Event.Vision, "Cambrian model not found: " + cambrian_data, 0, false);
 				}
             } catch (Exception e) {
             	e.printStackTrace();

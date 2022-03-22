@@ -1,8 +1,6 @@
 {
-  "idle": 2,
+  "idle": 0,
   "logger": false,
   "speed": 1.0,
-  "accel": 0.6,
-  "sandBoxMode": false,
-  "scanBoltOnce": false
+  "accel": 0.6
 }

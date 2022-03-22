@@ -9,5 +9,9 @@
   "RANDOM_DIST_MAX": 10.0,
   "APPROACH_DIST": 50,
   "EXIT_DIST": 50,
-  "TOTAL_JOINTS": 10
+  "TOTAL_JOINTS": 10,
+  "approachMode": 0,
+  "sniffPause" : 500,
+  "sandBoxMode": false,
+  "scanBoltOnce": true
 }
