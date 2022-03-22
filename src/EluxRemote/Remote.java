@@ -5,7 +5,6 @@ public class Remote {
 	boolean logger;
 	double speed;
 	double accel;
-	String prog;
 	
 	public Remote() { }	// CONSTRUCTOR
 }

@@ -55,11 +55,11 @@ public class CambrianAPI {
 	
 	public int doScan(String modelName) {
 		int totalPredictions = 0;
-		double initTime = getCurrentTime();
+		//double initTime = getCurrentTime();
 		predictionsList = new FrameList();
 		if (getNewPrediction(modelName)) {
 			predictionsList.add(this.target_frame);
-			totalPredictions++;
+			totalPredictions++; 
 			while(getNextPrediction(modelName)) {
 				Frame newPrediction = this.target_frame;
 				totalPredictions++;
@@ -75,12 +75,14 @@ public class CambrianAPI {
 			}
 		}
 		
-		log.msg(Event.Vision, "Cambrian response time = " + (getCurrentTime() - initTime) + " ms. Found" +
+		log.msg(Event.Vision, /*"Cambrian response time = " + (getCurrentTime() - initTime) + " ms. */"Found " +
 				predictionsList.size() + "/" + totalPredictions + " unique predictions", 0, true);
 		return predictionsList.size();		
 	}
     
-	// GETTER METHODS -----------------------------------------------------   
+	// GETTER METHODS -----------------------------------------------------  
+	
+	public boolean getInit() { return socket != null; }
 	
 	public int getPredictAmount() { return predictionsList.size(); }
 	

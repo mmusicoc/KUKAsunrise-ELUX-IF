@@ -20,7 +20,6 @@ public class RemoteMgr {
 	public boolean getLogger() { fetch(); return data.logger; }
 	public double getSpeed() { fetch(); return data.speed; }
 	public double getAccel() { fetch(); return data.accel; }
-	public String getProg() { fetch(); return data.prog; }
 	
 	public void fetch() { data = json.fetchData(data); }
 	
@@ -31,8 +30,6 @@ public class RemoteMgr {
 		if(data.logger != logger) { data.logger = logger; save(); } }
 	public void setSpeed(double speed) { 
 		if(data.speed != speed) { data.speed = speed; save(); } }
-	public void setProg(String prog) { 
-		if(data.prog != prog) { data.prog = prog; save(); } }
 	
 	public void save() { json.saveData(data); }
 }

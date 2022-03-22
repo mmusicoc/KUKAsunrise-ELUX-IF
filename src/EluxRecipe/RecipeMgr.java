@@ -88,15 +88,13 @@ public class RecipeMgr<I> {
 		if(index >= 0 && index < getRCPamount()) {
 			activeRcp = db.recipeList.get(index);
 			log.msg(Event.Rcp, "Recipe " + activeRcp.getRCP() + " has been selected", 0, true);
-			//saveActiveRecipe(false);
-			return true;
+			return saveActiveRecipe(false);
 		} else logErr("Index out of bound");
 		return false;
 	}
 	
 	public int findRecipeIndex(String RCP) {
 		for(int i = 0; i < getRCPamount(); i++) {
-			//logmsg(db.recipeList.get(i).getRCP());
 			if(db.recipeList.get(i).getRCP().equals(RCP)) return i;
 		}
 		return -1;
@@ -116,7 +114,7 @@ public class RecipeMgr<I> {
 					switch(pad.question("Do you want to create a new recipe for ANC=" +
 							RCP, "YES", "NO, CANCEL")) {
 						case 0:
-							newRecipe(RCP);
+							//newRecipe(RCP);
 							return 0;
 						default:
 							logmsg("Operation cancelled");
@@ -133,28 +131,42 @@ public class RecipeMgr<I> {
 	
 	// SETTERS ---------------------------------------------------------------
 	
-	public void newRecipe(String RCP) {
+/*	public void newRecipe(String RCP) {
 		activeRcp = new Recipe<I>();
 		activeRcp.setRCP(RCP);
 		//saveActiveRecipe(false);
 	}
+	*/
 	
-	public void saveActiveRecipe(boolean logger) {
+	public boolean saveActiveRecipe(boolean logger) {
 		fetchAllRecipes();
 		int RCPindex = findRecipeIndex(activeRcp.getRCP());
 		if(RCPindex != -1) db.recipeList.remove(RCPindex);
 		db.recipeList.add(0, activeRcp);
-		if(json.saveData(db) & logger){
-			String notice = "Recipe for ANC=" + activeRcp.getRCP() + " has been ";
+		if(json.saveData(db)){
+			String notice = "Json recipe " + activeRcp.getRCP() + " has been ";
 			notice = notice + ((RCPindex == -1)?"added.":"updated.");
-			logmsg(notice);
+			log.msg(Event.Rcp, notice, 0, false);
+			return true;
 		}
+		return false;
 	}
 	
 	public boolean copyRecipe(String templateRCP, String newRCP) {
 		fetchAllRecipes();
-		Recipe<I> copy = getRecipe(templateRCP);
-		db.recipeList.add(0, copy);
+		int RCPindex = findRecipeIndex(newRCP);
+		if(RCPindex != -1) {
+			if(pad.questionYN("Do you want to replace existing "+ newRCP + "?")) {
+				db.recipeList.remove(RCPindex);
+			} else {
+				log.msg(Event.Rcp, "RCP update aborted", 1, false);
+				return false;	
+			}
+		}
+		db.recipeList.add(0, getRecipe(templateRCP));
+		json.saveData(db);
+		this.fetchAllRecipes();
+		db.recipeList.get(0).setRCP(newRCP);
 		if(json.saveData(db)){
 			String notice = "Json Recipe " + templateRCP + " has been copied to " + newRCP;
 			log.msg(Event.Rcp, notice, 0, false);

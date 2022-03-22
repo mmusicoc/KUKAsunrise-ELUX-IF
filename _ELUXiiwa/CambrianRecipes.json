@@ -1,68 +1,48 @@
 {
   "recipeList": [
     {
-      "RCP": "F7",
+      "RCP": "F1",
       "itemOrder": [
         1,
+        2,
         3,
-        4,
         5,
-        7,
-        9,
-        10
+        6
       ],
       "items": [
         {
           "jointID": 1,
           "jointType": "W",
-          "multiJoint": 2
+          "multiJoint": 0
         },
         {
           "jointID": 2,
+          "jointType": "U",
           "multiJoint": 0
         },
         {
           "jointID": 3,
-          "jointType": "J",
-          "multiJoint": 0
+          "jointType": "W",
+          "multiJoint": 4
         },
         {
           "jointID": 4,
-          "jointType": "U",
           "multiJoint": 0
         },
         {
           "jointID": 5,
-          "jointType": "W",
-          "multiJoint": 6
-        },
-        {
-          "jointID": 6,
-          "multiJoint": 0
-        },
-        {
-          "jointID": 7,
-          "jointType": "C",
-          "multiJoint": 8
-        },
-        {
-          "jointID": 8,
-          "multiJoint": 0
-        },
-        {
-          "jointID": 9,
           "jointType": "U",
           "multiJoint": 0
         },
         {
-          "jointID": 10,
+          "jointID": 6,
           "jointType": "J",
           "multiJoint": 0
         }
       ]
     },
     {
-      "RCP": "F11",
+      "RCP": "F7",
       "itemOrder": [
         1,
         3,
@@ -174,71 +154,6 @@
         {
           "jointID": 9,
           "jointType": "U",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 10,
-          "jointType": "J",
-          "multiJoint": 0
-        }
-      ]
-    },
-    {
-      "RCP": "F3",
-      "itemOrder": [
-        1,
-        2,
-        3,
-        5,
-        6,
-        8,
-        9,
-        10
-      ],
-      "items": [
-        {
-          "jointID": 1,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 2,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 3,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 4,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 5,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 6,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 7,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 8,
-          "jointType": "J",
-          "multiJoint": 0
-        },
-        {
-          "jointID": 9,
-          "jointType": "J",
           "multiJoint": 0
         },
         {

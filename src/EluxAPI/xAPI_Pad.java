@@ -273,4 +273,6 @@ public class xAPI_Pad extends RoboticsAPIApplication {
 		mf.resetRGB();
 		return promptAns;
 	}
+	
+	public boolean questionYN(String question) { return question(question, "YES", "NO") == 0; } 
 }

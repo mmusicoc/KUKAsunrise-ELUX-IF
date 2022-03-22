@@ -1,4 +1,4 @@
-package application.Cambrian;
+/*package application.Cambrian;
 
 import EluxUtils.JSONmgr;
 
@@ -22,3 +22,4 @@ public class ParamsMgr {
 	
 	public void save() { json.saveData(p); }
 }
+*/

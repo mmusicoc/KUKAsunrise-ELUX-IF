@@ -14,7 +14,7 @@ public class ModifyAppDataFrame_Test extends RoboticsAPIApplication {
 		final IPersistenceEngine engine = this.getContext().getEngine(IPersistenceEngine.class);
 		final XmlApplicationDataSource defaultDataSource = (XmlApplicationDataSource) engine.getDefaultDataSource();
 		//Example
-		defaultDataSource.addFrame(getApplicationData().getFrame("/NewFrame"));
-		defaultDataSource.renameFrame(getApplicationData().getFrame("/P2"), "P20");
+		defaultDataSource.addFrame(getApplicationData().getFrame("/_Cambrian/Recipes"));
+		defaultDataSource.renameFrame(getApplicationData().getFrame("/_Cambrian/Recipes/P1"), "F21");
 	}
 }
