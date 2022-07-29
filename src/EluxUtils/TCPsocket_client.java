@@ -57,8 +57,9 @@ public class TCPsocket_client {
 				out.flush();
 				return true;
 			} else {
-				System.err.println("Socket was disconnected");
-				socket.close();
+				System.err.println("Socket was disconnected, trying to reconnect...");
+				this.close();
+				if(this.open()) this.send(command);
 				return false;
 			}
 		} catch (IOException e) {

@@ -1,7 +1,7 @@
 {
   "APPROACH_SPEED": 0.4,
   "FILTER_IAE_DIST": 15,
-  "FILTER_INV_ENABLE": true,
+  "FILTER_INV_ENABLED": false,
   "FILTER_INV_DIST": 50,
   "FILTER_INV_ANG": 20,
   "MAX_TRIALS": 1,
@@ -11,7 +11,21 @@
   "EXIT_DIST": 50,
   "TOTAL_JOINTS": 10,
   "approachMode": 0,
-  "sniffPause" : 500,
+  "sniffPause": 500,
   "sandBoxMode": false,
-  "scanBoltOnce": true
+  "scanBoltOnce": true,
+  "teachNominal": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ]
 }

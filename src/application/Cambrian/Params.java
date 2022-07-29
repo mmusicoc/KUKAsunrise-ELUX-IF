@@ -18,9 +18,14 @@ public class Params {
 	boolean sandBoxMode;
 	boolean scanBoltOnce;
 	
-	//boolean teachNominal[];
+	boolean teachNominal[];
 	
 	public Params() { 
-//		teachNominal = new boolean[12];
+		
 	} // CONSTRUCTOR
+	
+	public void init(){
+		teachNominal = new boolean[12];
+		for(int i = 0; i < 12; i++) teachNominal[i] = false;
+	}
 }

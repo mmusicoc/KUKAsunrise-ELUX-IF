@@ -190,4 +190,5 @@ public class OEEmgr {
 	
 	public void printStatsCycle() { padPrintOEE.printStatsCycle(); }
 	public void printStatsItem(int item) { padPrintOEE.printStatsItem(item); }
+	public void printStatsBad() { padPrintOEE.printStatsBad(this.itemAmount); }
 }

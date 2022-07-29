@@ -63,9 +63,9 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	
 	@Override public void initialize() {
 		paramsMgr.init(PARAMS_FILENAME);
-		//paramsMgr.saveData(p);
 		p = paramsMgr.fetchData(p);
-		logmsg(p.APPROACH_DIST);
+		//p.init();
+		//paramsMgr.saveData(p);
 		
 		keys.configPadKeys();
 		remote.init(REMOTE_FILENAME);
@@ -73,8 +73,8 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		log.newLog("RobotInit");
 		setLogger(remote.getLogger());
 		
-		//PNC = 925501302;	// ###########################################################
-		//SN = 20451651;	// ###########################################################
+		//PNC = 925501302;
+		//SN = 20451651;
 		
 		// INIT MOVE ---------------------------------------------
 		move.init(FRAMES_PR + "/_HomeLB",		// Home path
@@ -82,7 +82,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 					remote.getSpeed(), 1.0,		// Relative speed and acceleration
 					20.0, 5.0,					// Blending
 					5.0, 0,						// Collision detection (Nm), release mode
-					false);						// Logging
+					remote.getLogger());		// Logging
 		move.setA7Speed(1); 					// Accelerate J7 if bottleneck
 		
 		if(!move.PTPhome(0.5, false)) stop();
@@ -90,9 +90,6 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		// INIT RECIPE -------------------------------------------
 		rcp.init(pad, RECIPE_FILENAME, log);
 		rcpb.init();
-		//rcp.copyRecipe("F7", "F10");
-		//rcpb.copyFrames("F7", "F10");
-		//stop();
 
 		// INIT CAMBRIAN -----------------------------------------
 		if(!cambrian.init(log)) stop();
@@ -124,8 +121,8 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	}
 	
 	@Override public void run() {		// MAIN CYCLIC PROGRAM
-		p = paramsMgr.fetchData(p); 
 		while (true) {
+			p = paramsMgr.fetchData(p);
 			if(waitForNewFridge()) {
 				if(!p.sandBoxMode) {
 					scanFridge();
@@ -154,7 +151,12 @@ public class _CambrianApp extends RoboticsAPIApplication {
 							"\nCurrent RCP is " + RCP, 0, false);
 		if(RCP.compareTo("RCP NOT FOUND") == 0) {
 			log.msg(Event.Rcp, "Recipe for PNC " + PNC + " not found", 1, true);
-			rcpb.createNewRecipe();
+			if(pad.questionYN("Do you want to create a new recipe?")) {
+				rcpb.createNewRecipe();
+			}
+			remote.setIdle(2);
+			idle();
+			
 			return false; // RECIPE NOT FOUND
 		}
 		rcp.selectRecipeRCP(RCP);
@@ -249,18 +251,17 @@ public class _CambrianApp extends RoboticsAPIApplication {
 			Frame prediction = predictions.get(i).transform(rcp.getDO().invert());
 			Frame offset2NJ = prediction.copyWithRedundancy(NJ_frame);
 			if(!targetVisited(prediction, i == (predictions.size() - 1))) {
-				if(targetFilter(offset2NJ)) {
+				if(targetFilter(offset2NJ) || p.teachNominal[jointID]) {
 					targetFrame = prediction;
 					log.msg(Event.Vision, "Found pred #" + i + 
 									"a good match for Joint ID=" + jointID, 0, false);
-				/*	if(p.teachNominal[jointID]) { 
-						if(pad.questionYN("Update Joint ID= " + jointID + " in " + RCP + "?")) { 
-							log.msg(Event.Rcp, "Updating NJ for " + jointID, 1, true); 
-							rcpb.updateFrame(NJ_path, targetFrame); 
+					if(p.teachNominal[jointID]) { 
+						if(pad.questionYN("Update Joint ID= " + jointID + " in " + RCP + "?")) {
+							rcpb.setFrameTrafo(NJ_path, targetFrame);
 							p.teachNominal[jointID] = false; 
 							paramsMgr.saveData(p); 
 						} 
-					} */
+					}
 					return true;
 				} else {
 					bestFound = 2;
@@ -410,7 +411,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	}
 	
 	void scanFridge() {
-		if (loop_joint == 0) log.msg(Event.Proc, "Fridges ready and YuMi scanning. Start mission", 0, true);
+		if (loop_joint == 0) log.msg(Event.Proc, "Fridges ready and YuMi scanning. Start mission", firstRun ? 1 : 0, true);
 		oee.startCycle();
 		visitedJoints.free();
 		if(!p.scanBoltOnce || firstRun) {
@@ -542,14 +543,6 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		pad.info("PROGRAM STOPPED, continue to abort...");
 		if(cambrian.getInit()) cambrian.end();
 		getApplicationControl().halt();
-	/*	try { 
-			getTaskManager().getTask(_CambrianApp.class).stopAllInstances(); 
-			getTaskManager().getTask(CambrianAPI.class).stopAllInstances(); 
-			getTaskManager().getTask(TCPsocket_client.class).stopAllInstances(); 
-		} catch (InterruptedException e) { 
-			e.printStackTrace(); 
-			
-		} */
 		//dispose();
 	}
 }

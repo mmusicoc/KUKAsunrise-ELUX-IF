@@ -2,6 +2,7 @@ package EluxUtils;
 
 import java.util.Locale;
 import com.kuka.roboticsAPI.geometricModel.Frame;
+import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
 public class UMath {
@@ -35,6 +36,7 @@ public class UMath {
 	}
 	
 	public static String f2p(Frame pose) { return pose.getPath(); }
+	public static String f2p(ObjectFrame pose) { return pose.getPath(); }
 	
 	public static int abs(int num) { return (num < 0) ? -num : num; }
 	public static double abs(double num) { return (num < 0) ? -num : num; }

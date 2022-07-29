@@ -28,7 +28,7 @@ public class OEEpadPrinter {
 		stats = (stats + "\nTOTAL " + cycleID + ": " + cycle.getTotal());
 		stats = (stats + "\nGOOD " + cycleID + ": " + cycle.getGood());
 		cycleID = cycleID.substring(0,1).toUpperCase() + cycleID.substring(1);
-		stats = (stats + "\n" + cycleID + " with bad: " + cycle.getTMI());
+		stats = (stats + "\n" + cycleID + " with BAD: " + cycle.getTMI());
 		stats = (stats + "\n   of which " + cycleID + " with TMI: " + cycle.getTMI());
 		stats = (stats + "\n   of which " + cycleID + " with PWC: " + cycle.getPWC());
 		
@@ -86,6 +86,19 @@ public class OEEpadPrinter {
 				items[item].getAvgCT() / 1000));
 		
 		stats = (stats + "\n---------------------------------------------------");
+		logmsg(stats);
+	}
+	
+	public void printStatsBad(int itemAmount) {
+		String stats = new String("STATISTICS FOR BAD " + cycleName + 
+				"S & " + itemName + "S ----");
+		stats = stats + "\n" + cycleName + "S: " + 
+								cycle.getBad() + "/" + cycle.getTotal() + " bad";
+		for(int i = 1; i <= itemAmount; i++) 
+			if(items[i].getBad() > 0) 
+				stats = stats + "\n" + itemName + " " + i + ": " + 
+								items[i].getBad() + "/" + items[i].getTotal() + " bad";
+		stats = (stats + "\n--------------------------------------------------------------");
 		logmsg(stats);
 	}
 }

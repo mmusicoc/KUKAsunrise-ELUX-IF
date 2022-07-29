@@ -24,17 +24,17 @@ public class UserKeys {
 				if (event == UserKeyEvent.KeyDown) {
 					switch (key.getSlot()) {
 						case 0:  						// KEY - OEE DATA
-							switch (app.pad.question("Manage / print OEE data", "CANCEL", "Save OEE data",
-									"Restore OEE data", "Reset OEE to 0", "Reset CT",
-									"Print Fridges", "Print Joint Sum", "Print 1 joint", "Print ALL")) {
-								case 0: break;
-								case 1: app.oee.saveOEEimage(log.getPadLogger()); break;
-								case 2: app.oee.restoreOEEimage(log.getPadLogger()); break;
-								case 3: app.resetAllOEE();
+							switch (app.pad.question("Manage / print OEE data", "Save OEE data",
+									"Restore OEE data", "Reset OEE to 0", "Reset CT", "Print BAD",
+									"Print Fridges", "Print Joint Sum", "Print 1 joint", "Print ALL", "CANCEL")) {
+								case 0: app.oee.saveOEEimage(log.getPadLogger()); break;
+								case 1: app.oee.restoreOEEimage(log.getPadLogger()); break;
+								case 2: app.resetAllOEE();
 										break;
-								case 4: app.oee.resetCycleTime();
+								case 3: app.oee.resetCycleTime();
 										app.oee.saveOEEimage(log.getPadLogger());
 										break;
+								case 4: app.oee.printStatsBad(); break;
 								case 5: app.oee.printStatsCycle(); break;
 								case 6: app.oee.printStatsItem(0); break;
 								case 7: app.oee.printStatsItem(
@@ -42,6 +42,7 @@ public class UserKeys {
 											"1","2","3","4","5","6","7","8", "9", "10") + 1); break;
 								case 8: app.oee.printStatsCycle();
 										for(int i = 0; i <= 10; i++) app.oee.printStatsItem(i); break;
+								case 9: break;
 							}
 							break;
 						case 1:							// KEY - RECORD INP

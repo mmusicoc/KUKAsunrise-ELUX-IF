@@ -102,7 +102,7 @@ public class RecipeMgr<I> {
 	
 	public void fetchAllRecipes() { db = json.fetchData(db); } // OVERRIDED
 	
-	public int askRCP() {
+	/*public int askRCP() {
 		int ans = pad.question("Which recipe do you want to select?", getLastRCPs());
 		switch(ans) {
 			case 0:
@@ -127,16 +127,9 @@ public class RecipeMgr<I> {
 				if(!selectRecipeIndex(ans - 2)) return -1;
 		}
 		return 1;
-	}
+	}*/
 	
 	// SETTERS ---------------------------------------------------------------
-	
-/*	public void newRecipe(String RCP) {
-		activeRcp = new Recipe<I>();
-		activeRcp.setRCP(RCP);
-		//saveActiveRecipe(false);
-	}
-	*/
 	
 	public boolean saveActiveRecipe(boolean logger) {
 		fetchAllRecipes();
@@ -169,7 +162,7 @@ public class RecipeMgr<I> {
 		db.recipeList.get(0).setRCP(newRCP);
 		if(json.saveData(db)){
 			String notice = "Json Recipe " + templateRCP + " has been copied to " + newRCP;
-			log.msg(Event.Rcp, notice, 0, false);
+			log.msg(Event.Rcp, notice, 1, false);
 			return true;
 		}
 		return false;
