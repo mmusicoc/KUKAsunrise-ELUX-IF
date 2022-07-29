@@ -2,7 +2,5 @@
   "idle": 2,
   "logger": false,
   "speed": 1.0,
-  "accel": 0.6,
-  "sandBoxMode": false,
-  "scanBoltOnce": false
+  "accel": 0.6
 }

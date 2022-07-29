@@ -5,9 +5,6 @@ public class Remote {
 	boolean logger;
 	double speed;
 	double accel;
-	String prog;
-	boolean sandBoxMode;
-	boolean scanBoltOnce;
 	
 	public Remote() { }	// CONSTRUCTOR
 }

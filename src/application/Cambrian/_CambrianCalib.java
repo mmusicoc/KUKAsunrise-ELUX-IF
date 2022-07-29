@@ -30,7 +30,7 @@ public class _CambrianCalib extends RoboticsAPIApplication {
 
 	@Override public void run() {
 		try {
-			if(pad.question("Are you sure you want to recalibrate?", "YES", "NO") == 0) {
+			if(pad.questionYN("Are you sure you want to recalibrate?")) {
 				calibrate("/_Cambrian/Calib");		// Robot mounted camera
 			} else dispose();	
 		} catch (InterruptedException e) {

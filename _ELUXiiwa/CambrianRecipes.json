@@ -1,329 +1,440 @@
 {
-	"recipeList": [
-		{
-			"RCP": "Example",
-			"itemOrder": [
-				1,
-				2
-			],
-			"items": [
-				{
-					"jointID": 1,
-					"jointType": "J",
-					"DO": {
-						"X": -0.6,
-						"Y": 1.27,
-						"Z": 0.79,
-						"A": 0.14,
-						"B": 0.25,
-						"U": -2.71
-					}
-				},
-				{
-					"jointID": 2,
-					"jointType": "U",
-					"DO": {
-						"X": 1.78,
-						"Y": -0.79,
-						"Z": -2.21,
-						"A": -3.1,
-						"B": 5.93,
-						"U": 0.77
-					}
-				}
-			]
-		},
-		{
-			"RCP": "F3",
-			"itemOrder": [
-				1,
-				2,
-				3,
-				5,
-				6,
-				8,
-				9,
-				10
-			],
-			"items": [
-				{
-					"jointID": 1,
-					"jointType": "J"
-				},
-				{
-					"jointID": 2,
-					"jointType": "J"
-				},
-				{
-					"jointID": 3,
-					"jointType": "J"
-				},
-				{
-					"jointID": 4,
-					"jointType": "J"
-				},
-				{
-					"jointID": 5,
-					"jointType": "J"
-				},
-				{
-					"jointID": 6,
-					"jointType": "J"
-				},
-				{
-					"jointID": 7,
-					"jointType": "J"
-				},
-				{
-					"jointID": 8,
-					"jointType": "J"
-				},
-				{
-					"jointID": 9,
-					"jointType": "J"
-				},
-				{
-					"jointID": 10,
-					"jointType": "J"
-				}
-			]
-		},
-		{
-			"RCP": "F4",
-			"itemOrder": [
-				1,
-				3,
-				4,
-				5,
-				6,
-				2
-			],
-			"items": [
-				{
-					"jointID": 1,
-					"jointType": "J"
-				},
-				{
-					"jointID": 2,
-					"jointType": "U"
-				},
-				{
-					"jointID": 3,
-					"jointType": "J"
-				},
-				{
-					"jointID": 4,
-					"jointType": "J"
-				},
-				{
-					"jointID": 5,
-					"jointType": "J"
-				},
-				{
-					"jointID": 6,
-					"jointType": "U"
-				}
-			]
-		},
-		{
-			"RCP": "F5",
-			"itemOrder": [
-				1,
-				2,
-				3,
-				4,
-				5,
-				6,
-				7,
-				8,
-				9,
-				10
-			],
-			"items": [
-				{
-					"jointID": 1,
-					"jointType": "J"
-				},
-				{
-					"jointID": 2,
-					"jointType": "J"
-				},
-				{
-					"jointID": 3,
-					"jointType": "J"
-				},
-				{
-					"jointID": 4,
-					"jointType": "J"
-				},
-				{
-					"jointID": 5,
-					"jointType": "J"
-				},
-				{
-					"jointID": 6,
-					"jointType": "J"
-				},
-				{
-					"jointID": 7,
-					"jointType": "J"
-				},
-				{
-					"jointID": 8,
-					"jointType": "J"
-				},
-				{
-					"jointID": 9,
-					"jointType": "U"
-				},
-				{
-					"jointID": 10,
-					"jointType": "U"
-				}
-			]
-		},
-		{
-			"RCP": "F6",
-			"itemOrder": [
-				1,
-				2,
-				4,
-				5,
-				7,
-				6,
-				3
-			],
-			"items": [
-				{
-					"jointID": 1,
-					"jointType": "J"
-				},
-				{
-					"jointID": 2,
-					"jointType": "J"
-				},
-				{
-					"jointID": 3,
-					"jointType": "U"
-				},
-				{
-					"jointID": 4,
-					"jointType": "J"
-				},
-				{
-					"jointID": 5,
-					"jointType": "J"
-				},
-				{
-					"jointID": 6,
-					"jointType": "U"
-				},
-				{
-					"jointID": 7,
-					"jointType": "J"
-				},
-				{
-					"jointID": 8,
-					"jointType": "J"
-				},
-				{
-					"jointID": 9,
-					"jointType": "J"
-				}
-			]
-		},
-		{
-			"RCP": "F7",
-			"itemOrder": [
-				1,
-				3,
-				4,
-				5,
-				7,
-				9,
-				10
-			],
-			"items": [
-				{
-					"jointID": 1,
-					"jointType": "W",
-					"multiJoint" : 2
-				},
-				{
-					"jointID": 2
-				},
-				{
-					"jointID": 3,
-					"jointType": "W"
-				},
-				{
-					"jointID": 4,
-					"jointType": "U"
-				},
-				{
-					"jointID": 5,
-					"jointType": "W",
-					"multiJoint": 6
-				},
-				{
-					"jointID": 6
-				},
-				{
-					"jointID": 7,
-					"jointType": "C",
-					"multiJoint": 8
-				},
-				{
-					"jointID": 8
-				},
-				{
-					"jointID": 9,
-					"jointType": "U"
-				},
-				{
-					"jointID": 10,
-					"jointType": "J"
-				}
-			]
-		},
-		{
-			"RCP": "F8",
-			"itemOrder": [
-				1,
-				3,
-				4,
-				5,
-				6,
-				2
-			],
-			"items": [
-				{
-					"jointID": 1,
-					"jointType": "J"
-				},
-				{
-					"jointID": 2,
-					"jointType": "U"
-				},
-				{
-					"jointID": 3,
-					"jointType": "J"
-				},
-				{
-					"jointID": 4,
-					"jointType": "J"
-				},
-				{
-					"jointID": 5,
-					"jointType": "J"
-				},
-				{
-					"jointID": 6,
-					"jointType": "U"
-				}			
-				
-				
-			]
-		}
-	]
+  "recipeList": [
+    {
+      "RCP": "F1",
+      "itemOrder": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "W",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 2,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "W",
+          "multiJoint": 4
+        },
+        {
+          "jointID": 4,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 6,
+          "jointType": "J",
+          "multiJoint": 0
+        }
+      ]
+    },
+    {
+      "RCP": "F7",
+      "itemOrder": [
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "W",
+          "multiJoint": 2
+        },
+        {
+          "jointID": 2,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 4,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "W",
+          "multiJoint": 6
+        },
+        {
+          "jointID": 6,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 7,
+          "jointType": "C",
+          "multiJoint": 8
+        },
+        {
+          "jointID": 8,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 9,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 10,
+          "jointType": "J",
+          "multiJoint": 0
+        }
+      ]
+    },
+    {
+      "RCP": "F8",
+      "itemOrder": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        2
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 2,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 4,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 6,
+          "jointType": "U",
+          "multiJoint": 0
+        }
+      ]
+    },
+    {
+      "RCP": "F4",
+      "itemOrder": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        2
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 2,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 4,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 6,
+          "jointType": "U",
+          "multiJoint": 0
+        }
+      ]
+    },
+    {
+      "RCP": "F11",
+      "itemOrder": [
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "W",
+          "multiJoint": 2
+        },
+        {
+          "jointID": 2,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 4,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "W",
+          "multiJoint": 6
+        },
+        {
+          "jointID": 6,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 7,
+          "jointType": "C",
+          "multiJoint": 8
+        },
+        {
+          "jointID": 8,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 9,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 10,
+          "jointType": "J",
+          "multiJoint": 0
+        }
+      ]
+    },
+    {
+      "RCP": "F10",
+      "itemOrder": [
+        1,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "W",
+          "multiJoint": 2
+        },
+        {
+          "jointID": 2,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 4,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "W",
+          "multiJoint": 6
+        },
+        {
+          "jointID": 6,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 7,
+          "jointType": "C",
+          "multiJoint": 8
+        },
+        {
+          "jointID": 8,
+          "multiJoint": 0
+        },
+        {
+          "jointID": 9,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 10,
+          "jointType": "J",
+          "multiJoint": 0
+        }
+      ]
+    },
+    {
+      "RCP": "F5",
+      "itemOrder": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 2,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 4,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 6,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 7,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 8,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 9,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 10,
+          "jointType": "U",
+          "multiJoint": 0
+        }
+      ]
+    },
+    {
+      "RCP": "F6",
+      "itemOrder": [
+        1,
+        2,
+        4,
+        5,
+        7,
+        6,
+        3
+      ],
+      "items": [
+        {
+          "jointID": 1,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 2,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 3,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 4,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 5,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 6,
+          "jointType": "U",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 7,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 8,
+          "jointType": "J",
+          "multiJoint": 0
+        },
+        {
+          "jointID": 9,
+          "jointType": "J",
+          "multiJoint": 0
+        }
+      ]
+    }
+  ]
 }

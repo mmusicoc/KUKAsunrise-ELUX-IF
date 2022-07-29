@@ -2,7 +2,7 @@ package application.Cambrian;
 
 //import static EluxUtils.Utils.*;
 //import static EluxUtils.UMath.*;
-import EluxUtils.SimpleFrame;
+//import EluxUtils.SimpleFrame;
 //import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 
@@ -10,13 +10,13 @@ public class JointRecipe {
 	private int jointID;
 	private String jointType;
 	private int multiJoint;
-	private SimpleFrame DO; 		// Detection Avg Offset to Nominal Joint
+	//private SimpleFrame DO; 		// Detection Avg Offset to Nominal Joint
 	//private SimpleFrame NJ;			// Nominal Joint position
 	//private SimpleFrame SPO; 		// ScanPoint relative to Nominal Joint
 	//private double threshold[];					// X+,X-,Y+,Y-,Z+,Z-
 	
 	public JointRecipe() { 	// CONSTRUCTOR
-		DO = new SimpleFrame();
+		//DO = new SimpleFrame();
 		//NJ = new SimpleFrame();
 		//SPO = new SimpleFrame();
 	}
@@ -26,9 +26,12 @@ public class JointRecipe {
 	public char getJointType() { return this.jointType.charAt(0); }
 	public boolean isMultiJoint() { return this.multiJoint > 0; }
 	public int getMultiJoint() { return this.multiJoint; }
-	public Transformation getDO() { return Transformation.ofDeg(
-			DO.X, DO.Y, DO.Z, DO.A, DO.B, DO.C); }
+	/*public Transformation getDO() { return Transformation.ofDeg(
+			DO.X, DO.Y, DO.Z, DO.A, DO.B, DO.C); }*/
 	
+	public Transformation getDO() { return Transformation.ofDeg(
+			0,0,0,0,0,0); }
+	/*
 	public String joint2s() {
 		String ans = "ID: " + jointID + "\n";
 		ans += "type: " + jointType + "\n";
@@ -37,6 +40,7 @@ public class JointRecipe {
 						DO.A + ", " + DO.B + ", " + DO.C;
 		return ans;
 	}
+	*/
 	//public SimpleFrame getNominalTarget() { return this.NJ; }
 	
 	/*

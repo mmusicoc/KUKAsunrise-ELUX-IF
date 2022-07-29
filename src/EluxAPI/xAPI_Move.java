@@ -118,10 +118,33 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		return scaledAccel;
 	}
 	
-	public Frame p2f(String framePath) { 
-		try { return getApplicationData().getFrame(framePath).copyWithRedundancy(); }
-		catch(Exception e) { nonexistent(framePath); return null; }
+	public Frame p2f(String framePath) { return p2f(framePath, true); }
+	public Frame p2f(String framePath, boolean errNotice) { 
+		ObjectFrame OF = p2of(framePath, errNotice);
+		if(OF == null) return null;
+		return OF.copyWithRedundancy();
+		//try { return getApplicationData().getFrame(framePath).copyWithRedundancy(); }
+		//catch(Exception e) { if(errMgm) nonexistent(framePath); return null; }
+		// Could be implemented differently with tryGetFrame
 	}
+	
+	public ObjectFrame p2of(String framePath) { return p2of(framePath, true); }
+	public ObjectFrame p2of(String framePath, boolean errNotice) { 
+		try { return getApplicationData().getFrame(framePath); }
+		catch(Exception e) { 
+			if(errNotice) {
+				nonexistent(framePath);
+				if(logger) {
+					System.err.println(e);
+					e.printStackTrace();
+				}
+			}
+			return null;
+		}
+	}
+	
+	public boolean framePathExists(String framePath) { return (p2of(framePath, false) != null); }
+	
 	public Frame getFlangePos() { return kiwa.getCurrentCartesianPosition(kiwa.
 											getFlange()).copyWithRedundancy(); }
 	public Frame getFlangeTarget() { return kiwa.getCommandedCartesianPosition(kiwa.
@@ -256,8 +279,7 @@ public class xAPI_Move extends RoboticsAPIApplication {
 		return this.PTP(homeFramePath, relSpeed, approx) == 1 ? true : false; }
 	
 	public int PTP(Frame target, double relSpeed, boolean approx) {
-		try { 
-			if(logger) logmsg("Moving to " + target.getPath());
+		try {
 			int success = 1;
 			setMoveColorMF();
 			if(approx) tcp.moveAsync(ptp(target)

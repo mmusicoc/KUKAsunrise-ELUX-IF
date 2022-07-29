@@ -55,11 +55,11 @@ public class CambrianAPI {
 	
 	public int doScan(String modelName) {
 		int totalPredictions = 0;
-		double initTime = getCurrentTime();
+		//double initTime = getCurrentTime();
 		predictionsList = new FrameList();
 		if (getNewPrediction(modelName)) {
 			predictionsList.add(this.target_frame);
-			totalPredictions++;
+			totalPredictions++; 
 			while(getNextPrediction(modelName)) {
 				Frame newPrediction = this.target_frame;
 				totalPredictions++;
@@ -74,13 +74,15 @@ public class CambrianAPI {
 				if(!ghost) predictionsList.add(newPrediction);
 			}
 		}
-		
-		log.msg(Event.Vision, "Cambrian response time = " + (getCurrentTime() - initTime) + " ms. Found" +
-				predictionsList.size() + "//" + totalPredictions + " unique predictions", 0, true);
+		// Response time already logged by ProLogger
+		log.msg(Event.Vision, /*"Cambrian response time = " + (getCurrentTime() - initTime) + " ms. */"Found " +
+				predictionsList.size() + "/" + totalPredictions + " unique predictions", 0, true);
 		return predictionsList.size();		
 	}
     
-	// GETTER METHODS -----------------------------------------------------   
+	// GETTER METHODS -----------------------------------------------------  
+	
+	public boolean getInit() { return socket != null; }
 	
 	public int getPredictAmount() { return predictionsList.size(); }
 	
@@ -106,8 +108,7 @@ public class CambrianAPI {
 					b    = Double.parseDouble(results[5]);
 					c    = Double.parseDouble(results[6]);
 					pick_type = Integer.parseInt(results[7]);
-    
-					//target_frame = new Frame(x, y, z, a, b, c);
+
 					Frame flange_pos = elux.getMove().getFlangePos();
 					target_frame = new Frame();
 					target_frame.setParent(flange_pos, false);
@@ -117,7 +118,7 @@ public class CambrianAPI {
                 }  
 				else {
 					if(logger && (predictionsList.size() == 0)) 
-						logmsg("Cambrian model not found: " + cambrian_data);
+						log.msg(Event.Vision, "Cambrian model not found: " + cambrian_data, 0, false);
 				}
             } catch (Exception e) {
             	e.printStackTrace();
@@ -137,15 +138,14 @@ public class CambrianAPI {
 		robot_pose += Double.toString(r2d(pose.getBetaRad())) + ",";
 		robot_pose += Double.toString(r2d(pose.getGammaRad())) + "]";
 		
-		String ans;
 		String request = command + "#" + data + "#" + robot_pose + 
 				"#p[0,0,0,0,0,0]#p[0,0,0,0,0,0]#<<"; 
-		//padLog(request);
+		
 		if (socket.send(request)) {
+			String ans;
 			if((ans = socket.read()) != "") {
 				try {
 					String msg = ans;
-					//if(logger) logmsg(ans);
 					String success = msg.substring(msg.indexOf("<<") + 2, msg.indexOf(">>"));
 					cambrian_success = (success.compareTo("OK") == 0 ? true : false);
 					msg = msg.substring(msg.indexOf(">>") + 2);

@@ -24,17 +24,17 @@ public class UserKeys {
 				if (event == UserKeyEvent.KeyDown) {
 					switch (key.getSlot()) {
 						case 0:  						// KEY - OEE DATA
-							switch (app.pad.question("Manage / print OEE data", "CANCEL", "Save OEE data",
-									"Restore OEE data", "Reset OEE to 0", "Reset CT",
-									"Print Fridges", "Print Joint Sum", "Print 1 joint", "Print ALL")) {
-								case 0: break;
-								case 1: app.oee.saveOEEimage(log.getPadLogger()); break;
-								case 2: app.oee.restoreOEEimage(log.getPadLogger()); break;
-								case 3: app.resetAllOEE();
+							switch (app.pad.question("Manage / print OEE data", "Save OEE data",
+									"Restore OEE data", "Reset OEE to 0", "Reset CT", "Print BAD",
+									"Print Fridges", "Print Joint Sum", "Print 1 joint", "Print ALL", "CANCEL")) {
+								case 0: app.oee.saveOEEimage(log.getPadLogger()); break;
+								case 1: app.oee.restoreOEEimage(log.getPadLogger()); break;
+								case 2: app.resetAllOEE();
 										break;
-								case 4: app.oee.resetCycleTime();
+								case 3: app.oee.resetCycleTime();
 										app.oee.saveOEEimage(log.getPadLogger());
 										break;
+								case 4: app.oee.printStatsBad(); break;
 								case 5: app.oee.printStatsCycle(); break;
 								case 6: app.oee.printStatsItem(0); break;
 								case 7: app.oee.printStatsItem(
@@ -42,6 +42,7 @@ public class UserKeys {
 											"1","2","3","4","5","6","7","8", "9", "10") + 1); break;
 								case 8: app.oee.printStatsCycle();
 										for(int i = 0; i <= 10; i++) app.oee.printStatsItem(i); break;
+								case 9: break;
 							}
 							break;
 						case 1:							// KEY - RECORD INP
@@ -70,8 +71,7 @@ public class UserKeys {
 							break;
 						case 3:  						// KEY - OTHER
 							switch(app.pad.question("Select option", "CANC", "Choose joint",
-												"Speed", "Sniff pause","Approach mode", 
-												(app.logger?"Disable":"Enable") + " Logger")) {
+												"Speed", (app.logger?"Disable":"Enable") + " Logger")) {
 								case 0: break;
 								case 1: 
 									int prev_loop = app.loop_joint;
@@ -90,16 +90,6 @@ public class UserKeys {
 											String.format("%,.0f", newSpeed * 100) + "%");
 									break;
 								case 3:
-									if(app.pad.question("Sniffing Pause", "True - 3s", "Test - 0.5s") == 0)
-										app.sniffing_pause = 3000;
-									else app.sniffing_pause = 500;
-									logmsg("Sniffing pause is now " + app.sniffing_pause + "ms.");
-									break;
-								case 4:
-									app.approachMode = app.pad.question("Select operation mode",
-											"Just scan", "Scan + Approach", "Scan + approach + test");
-									break;
-								case 5:
 									app.setLogger(!app.logger);
 									break;
 							}

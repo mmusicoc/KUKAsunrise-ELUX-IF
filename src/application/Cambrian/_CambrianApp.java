@@ -15,12 +15,14 @@ import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.Tool;
 
 public class _CambrianApp extends RoboticsAPIApplication {
+	public static final String PARAMS_FILENAME = "CambrianParams.json";
 	public static final String REMOTE_FILENAME = "Remote.json";
 	public static final String OEE_OBJ_FILENAME = "OEE_Object.txt";
 	public static final String OEE_STATS_FILENAME = "OEE_Stats.csv";
 	public static final String OEE_EVENTS_FILENAME = "OEE_Failure_Log.csv";
 	public static final String PRECISION_FILENAME = "Cambrian_Precision_Log.csv";
 	public static final String RECIPE_FILENAME = "CambrianRecipes.json";
+	public static final String FRAMES_PR = "/_Cambrian";
 	
 	@Inject	@Named("Cambrian") private Tool tool;
 	xAPI__ELUX elux = new xAPI__ELUX();
@@ -34,11 +36,11 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	Params p = new Params();
 	JSONmgr<Params> paramsMgr = new JSONmgr<Params>();
 	RecipeMgrJoints rcp = new RecipeMgrJoints();
+	RecipeBuilder rcpb = new RecipeBuilder(this);
 	UserKeys keys = new UserKeys(this, log);
 	OEEmgr oee = elux.getOEE();
 	RemoteMgr remote = new RemoteMgr();
 	CSVLogger precLog;
-	//CSVLogger cycleLog = new CSVLogger(p.PRECISION_FILENAME, true, ';');
 	LUTrecipe LUTrcp = new LUTrecipe();
 	LUTcambrianModel LUTcm = new LUTcambrianModel();
 	
@@ -47,7 +49,8 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	boolean logger;
 	int PNC, SN;
 	String RCP;
-	int approachMode, idle, sniffing_pause;
+	int idle;
+	int approachMode, sniffing_pause;
 	int loop_joint, jointID;
 	int moveAns;
 	int failure[] = new int[3];
@@ -55,35 +58,38 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	String cambrianModel;
 	String RB_path, SP_pathroot, SP_path, NJ_pathroot;
 	Frame OB_frame, offset2NB, SP_frame;
-	Frame NJ1_frame, NJ2_frame;
+	Frame NJ_frame;
 	Frame targetFrame;
 	
 	@Override public void initialize() {
-		paramsMgr.init("CambrianParams.json");
-		//paramsMgr.saveData(p);
+		paramsMgr.init(PARAMS_FILENAME);
 		p = paramsMgr.fetchData(p);
+		//p.init();
+		//paramsMgr.saveData(p);
 		
 		keys.configPadKeys();
 		remote.init(REMOTE_FILENAME);
 		
 		log.newLog("RobotInit");
 		setLogger(remote.getLogger());
-		if(!move.PTPhome(0.5, false)) stop();
 		
-		//PNC = 925501302;	// ###########################################################
-		//SN = 20451651;	// ###########################################################
+		//PNC = 925501302;
+		//SN = 20451651;
 		
 		// INIT MOVE ---------------------------------------------
-		move.init("/_Cambrian/_HomeLB",			// Home path
+		move.init(FRAMES_PR + "/_HomeLB",		// Home path
 					tool, "/TCP",				// Tool, TCP
 					remote.getSpeed(), 1.0,		// Relative speed and acceleration
 					20.0, 5.0,					// Blending
 					5.0, 0,						// Collision detection (Nm), release mode
-					false);						// Logging
+					remote.getLogger());		// Logging
 		move.setA7Speed(1); 					// Accelerate J7 if bottleneck
+		
+		if(!move.PTPhome(0.5, false)) stop();
 		
 		// INIT RECIPE -------------------------------------------
 		rcp.init(pad, RECIPE_FILENAME, log);
+		rcpb.init();
 
 		// INIT CAMBRIAN -----------------------------------------
 		if(!cambrian.init(log)) stop();
@@ -101,13 +107,13 @@ public class _CambrianApp extends RoboticsAPIApplication {
 						"X(mm);Y(mm);Z(mm);DIST;A(°);B(°);C(°);" +
 						"CT(s);RC;Reason\n");
 		
-		//if(pad.question("Restart all OEE & precision data?", "YES", "NO") == 0) resetAllOEE();
+		if(pad.questionYN("Restart all OEE & precision data?")) resetAllOEE();
 		
 		// INIT PROCESS ------------------------------------------
-		sniffing_pause = 500;
+		sniffing_pause = p.sniffPause;
 		loop_joint = 0;
 		idle = 0; remote.setIdle(0);
-		approachMode = 0;
+		approachMode = p.approachMode;
 		firstRun = true;
 		if(!move.PTPhome(1, false)) stop();
 		plc.fbkMissionEnded();
@@ -116,56 +122,69 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	
 	@Override public void run() {		// MAIN CYCLIC PROGRAM
 		while (true) {
+			p = paramsMgr.fetchData(p);
 			if(waitForNewFridge()) {
-				if(!remote.getSandBox()) {
+				if(!p.sandBoxMode) {
 					scanFridge();
-					log.msg(Event.Proc, "Fridge scanned & going home", 0, true);
-					if(move.PTPhome(1, false)) plc.fbkMissionEnded();
 				}
 			}
-			else log.msg(Event.Rcp, "Recipe for PNC " + PNC + " not found", 1, true);
 		}
 	}
 	
 	boolean waitForNewFridge() {
 		rcp.fetchAllRecipes();
-		log.msg(Event.Proc, "Waiting for new fridge detected & identified", 0, false);
-		while(!plc.loadRecipe()) { waitMillis(10);} // Wait for new fridge data available
+		log.msg(Event.Proc, "Waiting for new fridge detected & identified", 
+				firstRun ? 1 : 0, false);
+		while(!plc.loadRecipe()) { // Wait for new fridge data available
+			waitMillis(10);
+			if(idle != 0) idle();
+		} 
 		
 		// LOAD RECIPE
+		log.msg(Event.Prod, "New fridge fed into station", firstRun ? 1 : 0, true);
 		PNC = plc.getPNC();
 		SN = plc.getSN();
 		RCP = LUTrcp.getRecipe(PNC);
 		log.newLog(PNC + "_" + SN + "_" + RCP);
-		log.msg(Event.Prod, "Current PNC is " + PNC + 
+		log.msg(Event.Prod, "New fridge with PNC " + PNC + 
 							"\nCurrent SN is " + SN + 
 							"\nCurrent RCP is " + RCP, 0, false);
-		if(RCP.compareTo("RCP NOT FOUND") == 0) return false; // RECIPE NOT FOUND
+		if(RCP.compareTo("RCP NOT FOUND") == 0) {
+			log.msg(Event.Rcp, "Recipe for PNC " + PNC + " not found", 1, true);
+			if(pad.questionYN("Do you want to create a new recipe?")) {
+				rcpb.createNewRecipe();
+			}
+			remote.setIdle(2);
+			idle();
+			
+			return false; // RECIPE NOT FOUND
+		}
 		rcp.selectRecipeRCP(RCP);
-		RB_path = "/_Cambrian/Recipes/" + RCP + "/_RefBolt";
-		SP_pathroot = "/_Cambrian/Recipes/" + RCP + "/ScanPoints/";
-		NJ_pathroot = "/_Cambrian/Recipes/" + RCP + "/NominalJoints/";
+		RB_path = FRAMES_PR + "/Recipes/" + RCP + "/_RefBolt";
+		SP_pathroot = FRAMES_PR + "/Recipes/" + RCP + "/ScanPoints/";
+		NJ_pathroot = FRAMES_PR + "/Recipes/" + RCP + "/NominalJoints/";
 		
 		plc.fbkRecipeLoaded();
-		log.msg(Event.Proc, "Recipe " + RCP + " loaded & waiting for YuMi", 0, true);
+		log.msg(Event.Proc, "Recipe " + RCP + " loaded & waiting for YuMi", 
+				firstRun ? 1 : 0, true);
 		
 		while(!plc.missionStart()) { // Wait for OK from line to start
 			waitMillis(10);
-			if (this.checkMissionEndReq(true)) 
-				log.msg(Event.Fail, "Scan aborted, fridge missed", 0, true);
+			if (this.checkMissionEndReq(true)) {
+				log.msg(Event.Fail, "Scan aborted, fridge missed", firstRun ? 1 : 0, true);
+				return false;
 			}
+			if(idle != 0) idle();
+		}
 		plc.fbkMissionRunning();
 		return true;
 	}
 	
 	boolean checkMissionEndReq(boolean doingIntent) {
 		if(plc.missionEnd()) {
-			log.msg(Event.Proc, "Request mission end after timeout / yumi ready", 0, true);
+			log.msg(Event.Proc, "Mission end after timeout / yumi finished / user request", 1, true);
 			if(doingIntent) oee.endItem(jointID);
-			move.PTPhome(1, false);
-			visitedJoints.free();
-			log.msg(Event.Proc, "Robot returned to home, conveyor free", 0, true);
-			plc.fbkMissionEnded();
+			endCycle();
 			return true;
 		}
 		return false;
@@ -183,20 +202,18 @@ public class _CambrianApp extends RoboticsAPIApplication {
 		precLog.log(rf2s(offset, true, true), true);
 		if(outcome == 1) precLog.log(oee.getCurrentItemCT(), true);
 		else precLog.log("", true);
-//		if(outcome!= 1) {
-			precLog.log(outcome, true);
-			precLog.log(oee.reason(outcome), true);
-//		}
+		precLog.log(outcome, true);
+		precLog.log(oee.reason(outcome), true);
 		precLog.eol();
 		precLog.close(false);
 	}
 	
-	boolean targetVisited(Frame target) {
+	boolean targetVisited(Frame target, boolean lastChance) {
 		double dist;
 		for(int i = 0; i < visitedJoints.size(); i++) {
 			dist = visitedJoints.get(i).distanceTo(target);
 			if(dist < p.FILTER_IAE_DIST) {
-				log.msg(Event.Vision, "Distance to joint #" + rcp.getOItemID(i) + " = " + d2s(dist) +
+				if(lastChance) log.msg(Event.Vision, "Distance to joint #" + rcp.getOItemID(i) + " = " + d2s(dist) +
 									" too small - already visited", 0, true);
 				return true;
 			}
@@ -227,24 +244,36 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	}
 	
 	boolean selectBestPrediction(int jointID, FrameList predictions) {
+		int bestFound = 0;
 		String NJ_path = NJ_pathroot + "P" + jointID;
-		NJ1_frame = move.p2f(NJ_path).transform(offset2NB.getTransformationFromParent());
+		NJ_frame = move.p2f(NJ_path).transform(offset2NB.getTransformationFromParent());
 		for(int i = 0; i < predictions.size(); i++) {
 			Frame prediction = predictions.get(i).transform(rcp.getDO().invert());
-			Frame offset2NJ = prediction.copyWithRedundancy(NJ1_frame);
-			if(!targetVisited(prediction)) {
-				if(targetFilter(offset2NJ)) {
+			Frame offset2NJ = prediction.copyWithRedundancy(NJ_frame);
+			if(!targetVisited(prediction, i == (predictions.size() - 1))) {
+				if(targetFilter(offset2NJ) || p.teachNominal[jointID]) {
 					targetFrame = prediction;
-					log.msg(Event.Vision, "Found good match for Joint ID=" + jointID, 0, false);
+					log.msg(Event.Vision, "Found pred #" + i + 
+									"a good match for Joint ID=" + jointID, 0, false);
+					if(p.teachNominal[jointID]) { 
+						if(pad.questionYN("Update Joint ID= " + jointID + " in " + RCP + "?")) {
+							rcpb.setFrameTrafo(NJ_path, targetFrame);
+							p.teachNominal[jointID] = false; 
+							paramsMgr.saveData(p); 
+						} 
+					}
 					return true;
 				} else {
-					
+					bestFound = 2;
 				}
 			} else {
+				bestFound = (bestFound == 2) ? 2 : 3;
 				predictions.remove(i);
 				i--;
 			}
 		}
+		if (bestFound == 2) oee.addINV(jointID);
+		if (bestFound == 3) oee.addIAE(jointID);
 		return false;
 	}
 	
@@ -274,9 +303,9 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	}
 	
 	int filterAndVisit(int jointID, int MJ, Frame targetFrame) {
-		Frame offset2NJ = targetFrame.copyWithRedundancy(NJ1_frame);
+		Frame offset2NJ = targetFrame.copyWithRedundancy(NJ_frame);
 		Frame offset2OB = targetFrame.copyWithRedundancy(OB_frame);
-		if(!targetVisited(targetFrame)) {
+		if(!targetVisited(targetFrame, true)) {
 			if(targetFilter(offset2NJ)) {
 				// VISIT JOINT -------------------------------------------------
 				if(approachMode != 0) visitJoint(jointID, MJ, targetFrame); 
@@ -292,14 +321,14 @@ public class _CambrianApp extends RoboticsAPIApplication {
 					INR();
 				}
 			} else {
-				log.msg(Event.Vision, "Detection not valid(filtered)", 0, true);
+				log.msg(Event.Vision, "Detection not valid(filtered)", 1, true);
 				failure[MJ] += 1000;
 				oee.addINV(jointID);
 				logPrecision(jointID, offset2OB, 2);		// Update OB/NJ
 				INR();
 			}
 		} else {
-			log.msg(Event.Vision, "Detection already visited", 0, true);
+			log.msg(Event.Vision, "Detection already visited", 1, true);
 			failure[MJ] += 10000;
 			oee.addIAE(jointID);
 			logPrecision(jointID, offset2OB, 3);
@@ -327,9 +356,21 @@ public class _CambrianApp extends RoboticsAPIApplication {
 			oee.resume();
 			
 			if (trial >= p.MAX_TRIALS + 1) {	// TOO MANY INTENTS ------------------
-				log.msg(Event.Fail, "Skip joint #" + jointID + ", too many intents.", 0, true);
-				mf.blinkRGB("R", 1000);
-				oee.addTMI(jointID);
+				if(failure[1] > 0) {
+					log.msg(Event.Fail, "Skip joint #" + jointID + " after " + 
+											(trial - 1) + " intents.", 0, true);
+					mf.blinkRGB("R", 1000);
+					oee.addTMI(jointID);
+					oee.endItem(jointID);
+				}
+				if(failure[2] > 0) {
+					log.msg(Event.Fail, "Skip joint #" + MJ + " after " + 
+											(trial - 1) + " intents.", 0, true);
+					mf.blinkRGB("R", 1000);
+					oee.addTMI(MJ);
+					oee.endItem(MJ);
+				}
+				
 				break;
 			}
 			log.msg(Event.Proc, "Starting trial #" + trial, 0, false);
@@ -344,11 +385,19 @@ public class _CambrianApp extends RoboticsAPIApplication {
 				if(failure[1] > 0 && selectBestPrediction(jointID, cambrian.getPredictFrames())) { 
 					failure[1] = 0; 
 					filterAndVisit(jointID, 1, targetFrame);	// VISIT J1
+					if(failure[1] == 0) {
+						oee.endItem(jointID);
+						oee.startItem();
+					}
 				}
 				if(rcp.isActiveJointMJ() && (failure[2] > 0) && 
 						selectBestPrediction(MJ, cambrian.getPredictFrames())) {
 					failure[2] = 0;
 					filterAndVisit(MJ, 2, targetFrame);	// VISIT J2
+					if(failure[2] == 0) {
+						oee.endItem(MJ);
+						oee.startItem();
+					}
 				}
 				if((failure[0] + failure[1] + failure [2]) == 0) break;
 				
@@ -362,12 +411,13 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	}
 	
 	void scanFridge() {
-		if (loop_joint == 0) log.msg(Event.Proc, "Fridges ready and YuMi scanning. Start mission", 0, true);
+		if (loop_joint == 0) log.msg(Event.Proc, "Fridges ready and YuMi scanning. Start mission", firstRun ? 1 : 0, true);
 		oee.startCycle();
-		if(!remote.getScanBoltOnce() || firstRun) {
+		visitedJoints.free();
+		if(!p.scanBoltOnce || firstRun) {
 			cambrianModel = LUTcm.getCambrianModel('B');
 			cambrian.loadModel(cambrianModel);
-			move.PTP("/_Cambrian/_RBSP", 1, false);
+			move.PTP(FRAMES_PR + "/_RBSP", 1, false);
 			log.msg(Event.Proc, "Cambrian scanning for bolt...", 0, true);
 			if (cambrian.doScan(cambrianModel) > 0) {
 				OB_frame = cambrian.getPredictFrames().getFirst();
@@ -379,8 +429,8 @@ public class _CambrianApp extends RoboticsAPIApplication {
 				firstRun = false;
 			} else {
 				logErr("Reference bolt not found");
-				move.PTPhome(1, false);
-				//if(testMode) stop();
+				endCycle();
+				return;
 			}
 		}
 		
@@ -395,24 +445,26 @@ public class _CambrianApp extends RoboticsAPIApplication {
 			} else {
 				jointID = loop_joint;
 				rcp.selectJointID(jointID);
-				//i = USED_JOINTS;
 			}
 			
 			if (this.checkMissionEndReq(false)) return;
-			scanJoint();		// SCAN JOINT
-			
-			oee.endItem(jointID);
+			if (!scanJoint()) return;		// SCAN JOINT
 			selectModelAtEnd(i);
 		}
-		
-		visitedJoints.free();
+		endCycle();
+	}
+	
+	void endCycle() {
 		if(loop_joint == 0) {
 			oee.endCycle();
 			oee.saveOEEimage(false);
-			//move.PTPhome(1, true);
+			if(move.PTPhome(1, false)) {
+				log.msg(Event.Proc, "Robot returned to home. Conveyor free", 0, true);
+				plc.fbkMissionEnded();
+			}
+			else log.msg(Event.Fail, "Unable to return home", 1, true);
 			if(idle == 2) idle();
 		}
-		
 	}
 	
 	void loadAllCambrianModels() {
@@ -489,7 +541,7 @@ public class _CambrianApp extends RoboticsAPIApplication {
 	
 	void stop() {
 		pad.info("PROGRAM STOPPED, continue to abort...");
-		cambrian.end();
+		if(cambrian.getInit()) cambrian.end();
 		getApplicationControl().halt();
 		//dispose();
 	}

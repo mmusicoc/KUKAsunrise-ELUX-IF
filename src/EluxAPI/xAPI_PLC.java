@@ -76,7 +76,7 @@ public class xAPI_PLC {
 		else if (_mf.waitUserButton(5000)) {
 			waitMillis(1000);
 			openGripper();
-		} else if (pad.question("The gripper is gripping sth, do you want to open it before proceeding?", "YES", "NO") == 0) {
+		} else if (pad.questionYN("The gripper is gripping sth, do you want to open it before proceeding?")) {
 			waitMillis(1000);
 			openGripper();
 		}
@@ -89,7 +89,7 @@ public class xAPI_PLC {
 				this.openGripper();
 				this.closeGripper();
 			}
-			else if (pad.question("The gripper didn't detect anything, do you want to close it now?", "YES", "NO") == 0) {
+			else if (pad.questionYN("The gripper didn't detect anything, do you want to close it now?")) {
 				this.openGripper();
 				this.closeGripper();
 			}
